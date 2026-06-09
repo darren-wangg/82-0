@@ -1,0 +1,179 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+// ---------------------------------------------------------------------------
+// Player data (loaded by scripts/etl; read-mostly)
+// ---------------------------------------------------------------------------
+
+model Player {
+  slug        String         @id // bbref-style slug, e.g. "chambwi01"
+  name        String
+  nickname    String?
+  nbaPlayerId Int?
+  seasons     PlayerSeason[]
+}
+
+model PlayerSeason {
+  id          String  @id // `${slug}-${franchiseId}-${decade}` (peak season row)
+  player      Player  @relation(fields: [playerSlug], references: [slug])
+  playerSlug  String
+  franchiseId String
+  decade      String
+  peakSeason  String // e.g. "1961-62"
+  position    String
+  altPositions String[]
+  // 9-cat + ratings (per-game / per-100)
+  pts   Float
+  reb   Float
+  ast   Float
+  stl   Float
+  blk   Float
+  fgPct Float
+  ftPct Float
+  tpm   Float
+  tov   Float
+  ortg  Float
+  drtg  Float
+  estimatedCats String[]
+
+  @@index([franchiseId, decade])
+}
+
+// ---------------------------------------------------------------------------
+// Identity — Auth.js v5 standard tables + anonymous device identity
+// ---------------------------------------------------------------------------
+
+model User {
+  id            String    @id @default(cuid())
+  name          String?
+  email         String?   @unique
+  emailVerified DateTime?
+  image         String?
+  displayName   String?   @unique // claimed leaderboard name
+  accounts      Account[]
+  sessions      Session[]
+  teams         Team[]
+  anonIdentities AnonIdentity[]
+}
+
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String?
+  access_token      String?
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String?
+  session_state     String?
+  user              User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  @@unique([identifier, token])
+}
+
+// Anonymous-first: a signed cookie maps to this row; linking to a User happens
+// on sign-in so anonymous teams are claimed.
+model AnonIdentity {
+  id        String   @id @default(cuid())
+  user      User?    @relation(fields: [userId], references: [id])
+  userId    String?
+  createdAt DateTime @default(now())
+  teams     Team[]
+}
+
+// ---------------------------------------------------------------------------
+// Teams, matchups, lobbies, leaderboards
+// ---------------------------------------------------------------------------
+
+model Team {
+  slug            String   @id // short shareable slug
+  teamName        String
+  roster          Json // Roster (contracts.ts), validated on write
+  snapshotVersion String
+  // Server-computed (authoritative) engine outputs, denormalized for reads
+  ovr        Float
+  offRating  Float
+  defRating  Float
+  catProfile Json // Record<NineCat, number>
+  wins       Int
+  losses     Int
+  gatedCategory String?
+  // Ownership: anon always set at creation; user filled when claimed
+  anonIdentity   AnonIdentity? @relation(fields: [anonIdentityId], references: [id])
+  anonIdentityId String?
+  user           User?         @relation(fields: [userId], references: [id])
+  userId         String?
+  createdAt DateTime @default(now())
+
+  matchupsAsA  Matchup[]    @relation("teamA")
+  matchupsAsB  Matchup[]    @relation("teamB")
+  lobbyEntries LobbyEntry[]
+
+  @@index([snapshotVersion, wins, ovr]) // leaderboard reads
+  @@index([createdAt])
+}
+
+model Matchup {
+  id        String   @id @default(cuid())
+  teamA     Team     @relation("teamA", fields: [teamASlug], references: [slug])
+  teamASlug String
+  teamB     Team     @relation("teamB", fields: [teamBSlug], references: [slug])
+  teamBSlug String
+  seed      Int
+  result    Json // MatchupResult (contracts.ts)
+  createdAt DateTime @default(now())
+
+  @@unique([teamASlug, teamBSlug, seed])
+}
+
+model Lobby {
+  code      String       @id // short join code
+  name      String
+  createdAt DateTime     @default(now())
+  entries   LobbyEntry[]
+}
+
+model LobbyEntry {
+  id        String   @id @default(cuid())
+  lobby     Lobby    @relation(fields: [lobbyCode], references: [code], onDelete: Cascade)
+  lobbyCode String
+  team      Team     @relation(fields: [teamSlug], references: [slug])
+  teamSlug  String
+  createdAt DateTime @default(now())
+
+  @@unique([lobbyCode, teamSlug])
+}
+
+// AI explanation cache: one explanation per unique content hash
+model Explanation {
+  contentHash String   @id // hash of (kind, engine output payload, prompt version)
+  kind        String // "team" | "matchup"
+  text        String
+  model       String
+  createdAt   DateTime @default(now())
+}
