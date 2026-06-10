@@ -52,6 +52,26 @@ export default function Home() {
           >
             Start Draft
           </Link>
+          <div className="flex w-full items-center justify-center gap-1">
+            <Link
+              href="/leaderboard"
+              className={cn(
+                buttonVariants({ variant: "ghost", size: "lg" }),
+                "h-11 flex-1 text-muted-foreground"
+              )}
+            >
+              Leaderboard
+            </Link>
+            <Link
+              href="/l/new"
+              className={cn(
+                buttonVariants({ variant: "ghost", size: "lg" }),
+                "h-11 flex-1 text-muted-foreground"
+              )}
+            >
+              Group lobby
+            </Link>
+          </div>
           <HowToPlayDialog />
         </div>
       </main>
