@@ -17,6 +17,9 @@ const bg = "#09090b";
 const fg = "#fafafa";
 const muted = "#a1a1aa";
 const accent = "#f97316";
+const emerald = "#34d399";
+/** Near-black with a faint warm wash toward the record corner. */
+const bgGradient = `linear-gradient(120deg, ${bg} 0%, #111113 55%, #221208 100%)`;
 
 export default async function Image({
   params,
@@ -44,6 +47,7 @@ export default async function Image({
             alignItems: "center",
             justifyContent: "center",
             backgroundColor: bg,
+            backgroundImage: bgGradient,
             color: fg,
             fontSize: 96,
             fontWeight: 800,
@@ -66,6 +70,7 @@ export default async function Image({
     const p = players.get(team.roster.starters[pos] ?? "");
     return { pos, name: p?.name ?? "—" };
   });
+  const perfect = team.season.losses === 0;
 
   return new ImageResponse(
     (
@@ -75,6 +80,7 @@ export default async function Image({
           height: "100%",
           display: "flex",
           backgroundColor: bg,
+          backgroundImage: bgGradient,
           color: fg,
           padding: 64,
         }}
@@ -127,12 +133,21 @@ export default async function Image({
             justifyContent: "center",
           }}
         >
-          <div style={{ fontSize: 160, fontWeight: 800, display: "flex" }}>
+          <div
+            style={{
+              fontSize: 160,
+              fontWeight: 800,
+              display: "flex",
+              color: perfect ? emerald : fg,
+            }}
+          >
             {team.season.wins}
             <span style={{ color: muted }}>–</span>
             {team.season.losses}
           </div>
-          <div style={{ fontSize: 26, color: muted }}>PROJECTED RECORD</div>
+          <div style={{ fontSize: 26, color: perfect ? emerald : muted }}>
+            {perfect ? "PERFECT SEASON" : "PROJECTED RECORD"}
+          </div>
           <div style={{ fontSize: 30, marginTop: 24, display: "flex" }}>
             <span style={{ color: muted, marginRight: 12 }}>OVR</span>
             <span style={{ fontWeight: 700 }}>{Math.round(team.rating.ovr)}</span>
