@@ -404,6 +404,27 @@ describe("full draft on the real snapshot", () => {
   });
 });
 
+describe("challenge mode", () => {
+  it("NEW_GAME carries the challenge slug; plain new games clear it", () => {
+    const challenged = gameReducer(
+      newGame(1, realCtx),
+      { type: "NEW_GAME", seed: 2, challengeSlug: "abc123" },
+      realCtx
+    );
+    expect(challenged.challengeSlug).toBe("abc123");
+    const fresh = gameReducer(challenged, { type: "NEW_GAME", seed: 3 }, realCtx);
+    expect(fresh.challengeSlug).toBeNull();
+  });
+
+  it("challengeSlug survives serialization and defaults for old saves", () => {
+    const s = newGame(4, realCtx, "abc123");
+    expect(deserializeGame(serializeGame(s), realCtx)?.challengeSlug).toBe("abc123");
+    const legacy = JSON.parse(serializeGame(newGame(5, realCtx)));
+    delete legacy.challengeSlug;
+    expect(deserializeGame(JSON.stringify(legacy), realCtx)?.challengeSlug).toBeNull();
+  });
+});
+
 describe("persistence", () => {
   it("round-trips through serialize/deserialize", () => {
     let s = dispatch(newGame(11, realCtx), realCtx, { type: "SPIN" });

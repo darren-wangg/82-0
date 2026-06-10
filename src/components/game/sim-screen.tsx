@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { AnimatePresence, animate, motion } from "framer-motion";
-import { Check, Copy, RotateCcw, Share2, TriangleAlert } from "lucide-react";
+import { Check, Copy, RotateCcw, Share2, Swords, TriangleAlert } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import {
@@ -21,6 +21,7 @@ import {
   OVR_MAX,
   POSITIONS,
   SEASON_GAMES,
+  type MatchupResponse,
   type PlayerStatLine,
   type Roster,
   type SaveTeamRequest,
@@ -247,6 +248,7 @@ export function SimScreen() {
   const [save, setSave] = useState<SaveState>({ phase: "idle" });
   const [toast, setToast] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
+  const [shareOpen, setShareOpen] = useState(false);
 
   const sim = useMemo(() => {
     if (!state || state.status !== "locked") return null;
@@ -292,11 +294,31 @@ export function SimScreen() {
       });
       if (!res.ok) throw new Error(`save failed: ${res.status}`);
       const data: SaveTeamResponse = await res.json();
+      // Challenge draft: run the head-to-head and jump to the result page.
+      if (state.challengeSlug) {
+        try {
+          const m = await fetch("/api/matchups", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              teamSlugA: data.team.slug,
+              teamSlugB: state.challengeSlug,
+            }),
+          });
+          if (m.ok) {
+            const matchup: MatchupResponse = await m.json();
+            router.push(`/m/${matchup.id}`);
+            return;
+          }
+        } catch {
+          // fall through: team is saved even if the battle couldn't run
+        }
+        setToast("Saved! Couldn't run the battle right now — try again from the team page.");
+      }
       setSave({ phase: "saved", url: data.url });
     } catch {
-      // Route may not exist yet (built by another wave) — degrade gracefully.
       setSave({ phase: "error" });
-      setToast("Sharing coming soon — your season is saved on this device.");
+      setToast("Saving is unavailable right now — your season is safe on this device.");
     }
   };
 
@@ -319,7 +341,7 @@ export function SimScreen() {
     <div className="flex flex-1 flex-col px-4 pt-[max(0.75rem,env(safe-area-inset-top))]">
       {/* save/share icon, top right */}
       <div className="flex justify-end">
-        <Dialog>
+        <Dialog open={shareOpen} onOpenChange={setShareOpen}>
           <DialogTrigger
             render={
               <Button
@@ -334,9 +356,13 @@ export function SimScreen() {
           </DialogTrigger>
           <DialogContent className="dark border-border bg-background text-foreground">
             <DialogHeader>
-              <DialogTitle>Save &amp; share</DialogTitle>
+              <DialogTitle>
+                {state.challengeSlug ? "Save & battle" : "Save & share"}
+              </DialogTitle>
               <DialogDescription>
-                Name your team to get a share link.
+                {state.challengeSlug
+                  ? "Name your team — saving runs the best-of-7 against your rival."
+                  : "Name your team to get a share link."}
               </DialogDescription>
             </DialogHeader>
             {save.phase === "saved" ? (
@@ -371,7 +397,11 @@ export function SimScreen() {
                   disabled={save.phase === "saving" || teamName.trim().length === 0}
                   onClick={saveTeam}
                 >
-                  {save.phase === "saving" ? "Saving…" : "Save & Share"}
+                  {save.phase === "saving"
+                    ? "Saving…"
+                    : state.challengeSlug
+                      ? "Save & Battle"
+                      : "Save & Share"}
                 </Button>
               </div>
             )}
@@ -449,6 +479,14 @@ export function SimScreen() {
 
       {/* thumb-zone footer */}
       <div className="sticky bottom-0 mt-auto flex flex-col gap-2 bg-gradient-to-t from-background via-background/95 to-transparent pt-4 pb-[max(1rem,env(safe-area-inset-bottom))]">
+        {state.challengeSlug && save.phase !== "saved" && (
+          <Button
+            className="h-14 w-full rounded-2xl font-display text-xl tracking-wide shadow-lg shadow-primary/30"
+            onClick={() => setShareOpen(true)}
+          >
+            <Swords className="size-5" /> Battle your rival
+          </Button>
+        )}
         <Button
           variant="outline"
           className="h-14 w-full rounded-2xl text-lg font-bold"

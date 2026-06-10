@@ -150,10 +150,12 @@ export interface GameState {
   slots: Record<Slot, string | null>;
   /** Pool player awaiting slot placement (click player → click slot). */
   selectedPlayerId: string | null;
+  /** Saved-team slug this draft is challenging head-to-head, if any. */
+  challengeSlug: string | null;
 }
 
 export type GameAction =
-  | { type: "NEW_GAME"; seed: number }
+  | { type: "NEW_GAME"; seed: number; challengeSlug?: string | null }
   | { type: "SPIN" }
   | { type: "SKIP_TEAM" }
   | { type: "SKIP_ERA" }
@@ -301,7 +303,11 @@ export function toRoster(state: GameState): Roster | null {
 // Game creation
 // ---------------------------------------------------------------------------
 
-export function newGame(seed: number, ctx: DraftContext): GameState {
+export function newGame(
+  seed: number,
+  ctx: DraftContext,
+  challengeSlug: string | null = null
+): GameState {
   const rng = mulberry32(seed >>> 0);
   const base: GameState = {
     snapshotVersion: ctx.snapshotVersion,
@@ -317,6 +323,7 @@ export function newGame(seed: number, ctx: DraftContext): GameState {
     picks: [],
     slots: emptySlots(),
     selectedPlayerId: null,
+    challengeSlug,
   };
   // Exclude decades for the whole game; retry (deterministically) in the
   // unlikely case an exclusion set leaves no spinnable combos.
@@ -339,7 +346,7 @@ export function gameReducer(
 ): GameState {
   switch (action.type) {
     case "NEW_GAME":
-      return newGame(action.seed, ctx);
+      return newGame(action.seed, ctx, action.challengeSlug ?? null);
 
     case "SPIN": {
       if (state.status !== "draft" || state.spin !== null) return state;
@@ -479,6 +486,8 @@ const PersistedSchema = z.object({
   picks: z.array(z.string()).max(DRAFT_ROUNDS),
   slots: z.record(z.enum(SLOT_KEYS), z.string().nullable()),
   selectedPlayerId: z.string().nullable(),
+  // Optional for saves written before challenges existed.
+  challengeSlug: z.string().nullable().default(null),
 });
 
 export function serializeGame(state: GameState): string {

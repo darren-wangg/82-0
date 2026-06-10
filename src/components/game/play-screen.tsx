@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+import { useSearchParams } from "next/navigation";
 import { AnimatePresence, motion } from "framer-motion";
 import { RefreshCcw, RotateCcw } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
@@ -16,6 +17,7 @@ import {
   draftablePool,
   pickablePool,
 } from "./draft-state";
+import { ChallengeBanner } from "./challenge-banner";
 import { DECADE_COLORS } from "./format";
 import { freshSeed, useGame } from "./game-provider";
 import { PoolList } from "./pool-list";
@@ -49,6 +51,26 @@ function PlaySkeleton() {
 export function PlayScreen() {
   const { state, dispatch, ctx, players, franchiseById } = useGame();
   const allowed = usePhaseGuard(["draft"]);
+
+  // Arriving via /play?challenge={slug} retargets the draft at that team.
+  // A fresh (or already-matching) game adopts it silently; an in-progress
+  // draft asks before being scrapped.
+  const challengeParam = useSearchParams().get("challenge");
+  const stateChallenge = state?.challengeSlug ?? null;
+  const statePicks = state?.picks.length ?? 0;
+  const stateReady = state !== null;
+  useEffect(() => {
+    if (!stateReady || !challengeParam || challengeParam === stateChallenge) {
+      return;
+    }
+    if (
+      statePicks > 0 &&
+      !window.confirm("Start a challenge draft? Your current draft will be scrapped.")
+    ) {
+      return;
+    }
+    dispatch({ type: "NEW_GAME", seed: freshSeed(), challengeSlug: challengeParam });
+  }, [stateReady, challengeParam, stateChallenge, statePicks, dispatch]);
 
   // Nonce of the last spin whose reel animation has finished. Every (re)spin —
   // including a restored pending spin on mount — counts as a reel roll: the
@@ -154,6 +176,8 @@ export function PlayScreen() {
           </Button>
         </div>
       </div>
+
+      {state.challengeSlug && <ChallengeBanner slug={state.challengeSlug} />}
 
       {/* slot machine — team and era side by side */}
       <Card className="mt-3 shrink-0 gap-0 overflow-hidden border-primary/25 bg-gradient-to-br from-card via-card to-accent/30 py-0">
