@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
-import { RotateCcw, Shuffle } from "lucide-react";
+import { RefreshCcw, RotateCcw } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -24,16 +24,20 @@ import { SlotReel } from "./slot-reel";
 import { usePhaseGuard } from "./use-phase-guard";
 
 /** Reel roll time (franchise reel + staggered decade reel), in ms. */
-const REEL_MS = 3100;
-const FRANCHISE_REEL_S = 2.4;
-const DECADE_REEL_DELAY_S = 0.5;
+const REEL_MS = 3900;
+const FRANCHISE_REEL_S = 3.0;
+const DECADE_REEL_DELAY_S = 0.6;
+
+/** Idle-reel placeholders shown before the first spin of a round. */
+const PLACEHOLDER_TEAM = "Chicago Bulls";
+const PLACEHOLDER_ERA = "1990s";
 
 function PlaySkeleton() {
   return (
     <div className="flex flex-1 flex-col gap-4 px-4 py-4">
       <Skeleton className="h-4 w-32" />
       <Skeleton className="h-2 w-full" />
-      <Skeleton className="h-32 w-full rounded-xl" />
+      <Skeleton className="h-28 w-full rounded-xl" />
       <Skeleton className="h-40 w-full rounded-xl" />
       <div className="mt-auto flex flex-col gap-3">
         <Skeleton className="h-24 w-full" />
@@ -69,7 +73,6 @@ export function PlayScreen() {
   if (!state || !allowed) return <PlaySkeleton />;
 
   const spin = state.spin;
-  const decadeItems = DECADES.filter((d) => !state.excludedDecades.includes(d));
   const pool = spin
     ? pickablePool(state, ctx, spin.franchiseId, spin.decade).flatMap(
         (id) => players.get(id) ?? []
@@ -97,7 +100,7 @@ export function PlayScreen() {
   };
 
   return (
-    <div className="flex h-[calc(100dvh-3rem)] flex-col overflow-hidden px-4 pt-3">
+    <div className="flex h-dvh flex-col overflow-hidden px-4 pt-[max(0.75rem,env(safe-area-inset-top))]">
       {/* header: progress left, respins top right */}
       <div className="flex items-start justify-between gap-2">
         <div className="min-w-0">
@@ -132,7 +135,7 @@ export function PlayScreen() {
             disabled={!skipTeamOk}
             onClick={() => dispatch({ type: "SKIP_TEAM" })}
           >
-            <Shuffle className="size-3.5" /> Team
+            <RefreshCcw className="size-3.5" /> Team
             <Badge variant="secondary" className="px-1 font-mono">
               {state.teamSkipsLeft}
             </Badge>
@@ -144,7 +147,7 @@ export function PlayScreen() {
             disabled={!skipEraOk}
             onClick={() => dispatch({ type: "SKIP_ERA" })}
           >
-            <Shuffle className="size-3.5" /> Era
+            <RefreshCcw className="size-3.5" /> Era
             <Badge variant="secondary" className="px-1 font-mono">
               {state.eraSkipsLeft}
             </Badge>
@@ -152,44 +155,25 @@ export function PlayScreen() {
         </div>
       </div>
 
-      {/* banned eras */}
-      <div className="mt-2 flex flex-wrap items-center gap-1.5">
-        <span className="text-[10px] font-semibold tracking-wide text-muted-foreground uppercase">
-          Banned eras
-        </span>
-        {state.excludedDecades.map((d) => (
-          <Badge
-            key={d}
-            variant="outline"
-            className={cn("font-mono line-through opacity-80", DECADE_COLORS[d].chip)}
-          >
-            {d}
-          </Badge>
-        ))}
-      </div>
-
       {/* slot machine — team and era side by side */}
       <Card className="mt-3 shrink-0 gap-0 overflow-hidden border-primary/25 bg-gradient-to-br from-card via-card to-accent/30 py-0">
-        <div className="border-b border-border/60 px-4 py-1.5 text-center text-[10px] font-semibold tracking-[0.3em] text-muted-foreground uppercase">
-          Round {state.round} spin
-        </div>
         <div className="flex items-stretch gap-2 px-3 py-3">
           <SlotReel
             value={franchiseName}
             items={franchiseNames}
             nonce={state.spinNonce}
             duration={FRANCHISE_REEL_S}
-            idleLabel="? ? ?"
+            idleLabel={PLACEHOLDER_TEAM}
             className="flex-[1.6] rounded-lg bg-background/40"
             rowClassName="font-display text-lg tracking-wide text-center leading-tight px-1"
           />
           <SlotReel
             value={spin?.decade ?? null}
-            items={decadeItems}
+            items={[...DECADES]}
             nonce={state.spinNonce}
             duration={FRANCHISE_REEL_S - 0.2}
             delay={DECADE_REEL_DELAY_S}
-            idleLabel="— — —"
+            idleLabel={PLACEHOLDER_ERA}
             className="flex-1 rounded-lg bg-background/40"
             rowClassName={cn(
               "font-display text-2xl tracking-wider",
@@ -200,7 +184,7 @@ export function PlayScreen() {
       </Card>
 
       {/* pool appears automatically once the reels settle */}
-      <div className="mt-3 flex min-h-0 flex-1 flex-col">
+      <div className="mt-2 flex min-h-0 flex-1 flex-col">
         <AnimatePresence mode="wait">
           {spin === null ? (
             <motion.div
@@ -238,17 +222,6 @@ export function PlayScreen() {
               key={`pool-${state.spinNonce}`}
               className="flex min-h-0 flex-1 flex-col"
             >
-              <div className="flex items-baseline gap-2 pb-1">
-                <span className="font-display text-base">{franchiseName}</span>
-                <span
-                  className={cn(
-                    "font-mono text-sm font-bold",
-                    spin && DECADE_COLORS[spin.decade].text
-                  )}
-                >
-                  {spin?.decade}
-                </span>
-              </div>
               <PoolList
                 pool={pool}
                 selectedId={state.selectedPlayerId}

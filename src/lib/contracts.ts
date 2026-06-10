@@ -50,7 +50,8 @@ export const BENCH_COUNT = 3;
 /** Bench players contribute at this fraction of starter weight. */
 export const BENCH_WEIGHT = 0.4;
 export const DRAFT_ROUNDS = 8;
-export const EXCLUDED_DECADES_PER_GAME = 2;
+/** All eras are in play (the original game banned 2 per run; we ban none). */
+export const EXCLUDED_DECADES_PER_GAME = 0;
 export const TEAM_SKIPS_PER_GAME = 1;
 export const ERA_SKIPS_PER_GAME = 1;
 export const SEASON_GAMES = 82;

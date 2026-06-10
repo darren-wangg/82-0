@@ -3,15 +3,25 @@
 import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { AnimatePresence, animate, motion } from "framer-motion";
-import { Check, Copy, RotateCcw, TriangleAlert } from "lucide-react";
+import { Check, Copy, RotateCcw, Share2, TriangleAlert } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
   NINE_CATS,
   OVR_MAX,
+  POSITIONS,
   SEASON_GAMES,
+  type PlayerStatLine,
   type Roster,
   type SaveTeamRequest,
   type SaveTeamResponse,
@@ -22,6 +32,7 @@ import { cn } from "@/lib/utils";
 import { toRoster } from "./draft-state";
 import { CAT_FRIENDLY, CAT_LABELS } from "./format";
 import { freshSeed, useGame } from "./game-provider";
+import { PlayerHeadshot } from "./player-headshot";
 import { usePhaseGuard } from "./use-phase-guard";
 
 const COUNT_UP_SECONDS = 2.2;
@@ -167,6 +178,55 @@ type SaveState =
   | { phase: "saved"; url: string }
   | { phase: "error" };
 
+/** The final roster: 5 starters + 3 bench, images and names only. */
+function TeamView({
+  roster,
+  players,
+}: {
+  roster: Roster;
+  players: Map<string, PlayerStatLine>;
+}) {
+  const slots: { label: string; id: string }[] = [
+    ...POSITIONS.map((pos) => ({ label: pos, id: roster.starters[pos]! })),
+    ...(["G", "F", "C"] as const).map((label, i) => ({
+      label,
+      id: roster.bench[i],
+    })),
+  ];
+  return (
+    <div className="mt-5 flex items-end gap-1.5">
+      {slots.map(({ label, id }, i) => {
+        const player = players.get(id);
+        const bench = i >= POSITIONS.length;
+        return (
+          <motion.div
+            key={`${label}-${id}`}
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.3 + i * 0.07 }}
+            className="flex min-w-0 flex-1 flex-col items-center gap-1"
+          >
+            <div
+              className={cn(
+                "rounded-full ring-2 ring-offset-2 ring-offset-background",
+                bench ? "size-11 ring-muted-foreground/30" : "size-13 ring-primary/50"
+              )}
+            >
+              {player && <PlayerHeadshot player={player} className="size-full" />}
+            </div>
+            <span className="w-full truncate text-center text-[9px] leading-none text-muted-foreground">
+              {player?.name.split(" ").slice(-1)[0] ?? "—"}
+            </span>
+            <span className="text-[8px] font-bold tracking-wider text-primary/70">
+              {label}
+            </span>
+          </motion.div>
+        );
+      })}
+    </div>
+  );
+}
+
 function SimSkeleton() {
   return (
     <div className="flex flex-1 flex-col gap-4 px-4 py-4">
@@ -256,12 +316,71 @@ export function SimScreen() {
   };
 
   return (
-    <div className="flex flex-1 flex-col px-4 pt-6">
+    <div className="flex flex-1 flex-col px-4 pt-[max(0.75rem,env(safe-area-inset-top))]">
+      {/* save/share icon, top right */}
+      <div className="flex justify-end">
+        <Dialog>
+          <DialogTrigger
+            render={
+              <Button
+                variant="outline"
+                size="icon"
+                aria-label="Save and share this team"
+                className="rounded-full"
+              />
+            }
+          >
+            <Share2 className="size-4" />
+          </DialogTrigger>
+          <DialogContent className="dark border-border bg-background text-foreground">
+            <DialogHeader>
+              <DialogTitle>Save &amp; share</DialogTitle>
+              <DialogDescription>
+                Name your team to get a share link.
+              </DialogDescription>
+            </DialogHeader>
+            {save.phase === "saved" ? (
+              <div className="flex flex-col gap-2">
+                <p className="text-sm font-semibold">Team saved!</p>
+                <div className="flex items-center gap-2">
+                  <code className="min-w-0 flex-1 truncate rounded-lg bg-muted px-2.5 py-2 font-mono text-xs">
+                    {save.url}
+                  </code>
+                  <Button
+                    variant="outline"
+                    className="h-10 shrink-0"
+                    onClick={() => copyLink(save.url)}
+                  >
+                    {copied ? <Check className="size-4" /> : <Copy className="size-4" />}
+                    {copied ? "Copied" : "Copy"}
+                  </Button>
+                </div>
+              </div>
+            ) : (
+              <div className="flex flex-col gap-3">
+                <Input
+                  value={teamName}
+                  maxLength={40}
+                  placeholder="Name your team"
+                  aria-label="Team name"
+                  className="h-11 rounded-xl"
+                  onChange={(e) => setTeamName(e.target.value)}
+                />
+                <Button
+                  className="h-12 w-full rounded-xl text-base font-bold"
+                  disabled={save.phase === "saving" || teamName.trim().length === 0}
+                  onClick={saveTeam}
+                >
+                  {save.phase === "saving" ? "Saving…" : "Save & Share"}
+                </Button>
+              </div>
+            )}
+          </DialogContent>
+        </Dialog>
+      </div>
+
       {/* final record */}
-      <div className="flex flex-col items-center gap-1 text-center">
-        <p className="text-[11px] font-semibold tracking-[0.3em] text-muted-foreground uppercase">
-          Season simulated
-        </p>
+      <div className="flex flex-col items-center text-center">
         <p
           className={cn(
             "font-display text-8xl tracking-tight tabular-nums",
@@ -273,17 +392,10 @@ export function SimScreen() {
         >
           {wins}-{losses}
         </p>
-        <motion.p
-          initial={{ opacity: 0, y: 6 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: COUNT_UP_SECONDS }}
-          className="text-sm text-muted-foreground"
-        >
-          {perfect
-            ? `Perfection. ${SEASON_GAMES}-0. It actually happened.`
-            : `${season.wins} wins. ${SEASON_GAMES - season.wins} short of immortality.`}
-        </motion.p>
       </div>
+
+      {/* the team */}
+      <TeamView roster={roster} players={players} />
 
       {/* gate callout */}
       {season.gatedCategory && (
@@ -333,46 +445,6 @@ export function SimScreen() {
             delay={COUNT_UP_SECONDS * 0.4 + i * 0.06}
           />
         ))}
-      </Card>
-
-      {/* save & share */}
-      <Card className="mt-3 gap-3 border-border/60 bg-card/80 p-4">
-        {save.phase === "saved" ? (
-          <div className="flex flex-col gap-2">
-            <p className="text-sm font-semibold">Team saved!</p>
-            <div className="flex items-center gap-2">
-              <code className="min-w-0 flex-1 truncate rounded-lg bg-muted px-2.5 py-2 font-mono text-xs">
-                {save.url}
-              </code>
-              <Button
-                variant="outline"
-                className="h-10 shrink-0"
-                onClick={() => copyLink(save.url)}
-              >
-                {copied ? <Check className="size-4" /> : <Copy className="size-4" />}
-                {copied ? "Copied" : "Copy"}
-              </Button>
-            </div>
-          </div>
-        ) : (
-          <>
-            <Input
-              value={teamName}
-              maxLength={40}
-              placeholder="Name your team"
-              aria-label="Team name"
-              className="h-11 rounded-xl"
-              onChange={(e) => setTeamName(e.target.value)}
-            />
-            <Button
-              className="h-12 w-full rounded-xl text-base font-bold"
-              disabled={save.phase === "saving" || teamName.trim().length === 0}
-              onClick={saveTeam}
-            >
-              {save.phase === "saving" ? "Saving…" : "Save & Share"}
-            </Button>
-          </>
-        )}
       </Card>
 
       {/* thumb-zone footer */}

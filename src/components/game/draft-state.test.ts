@@ -19,6 +19,7 @@ import {
   gameReducer,
   GameAction,
   GameState,
+  moveTargetsFor,
   newGame,
   openSlots,
   pickablePool,
@@ -290,6 +291,74 @@ describe("SELECT_PLAYER + PLACE", () => {
     expect(combos).toContainEqual({ franchiseId: "AAA", decade: "1970s" });
     // AAA 1990s is exhausted (its only player is drafted):
     expect(combos).not.toContainEqual({ franchiseId: "AAA", decade: "1990s" });
+  });
+});
+
+describe("MOVE (rearranging drafted players)", () => {
+  /** Game with magic at PG and shaq at BC, no spin pending. */
+  function board(): GameState {
+    let s = newGame(5, tinyCtx);
+    s = { ...s, spin: { franchiseId: "BBB", decade: "1980s" }, spinNonce: 1 };
+    s = draftInto(s, tinyCtx, "magic-BBB-1980s", "PG");
+    s = { ...s, spin: { franchiseId: "BBB", decade: "1990s" } };
+    s = draftInto(s, tinyCtx, "shaq-BBB-1990s", "BC");
+    return s;
+  }
+
+  it("moves a player to an empty eligible slot", () => {
+    const s = board();
+    const moved = gameReducer(s, { type: "MOVE", from: "PG", to: "BG" }, tinyCtx);
+    expect(moved.slots.PG).toBeNull();
+    expect(moved.slots.BG).toBe("magic-BBB-1980s");
+    expect(moved.picks).toEqual(s.picks); // moving is not drafting
+  });
+
+  it("moves between starters and bench in both directions", () => {
+    let s = board();
+    s = gameReducer(s, { type: "MOVE", from: "BC", to: "C" }, tinyCtx);
+    expect(s.slots.C).toBe("shaq-BBB-1990s");
+    expect(s.slots.BC).toBeNull();
+    s = gameReducer(s, { type: "MOVE", from: "C", to: "BC" }, tinyCtx);
+    expect(s.slots.BC).toBe("shaq-BBB-1990s");
+  });
+
+  it("swaps two players when both fit each other's slots", () => {
+    let s = board();
+    // magic PG → SG first, then bring in oscar at PG.
+    s = gameReducer(s, { type: "MOVE", from: "PG", to: "SG" }, tinyCtx);
+    s = { ...s, spin: { franchiseId: "AAA", decade: "1970s" } };
+    s = draftInto(s, tinyCtx, "oscar-AAA-1970s", "PG");
+    // Swap magic (SG, fits PG) with oscar (PG, fits... PG only) — oscar
+    // cannot play SG, so the swap must be rejected.
+    const rejected = gameReducer(s, { type: "MOVE", from: "SG", to: "PG" }, tinyCtx);
+    expect(rejected).toBe(s);
+    // But magic (SG) ↔ BG (empty) then oscar PG ↔ BG (guard slot) works:
+    const a = gameReducer(s, { type: "MOVE", from: "PG", to: "BG" }, tinyCtx);
+    expect(a.slots.BG).toBe("oscar-AAA-1970s");
+    // Swap where both fit: put magic back at PG, oscar stays BG; then swap
+    // magic(PG) with oscar(BG) — magic fits BG and oscar fits PG → allowed.
+    const b = gameReducer(a, { type: "MOVE", from: "SG", to: "PG" }, tinyCtx);
+    const c = gameReducer(b, { type: "MOVE", from: "PG", to: "BG" }, tinyCtx);
+    expect(c.slots.PG).toBe("oscar-AAA-1970s");
+    expect(c.slots.BG).toBe("magic-BBB-1980s");
+  });
+
+  it("rejects ineligible destinations", () => {
+    const s = board();
+    for (const to of ["SF", "PF", "C", "BF"] as const) {
+      // magic is a guard: SF/PF/C/BF are all illegal.
+      expect(gameReducer(s, { type: "MOVE", from: "PG", to }, tinyCtx)).toBe(s);
+    }
+    expect(moveTargetsFor("PG", s, tinyCtx).sort()).toEqual(["BG", "SG"].sort());
+  });
+
+  it("is a no-op for empty sources and after lock", () => {
+    const s = board();
+    expect(gameReducer(s, { type: "MOVE", from: "SF", to: "PF" }, tinyCtx)).toBe(s);
+    const locked = { ...s, status: "locked" as const };
+    expect(
+      gameReducer(locked, { type: "MOVE", from: "PG", to: "BG" }, tinyCtx)
+    ).toBe(locked);
   });
 });
 

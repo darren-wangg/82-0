@@ -158,7 +158,8 @@ export type GameAction =
   | { type: "SKIP_TEAM" }
   | { type: "SKIP_ERA" }
   | { type: "SELECT_PLAYER"; playerId: string | null }
-  | { type: "PLACE"; slot: Slot };
+  | { type: "PLACE"; slot: Slot }
+  | { type: "MOVE"; from: Slot; to: Slot };
 
 const emptySlots = (): Record<Slot, string | null> => ({
   PG: null,
@@ -192,6 +193,27 @@ export function eligibleSlotsFor(
   const positions = ctx.positionsById[playerId];
   if (!positions) return [];
   return openSlots(state).filter((slot) => slotAccepts(slot, positions));
+}
+
+/**
+ * Slots an already-placed player may MOVE to: empty eligible slots, plus
+ * occupied eligible slots whose occupant can take the mover's slot (swap).
+ */
+export function moveTargetsFor(
+  from: Slot,
+  state: GameState,
+  ctx: DraftContext
+): Slot[] {
+  const moving = state.slots[from];
+  const positions = moving ? ctx.positionsById[moving] : undefined;
+  if (!positions) return [];
+  return ALL_SLOTS.filter((to) => {
+    if (to === from || !slotAccepts(to, positions)) return false;
+    const occupant = state.slots[to];
+    if (!occupant) return true;
+    const occupantPositions = ctx.positionsById[occupant];
+    return !!occupantPositions && slotAccepts(from, occupantPositions);
+  });
 }
 
 /** Pool for a combo minus already-drafted humans. */
@@ -389,6 +411,19 @@ export function gameReducer(
         // Tapping the selected player again deselects.
         selectedPlayerId:
           state.selectedPlayerId === action.playerId ? null : action.playerId,
+      };
+    }
+
+    case "MOVE": {
+      if (state.status !== "draft") return state;
+      if (!moveTargetsFor(action.from, state, ctx).includes(action.to)) {
+        return state;
+      }
+      const moving = state.slots[action.from]!;
+      const occupant = state.slots[action.to];
+      return {
+        ...state,
+        slots: { ...state.slots, [action.to]: moving, [action.from]: occupant ?? null },
       };
     }
 

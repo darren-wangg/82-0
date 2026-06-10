@@ -12,7 +12,6 @@ import {
 import {
   DRAFT_ROUNDS,
   ERA_SKIPS_PER_GAME,
-  EXCLUDED_DECADES_PER_GAME,
   SEASON_GAMES,
   TEAM_SKIPS_PER_GAME,
 } from "@/lib/contracts";
@@ -20,15 +19,15 @@ import {
 const STEPS: { title: string; body: string }[] = [
   {
     title: "Spin",
-    body: `Each of the ${DRAFT_ROUNDS} rounds spins up a random franchise and decade. ${EXCLUDED_DECADES_PER_GAME} decades are knocked out of every game — check the banned chips before you start.`,
+    body: `Each of the ${DRAFT_ROUNDS} rounds spins up a random franchise and decade — every era from the 1960s on is in play.`,
   },
   {
     title: "Skip (maybe)",
-    body: `You get ${TEAM_SKIPS_PER_GAME} team skip and ${ERA_SKIPS_PER_GAME} era skip per game. A skip re-spins only that axis — spend them wisely.`,
+    body: `You get ${TEAM_SKIPS_PER_GAME} team re-spin and ${ERA_SKIPS_PER_GAME} era re-spin per game. A re-spin rolls only that axis — spend them wisely.`,
   },
   {
     title: "Pick & place",
-    body: "Tap a player from the spun pool, then tap one of their glowing roster slots. Starters need a true PG, SG, SF, PF, and C; the bench takes a guard, a forward, and a center. You can never draft the same player twice, even from a different era.",
+    body: "Tap a player from the spun pool, then tap one of their glowing roster slots. Starters need a true PG, SG, SF, PF, and C; the bench takes a guard, a forward, and a center. You can never draft the same player twice, even from a different era — and you can rearrange drafted players between eligible slots any time during the draft.",
   },
   {
     title: "Simulate",

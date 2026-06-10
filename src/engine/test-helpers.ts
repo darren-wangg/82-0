@@ -3,7 +3,13 @@
  * not exported from the engine entry point.
  */
 
-import { DECADES, Position, POSITIONS, Roster } from "@/lib/contracts";
+import {
+  DECADES,
+  EXCLUDED_DECADES_PER_GAME,
+  Position,
+  POSITIONS,
+  Roster,
+} from "@/lib/contracts";
 import { getBaselines, getPlayerMap, getSnapshot } from "@/lib/snapshot";
 import { mulberry32 } from "./rng";
 
@@ -129,7 +135,7 @@ export function draftedRosters(
 
   return Array.from({ length: count }, () => {
     const excluded = new Set<string>();
-    while (excluded.size < 2)
+    while (excluded.size < EXCLUDED_DECADES_PER_GAME)
       excluded.add(DECADES[Math.floor(rand() * DECADES.length)]);
     const picked: string[] = [];
     const slugs = new Set<string>();

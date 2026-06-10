@@ -5,33 +5,18 @@ import { motion } from "framer-motion";
 import { Badge } from "@/components/ui/badge";
 import type { NineCat, PlayerStatLine } from "@/lib/contracts";
 import { cn } from "@/lib/utils";
-import { formatCatValue, isEstimated, SORT_OPTIONS } from "./format";
+import { isEstimated, SORT_OPTIONS } from "./format";
 import { PlayerHeadshot } from "./player-headshot";
 
-function StatChip({
-  player,
-  cat,
-  label,
-  emphasized,
-}: {
-  player: PlayerStatLine;
-  cat: NineCat;
-  label: string;
-  emphasized: boolean;
-}) {
-  return (
-    <span
-      className={cn(
-        "font-mono text-[11px] tabular-nums",
-        emphasized ? "font-bold text-primary" : "text-muted-foreground"
-      )}
-    >
-      {formatCatValue(cat, player.stats[cat])}
-      {isEstimated(player, cat) && <span className="opacity-60">*</span>}{" "}
-      <span className="text-[9px] font-semibold opacity-70">{label}</span>
-    </span>
-  );
-}
+/** The six per-game columns shown for every pool player. */
+const ROW_CATS: { cat: NineCat; label: string }[] = [
+  { cat: "pts", label: "PPG" },
+  { cat: "reb", label: "RPG" },
+  { cat: "ast", label: "APG" },
+  { cat: "stl", label: "STL" },
+  { cat: "blk", label: "BLK" },
+  { cat: "tov", label: "TO" },
+];
 
 /**
  * The post-spin player pool: appears automatically once the reels settle,
@@ -57,18 +42,6 @@ export function PoolList({
     [pool, sortCat]
   );
 
-  // Always show PPG/RPG/APG; when sorting by another cat, swap it in front.
-  const shownCats = useMemo(() => {
-    const base: { cat: NineCat; label: string }[] = [
-      { cat: "pts", label: "PPG" },
-      { cat: "reb", label: "RPG" },
-      { cat: "ast", label: "APG" },
-    ];
-    if (base.some((b) => b.cat === sortCat)) return base;
-    const extra = SORT_OPTIONS.find((o) => o.cat === sortCat)!;
-    return [extra, ...base.slice(0, 2)];
-  }, [sortCat]);
-
   return (
     <motion.div
       initial={{ opacity: 0, y: 18 }}
@@ -76,25 +49,19 @@ export function PoolList({
       transition={{ duration: 0.35, ease: "easeOut" }}
       className="flex min-h-0 flex-1 flex-col"
     >
-      <div className="flex items-center justify-between pb-1.5">
-        <p className="text-[11px] font-semibold tracking-wide text-muted-foreground uppercase">
-          Tap a player, then a glowing slot
-        </p>
-        <label className="flex items-center gap-1.5 text-[11px] font-semibold text-muted-foreground">
-          Sort
-          <select
-            value={sortCat}
-            onChange={(e) => setSortCat(e.target.value as NineCat)}
-            className="h-8 rounded-lg border border-border bg-card px-2 font-mono text-xs font-bold text-foreground"
-            aria-label="Sort players by stat"
-          >
-            {SORT_OPTIONS.map(({ cat, label }) => (
-              <option key={cat} value={cat}>
-                {label}
-              </option>
-            ))}
-          </select>
-        </label>
+      <div className="flex justify-end pb-1.5">
+        <select
+          value={sortCat}
+          onChange={(e) => setSortCat(e.target.value as NineCat)}
+          className="h-8 rounded-lg border border-border bg-card px-2 font-mono text-xs font-bold text-foreground"
+          aria-label="Sort players by stat"
+        >
+          {SORT_OPTIONS.map(({ cat, label }) => (
+            <option key={cat} value={cat}>
+              {label}
+            </option>
+          ))}
+        </select>
       </div>
 
       <ul className="min-h-0 flex-1 space-y-1.5 overflow-y-auto overscroll-contain pb-2">
@@ -113,13 +80,11 @@ export function PoolList({
                 disabled={!draftable}
                 onClick={() => onSelect(selected ? null : p.id)}
                 className={cn(
-                  "flex w-full items-center gap-3 rounded-xl border p-2 text-left transition-colors",
+                  "flex w-full items-center gap-2.5 rounded-xl border p-2 text-left transition-colors",
                   selected
                     ? "border-primary bg-primary/15 shadow-md shadow-primary/20"
                     : "border-border/60 bg-card/70",
-                  draftable
-                    ? "active:scale-[0.99]"
-                    : "opacity-40 grayscale"
+                  draftable ? "active:scale-[0.99]" : "opacity-40 grayscale"
                 )}
               >
                 <PlayerHeadshot player={p} className="size-11 shrink-0" />
@@ -133,21 +98,27 @@ export function PoolList({
                       {[p.position, ...p.altPositions].join("/")}
                     </Badge>
                   </div>
-                  <div className="mt-0.5 flex items-center gap-2.5">
-                    {shownCats.map(({ cat, label }) => (
-                      <StatChip
-                        key={cat}
-                        player={p}
-                        cat={cat}
-                        label={label}
-                        emphasized={cat === sortCat}
-                      />
+                  <div className="mt-1 grid grid-cols-6 gap-1">
+                    {ROW_CATS.map(({ cat, label }) => (
+                      <div key={cat} className="flex flex-col items-start">
+                        <span
+                          className={cn(
+                            "font-mono text-[11px] leading-none font-bold tabular-nums",
+                            cat === sortCat ? "text-primary" : "text-foreground/90"
+                          )}
+                        >
+                          {p.stats[cat].toFixed(1)}
+                          {isEstimated(p, cat) && (
+                            <span className="text-muted-foreground">*</span>
+                          )}
+                        </span>
+                        <span className="text-[8px] font-semibold tracking-wider text-muted-foreground">
+                          {label}
+                        </span>
+                      </div>
                     ))}
                   </div>
                 </div>
-                <span className="shrink-0 pr-1 font-mono text-[10px] text-muted-foreground">
-                  {p.peakSeason}
-                </span>
               </button>
             </motion.li>
           );
