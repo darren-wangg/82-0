@@ -3,7 +3,15 @@
 import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { AnimatePresence, animate, motion } from "framer-motion";
-import { Check, Copy, RotateCcw, Share2, Swords, TriangleAlert } from "lucide-react";
+import {
+  Check,
+  Copy,
+  RotateCcw,
+  Share2,
+  Swords,
+  TriangleAlert,
+  UserRoundX,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import {
@@ -30,7 +38,7 @@ import {
 import { getEngine } from "@/lib/engine-provider";
 import { getBaselines } from "@/lib/snapshot";
 import { cn } from "@/lib/utils";
-import { toRoster } from "./draft-state";
+import { BENCH_SLOTS, toRoster, type Slot } from "./draft-state";
 import { CAT_FRIENDLY, CAT_LABELS } from "./format";
 import { freshSeed, useGame } from "./game-provider";
 import { PlayerHeadshot } from "./player-headshot";
@@ -179,24 +187,29 @@ type SaveState =
   | { phase: "saved"; url: string }
   | { phase: "error" };
 
-/** The final roster: 5 starters + 3 bench, images and names only. */
+/** The final roster: 5 starters + 3 bench, images and names only. While
+ *  `onReplace` is set (replace mode), every circle pulses red and tapping
+ *  one cuts that player. */
 function TeamView({
   roster,
   players,
+  onReplace,
 }: {
   roster: Roster;
   players: Map<string, PlayerStatLine>;
+  onReplace?: (slot: Slot) => void;
 }) {
-  const slots: { label: string; id: string }[] = [
-    ...POSITIONS.map((pos) => ({ label: pos, id: roster.starters[pos]! })),
+  const slots: { label: string; slot: Slot; id: string }[] = [
+    ...POSITIONS.map((pos) => ({ label: pos as string, slot: pos as Slot, id: roster.starters[pos]! })),
     ...(["G", "F", "C"] as const).map((label, i) => ({
-      label,
+      label: label as string,
+      slot: BENCH_SLOTS[i] as Slot,
       id: roster.bench[i],
     })),
   ];
   return (
     <div className="mt-5 flex items-end gap-1">
-      {slots.map(({ label, id }, i) => {
+      {slots.map(({ label, slot, id }, i) => {
         const player = players.get(id);
         const bench = i >= POSITIONS.length;
         return (
@@ -207,14 +220,31 @@ function TeamView({
             transition={{ delay: 0.3 + i * 0.07 }}
             className="flex min-w-0 flex-1 flex-col items-center gap-1"
           >
-            <div
+            <motion.button
+              type="button"
+              disabled={!onReplace}
+              aria-label={
+                onReplace
+                  ? `Cut ${player?.name ?? label} and spin for a replacement`
+                  : undefined
+              }
+              onClick={() => onReplace?.(slot)}
+              animate={onReplace ? { scale: [1, 1.1, 1] } : { scale: 1 }}
+              transition={
+                onReplace ? { repeat: Infinity, duration: 1.1 } : { duration: 0.15 }
+              }
               className={cn(
                 "rounded-full ring-2 ring-offset-1 ring-offset-background",
-                bench ? "size-9 ring-muted-foreground/30" : "size-10 ring-primary/50"
+                bench ? "size-9" : "size-10",
+                onReplace
+                  ? "ring-red-500 shadow-lg shadow-red-500/40"
+                  : bench
+                    ? "ring-muted-foreground/30"
+                    : "ring-primary/50"
               )}
             >
               {player && <PlayerHeadshot player={player} className="size-full" />}
-            </div>
+            </motion.button>
             <span className="w-full truncate text-center text-[9px] leading-none text-muted-foreground">
               {player?.name.split(" ").slice(-1)[0] ?? "—"}
             </span>
@@ -249,6 +279,7 @@ export function SimScreen() {
   const [toast, setToast] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
   const [shareOpen, setShareOpen] = useState(false);
+  const [replaceMode, setReplaceMode] = useState(false);
 
   const sim = useMemo(() => {
     if (!state || state.status !== "locked") return null;
@@ -411,7 +442,19 @@ export function SimScreen() {
 
       {/* final record */}
       <div className="flex flex-col items-center text-center">
-        <p
+        {/* outer: entrance spring; inner: endless pulse for a perfect season */}
+        <motion.div
+          initial={{ scale: 0.7, opacity: 0 }}
+          animate={{ scale: 1, opacity: 1 }}
+          transition={{ type: "spring", stiffness: 220, damping: 18 }}
+        >
+        <motion.p
+          animate={perfect ? { scale: [1, 1.06, 1] } : undefined}
+          transition={
+            perfect
+              ? { delay: COUNT_UP_SECONDS, repeat: Infinity, duration: 1.8 }
+              : undefined
+          }
           className={cn(
             "font-display text-8xl tracking-tight tabular-nums",
             perfect
@@ -421,18 +464,35 @@ export function SimScreen() {
           aria-label={`Final record ${season.wins} and ${season.losses}`}
         >
           {wins}-{losses}
-        </p>
+        </motion.p>
+        </motion.div>
       </div>
 
       {/* the team */}
-      <TeamView roster={roster} players={players} />
+      <TeamView
+        roster={roster}
+        players={players}
+        onReplace={
+          replaceMode
+            ? (slot) => dispatch({ type: "REPLACE", slot }) // → back to /play
+            : undefined
+        }
+      />
+      {replaceMode && (
+        <p className="mt-2 text-center text-xs font-semibold text-red-400">
+          Tap the player you want to cut — you&apos;ll spin for their replacement.
+        </p>
+      )}
 
       {/* gate callout */}
       {season.gatedCategory && (
         <motion.div
           initial={{ opacity: 0, y: 8 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: COUNT_UP_SECONDS + 0.2 }}
+          animate={{ opacity: 1, y: 0, x: [0, -5, 5, -3, 3, 0] }}
+          transition={{
+            delay: COUNT_UP_SECONDS + 0.2,
+            x: { delay: COUNT_UP_SECONDS + 0.5, duration: 0.4 },
+          }}
           className="mt-4 flex items-start gap-2 rounded-xl border border-destructive/40 bg-destructive/10 p-3 text-sm"
         >
           <TriangleAlert className="mt-0.5 size-4 shrink-0 text-destructive" />
@@ -487,13 +547,30 @@ export function SimScreen() {
             <Swords className="size-5" /> Battle your rival
           </Button>
         )}
-        <Button
-          variant="outline"
-          className="h-14 w-full rounded-2xl text-lg font-bold"
-          onClick={runItBack}
-        >
-          <RotateCcw className="size-5" /> Run it back
-        </Button>
+        <div className="flex gap-2">
+          {state.replacesLeft > 0 && (
+            <Button
+              variant="outline"
+              className={cn(
+                "h-14 flex-1 rounded-2xl text-lg font-bold",
+                replaceMode
+                  ? "border-red-500 text-red-400"
+                  : "border-red-500/50 text-red-400/90"
+              )}
+              onClick={() => setReplaceMode((m) => !m)}
+            >
+              <UserRoundX className="size-5" />
+              {replaceMode ? "Cancel" : "Replace · 1"}
+            </Button>
+          )}
+          <Button
+            variant="outline"
+            className="h-14 flex-1 rounded-2xl text-lg font-bold"
+            onClick={runItBack}
+          >
+            <RotateCcw className="size-5" /> Run it back
+          </Button>
+        </div>
       </div>
 
       {/* toast */}

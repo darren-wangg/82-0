@@ -11,6 +11,7 @@ import {
   buildDraftContext,
   canSkipEra,
   canSkipTeam,
+  comboKey,
   deserializeGame,
   DraftContext,
   draftablePool,
@@ -23,6 +24,7 @@ import {
   newGame,
   openSlots,
   pickablePool,
+  REPLACES_PER_GAME,
   rosterComplete,
   serializeGame,
   Slot,
@@ -401,6 +403,102 @@ describe("full draft on the real snapshot", () => {
     expect(
       gameReducer(s, { type: "SELECT_PLAYER", playerId: s.picks[0] }, realCtx)
     ).toBe(s);
+  });
+});
+
+describe("duplicate team+era prevention", () => {
+  it("every reel landing is recorded, and no combo repeats across a game", () => {
+    for (const seed of [3, 77, 1234]) {
+      let s = newGame(seed, realCtx);
+      const landed: string[] = [];
+      for (let guard = 0; guard < DRAFT_ROUNDS * 3 && s.status === "draft"; guard++) {
+        s = gameReducer(s, { type: "SPIN" }, realCtx);
+        landed.push(comboKey(s.spin!));
+        if (canSkipTeam(s, realCtx)) {
+          s = gameReducer(s, { type: "SKIP_TEAM" }, realCtx);
+          landed.push(comboKey(s.spin!));
+        } else if (canSkipEra(s, realCtx)) {
+          s = gameReducer(s, { type: "SKIP_ERA" }, realCtx);
+          landed.push(comboKey(s.spin!));
+        }
+        const pool = draftablePool(s, realCtx, s.spin!.franchiseId, s.spin!.decade);
+        s = draftInto(s, realCtx, pool[0], eligibleSlotsFor(pool[0], s, realCtx)[0]);
+      }
+      expect(s.status).toBe("locked");
+      expect(new Set(landed).size).toBe(landed.length);
+      expect(s.spunCombos).toEqual(landed);
+    }
+  });
+
+  it("eligibleCombos excludes already-landed combos", () => {
+    let s = newGame(5, tinyCtx);
+    s = { ...s, excludedDecades: [], spunCombos: ["BBB|1980s"] };
+    expect(eligibleCombos(s, tinyCtx)).not.toContainEqual({
+      franchiseId: "BBB",
+      decade: "1980s",
+    });
+  });
+
+  it("falls back to repeats rather than stranding the draft", () => {
+    let s = newGame(5, tinyCtx);
+    s = {
+      ...s,
+      excludedDecades: [],
+      spunCombos: [
+        "AAA|1970s",
+        "AAA|1990s",
+        "BBB|1980s",
+        "BBB|1990s",
+        "CCC|1990s",
+      ],
+    };
+    expect(eligibleCombos(s, tinyCtx).length).toBeGreaterThan(0);
+  });
+});
+
+describe("REPLACE (one roster do-over per game)", () => {
+  /** magic at PG and shaq at BC, no spin pending. */
+  function board(): GameState {
+    let s = newGame(5, tinyCtx);
+    s = { ...s, spin: { franchiseId: "BBB", decade: "1980s" }, spinNonce: 1 };
+    s = draftInto(s, tinyCtx, "magic-BBB-1980s", "PG");
+    s = { ...s, spin: { franchiseId: "BBB", decade: "1990s" } };
+    s = draftInto(s, tinyCtx, "shaq-BBB-1990s", "BC");
+    return s;
+  }
+
+  it("evicts the player, reopens the slot, rewinds the round, and decrements", () => {
+    const s = board();
+    expect(s.replacesLeft).toBe(REPLACES_PER_GAME);
+    const r = gameReducer(s, { type: "REPLACE", slot: "PG" }, tinyCtx);
+    expect(r.slots.PG).toBeNull();
+    expect(r.picks).toEqual(["shaq-BBB-1990s"]);
+    expect(r.replacesLeft).toBe(REPLACES_PER_GAME - 1);
+    expect(r.status).toBe("draft");
+    expect(r.round).toBe(2);
+  });
+
+  it("unlocks a completed roster back into the draft", () => {
+    const locked = { ...board(), status: "locked" as const };
+    const r = gameReducer(locked, { type: "REPLACE", slot: "BC" }, tinyCtx);
+    expect(r.status).toBe("draft");
+    expect(r.slots.BC).toBeNull();
+    expect(openSlots(r)).toContain("BC");
+  });
+
+  it("frees the evicted human to be drafted again", () => {
+    const r = gameReducer(board(), { type: "REPLACE", slot: "PG" }, tinyCtx);
+    const respun = { ...r, spin: { franchiseId: "BBB", decade: "1980s" } } as GameState;
+    expect(pickablePool(respun, tinyCtx, "BBB", "1980s")).toContain(
+      "magic-BBB-1980s"
+    );
+  });
+
+  it("is a no-op on empty slots and once exhausted", () => {
+    const s = board();
+    expect(gameReducer(s, { type: "REPLACE", slot: "SF" }, tinyCtx)).toBe(s);
+    const spent = gameReducer(s, { type: "REPLACE", slot: "PG" }, tinyCtx);
+    expect(gameReducer(spent, { type: "REPLACE", slot: "BC" }, tinyCtx)).toBe(spent);
   });
 });
 

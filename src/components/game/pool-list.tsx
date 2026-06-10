@@ -94,8 +94,11 @@ export function PoolList({
                     <Badge
                       variant="outline"
                       className="h-4 shrink-0 px-1 font-mono text-[9px]"
+                      title={[p.position, ...p.altPositions].join("/")}
                     >
-                      {[p.position, ...p.altPositions].join("/")}
+                      {/* Cap at 3 so true multi-position guys don't crowd out the name. */}
+                      {[p.position, ...p.altPositions].slice(0, 3).join("/")}
+                      {p.altPositions.length > 2 && "+"}
                     </Badge>
                   </div>
                   <div className="mt-1 grid grid-cols-6 gap-1">

@@ -10,7 +10,8 @@
     "lint": "eslint",
     "etl": "tsx scripts/etl/build.ts",
     "test": "vitest run",
-    "test:watch": "vitest"
+    "test:watch": "vitest",
+    "etl:headshots": "tsx scripts/etl/headshots.ts"
   },
   "dependencies": {
     "@ai-sdk/anthropic": "^3.0.82",

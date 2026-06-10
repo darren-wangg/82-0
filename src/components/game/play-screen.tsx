@@ -152,7 +152,7 @@ export function PlayScreen() {
           <Button
             variant="outline"
             size="sm"
-            className="h-9 rounded-lg border-red-500/60 px-3 font-bold text-red-400 shadow-md shadow-red-950/50 disabled:opacity-35 disabled:grayscale"
+            className="h-9 rounded-lg border-red-500/60 px-3 font-bold text-red-400 shadow-md shadow-red-950/50 transition-transform active:scale-95 disabled:opacity-35 disabled:grayscale"
             disabled={!skipTeamOk}
             onClick={() => dispatch({ type: "SKIP_TEAM" })}
           >
@@ -161,7 +161,7 @@ export function PlayScreen() {
           <Button
             variant="outline"
             size="sm"
-            className="h-9 rounded-lg border-orange-500/60 px-3 font-bold text-orange-400 shadow-md shadow-orange-950/50 disabled:opacity-35 disabled:grayscale"
+            className="h-9 rounded-lg border-orange-500/60 px-3 font-bold text-orange-400 shadow-md shadow-orange-950/50 transition-transform active:scale-95 disabled:opacity-35 disabled:grayscale"
             disabled={!skipEraOk}
             onClick={() => dispatch({ type: "SKIP_ERA" })}
           >
@@ -225,7 +225,7 @@ export function PlayScreen() {
                 className="w-full"
               >
                 <Button
-                  className="h-16 w-full rounded-2xl font-display text-2xl tracking-wide shadow-xl shadow-primary/30"
+                  className="h-16 w-full rounded-2xl font-display text-2xl tracking-wide shadow-xl shadow-primary/30 transition-transform active:scale-95"
                   onClick={() => dispatch({ type: "SPIN" })}
                 >
                   Spin

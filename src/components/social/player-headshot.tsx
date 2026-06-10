@@ -26,17 +26,19 @@ function Silhouette({ className }: { className?: string }) {
 }
 
 export function PlayerHeadshot({
-  src,
+  srcs,
   alt,
   className,
 }: {
-  src: string | null;
+  /** Candidate image URLs, tried in order (see headshotSources). */
+  srcs: readonly string[];
   alt: string;
   className?: string;
 }) {
-  const [failed, setFailed] = useState(false);
+  const [failed, setFailed] = useState<string[]>([]);
+  const src = srcs.find((s) => !failed.includes(s));
 
-  if (!src || failed) return <Silhouette className={className} />;
+  if (!src) return <Silhouette className={className} />;
 
   return (
     // Proxied through the Next image optimizer (remotePatterns in
@@ -46,7 +48,7 @@ export function PlayerHeadshot({
       alt={alt}
       width={260}
       height={200}
-      onError={() => setFailed(true)}
+      onError={() => setFailed((f) => [...f, src])}
       className={cn("bg-muted object-cover object-top", className)}
     />
   );

@@ -11,6 +11,12 @@ const nextConfig: NextConfig = {
         hostname: "cdn.nba.com",
         pathname: "/headshots/**",
       },
+      // Wikipedia-thumbnail fallbacks for players the NBA CDN doesn't cover
+      // (see scripts/etl/headshots.ts).
+      {
+        protocol: "https",
+        hostname: "upload.wikimedia.org",
+      },
     ],
   },
 };

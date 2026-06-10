@@ -2,9 +2,12 @@
 
 import { useState } from "react";
 import { motion } from "framer-motion";
+import { UserRoundX } from "lucide-react";
+import { Button } from "@/components/ui/button";
 import { POSITIONS } from "@/lib/contracts";
 import { cn } from "@/lib/utils";
 import {
+  ALL_SLOTS,
   BENCH_SLOTS,
   eligibleSlotsFor,
   moveTargetsFor,
@@ -19,6 +22,7 @@ function SlotCircle({
   slot,
   highlighted,
   moveSource,
+  replaceTarget,
   onTap,
   small,
 }: {
@@ -27,6 +31,8 @@ function SlotCircle({
   highlighted: boolean;
   /** This filled slot is currently selected for moving. */
   moveSource: boolean;
+  /** Replace mode: tapping this filled slot evicts its player. */
+  replaceTarget: boolean;
   onTap: (slot: Slot) => void;
   small?: boolean;
 }) {
@@ -42,27 +48,29 @@ function SlotCircle({
       {player ? (
         <motion.button
           type="button"
-          aria-label={`${player.name} at ${SLOT_LABELS[slot]}${highlighted ? " — tap to swap here" : moveSource ? " — selected" : " — tap to move"}`}
+          aria-label={`${player.name} at ${SLOT_LABELS[slot]}${replaceTarget ? " — tap to replace" : highlighted ? " — tap to swap here" : moveSource ? " — selected" : " — tap to move"}`}
           onClick={() => onTap(slot)}
           initial={{ scale: 0.3, opacity: 0, rotate: -8 }}
           animate={
-            highlighted
+            highlighted || replaceTarget
               ? { scale: [1, 1.1, 1], opacity: 1, rotate: 0 }
               : { scale: 1, opacity: 1, rotate: 0 }
           }
           transition={
-            highlighted
+            highlighted || replaceTarget
               ? { repeat: Infinity, duration: 1.1 }
               : { type: "spring", stiffness: 380, damping: 20 }
           }
           className={cn(
             "rounded-full ring-2 ring-offset-1 ring-offset-background",
             size,
-            moveSource
-              ? "ring-sky-400 shadow-lg shadow-sky-400/40"
-              : highlighted
-                ? "ring-primary shadow-lg shadow-primary/40"
-                : "ring-primary/40"
+            replaceTarget
+              ? "ring-red-500 shadow-lg shadow-red-500/40"
+              : moveSource
+                ? "ring-sky-400 shadow-lg shadow-sky-400/40"
+                : highlighted
+                  ? "ring-primary shadow-lg shadow-primary/40"
+                  : "ring-primary/40"
           )}
         >
           <PlayerHeadshot player={player} className="size-full" />
@@ -103,12 +111,14 @@ function SlotCircle({
 /**
  * The live roster: 5 starter slots + 3 bench slots (G/F/C).
  *
- * Two interactions:
+ * Three interactions:
  *  - Placement: while a pool player is selected, their eligible open slots
  *    pulse; tapping one drafts them into it.
  *  - Rearranging: with no pool selection, tapping a filled slot selects it
  *    (blue ring) and pulses every slot that player can move to — empty ones,
  *    or filled ones where the two players can legally swap.
+ *  - Replace (once per game): the Replace toggle pulses every filled slot
+ *    red; tapping one cuts that player so a fresh spin can re-fill the slot.
  *
  * Shows only basic team per-game averages; the full engine breakdown stays
  * hidden until the season simulates.
@@ -116,14 +126,18 @@ function SlotCircle({
 export function RosterBoard({ className }: { className?: string }) {
   const { state, dispatch, ctx, players } = useGame();
   const [moveFrom, setMoveFrom] = useState<Slot | null>(null);
+  const [replaceMode, setReplaceMode] = useState(false);
 
   const placing = state?.selectedPlayerId ?? null;
-  // A new pool selection cancels any in-progress move (state adjusted during
-  // render, per the React "derived reset" pattern).
+  // A new pool selection cancels any in-progress move or replace (state
+  // adjusted during render, per the React "derived reset" pattern).
   const [prevPlacing, setPrevPlacing] = useState(placing);
   if (placing !== prevPlacing) {
     setPrevPlacing(placing);
-    if (placing) setMoveFrom(null);
+    if (placing) {
+      setMoveFrom(null);
+      setReplaceMode(false);
+    }
   }
 
   if (!state) return null;
@@ -135,8 +149,17 @@ export function RosterBoard({ className }: { className?: string }) {
         ? moveTargetsFor(moveFrom, state, ctx)
         : []
   );
+  const filledSlots = ALL_SLOTS.filter((s) => state.slots[s] !== null);
+  const canReplace = state.replacesLeft > 0 && filledSlots.length > 0;
 
   const onTap = (slot: Slot) => {
+    if (replaceMode) {
+      if (state.slots[slot]) {
+        dispatch({ type: "REPLACE", slot });
+        setReplaceMode(false);
+      }
+      return;
+    }
     if (placing) {
       if (highlights.has(slot)) dispatch({ type: "PLACE", slot });
       return;
@@ -159,6 +182,31 @@ export function RosterBoard({ className }: { className?: string }) {
 
   return (
     <div className={cn("flex flex-col gap-2", className)}>
+      {canReplace && (
+        <div className="flex items-center justify-end gap-2">
+          {replaceMode && (
+            <span className="text-[10px] font-semibold text-red-400">
+              Tap a player to cut them, then spin for the replacement
+            </span>
+          )}
+          <Button
+            variant="outline"
+            size="sm"
+            className={cn(
+              "h-6 rounded-md px-2 text-[10px] font-bold",
+              replaceMode
+                ? "border-red-500 text-red-400"
+                : "border-red-500/40 text-red-400/80"
+            )}
+            onClick={() => {
+              setReplaceMode((m) => !m);
+              setMoveFrom(null);
+            }}
+          >
+            <UserRoundX className="size-3" /> Replace · 1 left
+          </Button>
+        </div>
+      )}
       <div className="flex items-end gap-1">
         {POSITIONS.map((p) => (
           <SlotCircle
@@ -166,6 +214,7 @@ export function RosterBoard({ className }: { className?: string }) {
             slot={p}
             highlighted={highlights.has(p)}
             moveSource={moveFrom === p}
+            replaceTarget={replaceMode && state.slots[p] !== null}
             onTap={onTap}
           />
         ))}
@@ -176,6 +225,7 @@ export function RosterBoard({ className }: { className?: string }) {
             slot={s}
             highlighted={highlights.has(s)}
             moveSource={moveFrom === s}
+            replaceTarget={replaceMode && state.slots[s] !== null}
             onTap={onTap}
             small
           />
@@ -187,9 +237,16 @@ export function RosterBoard({ className }: { className?: string }) {
       >
         {avgs.map(({ label, value }) => (
           <div key={label} className="flex flex-col items-center">
-            <span className="font-mono text-[11px] font-bold tabular-nums">
+            {/* keyed by value so every draft pick pops the number */}
+            <motion.span
+              key={value}
+              initial={{ scale: 1.4 }}
+              animate={{ scale: 1 }}
+              transition={{ type: "spring", stiffness: 500, damping: 18 }}
+              className="font-mono text-[11px] font-bold tabular-nums"
+            >
               {value}
-            </span>
+            </motion.span>
             <span className="text-[8px] font-semibold tracking-wider text-muted-foreground">
               {label}
             </span>

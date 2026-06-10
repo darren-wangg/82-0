@@ -4,7 +4,8 @@
  * estimated-era stat lines get an "est." badge.
  */
 
-import { headshotUrl, PlayerStatLine, POSITIONS, Roster } from "@/lib/contracts";
+import { PlayerStatLine, POSITIONS, Roster } from "@/lib/contracts";
+import { headshotSources } from "@/lib/headshots";
 import { getPlayerMap } from "@/lib/snapshot";
 import { Badge } from "@/components/ui/badge";
 import { PlayerHeadshot } from "./player-headshot";
@@ -21,7 +22,7 @@ function PlayerCard({
   return (
     <div className="flex flex-col overflow-hidden rounded-xl border border-border bg-card">
       <PlayerHeadshot
-        src={player ? headshotUrl(player) : null}
+        srcs={player ? headshotSources(player) : []}
         alt={player?.name ?? "Unknown player"}
         className="aspect-[13/10] w-full"
       />

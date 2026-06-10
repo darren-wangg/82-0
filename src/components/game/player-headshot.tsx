@@ -3,23 +3,26 @@
 import { useState } from "react";
 import Image from "next/image";
 import { UserRound } from "lucide-react";
-import { headshotUrl, type PlayerStatLine } from "@/lib/contracts";
+import { type PlayerStatLine } from "@/lib/contracts";
+import { headshotSources } from "@/lib/headshots";
 import { cn } from "@/lib/utils";
 
 /**
- * Player headshot served through the Next image optimizer (see next.config),
- * with a silhouette fallback when there is no nbaPlayerId or the source
- * image fails to load.
+ * Player headshot served through the Next image optimizer (see next.config).
+ * Sources are tried in order (NBA CDN, then the Wikipedia fallback resolved
+ * at ETL time); when every source fails — or none exists — a silhouette
+ * renders instead.
  */
 export function PlayerHeadshot({
   player,
   className,
 }: {
-  player: Pick<PlayerStatLine, "nbaPlayerId" | "name">;
+  player: Pick<PlayerStatLine, "nbaPlayerId" | "playerSlug" | "name">;
   className?: string;
 }) {
-  const url = headshotUrl(player);
-  const [failed, setFailed] = useState(false);
+  const [failed, setFailed] = useState<string[]>([]);
+  const [loaded, setLoaded] = useState(false);
+  const src = headshotSources(player).find((s) => !failed.includes(s));
 
   return (
     <span
@@ -28,15 +31,19 @@ export function PlayerHeadshot({
         className
       )}
     >
-      {url && !failed ? (
+      {src ? (
         <Image
-          src={url}
+          src={src}
           alt=""
           fill
           sizes="56px"
-          className="object-cover"
+          className={cn(
+            "object-cover transition-opacity duration-300",
+            loaded ? "opacity-100" : "opacity-0"
+          )}
           draggable={false}
-          onError={() => setFailed(true)}
+          onLoad={() => setLoaded(true)}
+          onError={() => setFailed((f) => [...f, src])}
         />
       ) : (
         <UserRound aria-hidden className="size-[55%] text-muted-foreground" />
