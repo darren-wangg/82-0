@@ -101,8 +101,8 @@ export default async function Image({
             >
               {team.teamName}
             </div>
-            <div style={{ fontSize: 26, color: muted, marginTop: 8 }}>
-              by {team.ownerDisplayName ?? "an anonymous GM"}
+            <div style={{ display: "flex", fontSize: 26, color: muted, marginTop: 8 }}>
+              {`by ${team.ownerDisplayName ?? "an anonymous GM"}`}
             </div>
           </div>
           <div style={{ display: "flex", flexDirection: "column" }}>

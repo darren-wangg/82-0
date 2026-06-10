@@ -6,6 +6,7 @@
  */
 
 import { useState } from "react";
+import Image from "next/image";
 import { cn } from "@/lib/utils";
 
 function Silhouette({ className }: { className?: string }) {
@@ -38,13 +39,13 @@ export function PlayerHeadshot({
   if (!src || failed) return <Silhouette className={className} />;
 
   return (
-    // Remote CDN with runtime fallback; next/image remotePatterns config lives
-    // in the shared next.config.ts, which this wave doesn't own.
-    // eslint-disable-next-line @next/next/no-img-element
-    <img
+    // Proxied through the Next image optimizer (remotePatterns in
+    // next.config.ts) so clients never hit the unofficial CDN directly.
+    <Image
       src={src}
       alt={alt}
-      loading="lazy"
+      width={260}
+      height={200}
       onError={() => setFailed(true)}
       className={cn("bg-muted object-cover object-top", className)}
     />
