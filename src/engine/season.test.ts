@@ -59,11 +59,11 @@ describe("projectSeason", () => {
     });
   });
 
-  it("golden master: balanced roster lands mid-band (exactly 65-17)", () => {
+  it("golden master: balanced roster lands mid-band (exactly 67-15)", () => {
     expect(project(BALANCED)).toEqual({
-      wins: 65,
-      losses: 17,
-      ovr: 89.4,
+      wins: 67,
+      losses: 15,
+      ovr: 92.3,
       gatedCategory: null,
       winCap: 82,
     });
@@ -71,9 +71,9 @@ describe("projectSeason", () => {
 
   it("golden master: all-centers roster is gated by free-throw shooting", () => {
     expect(project(ALL_CENTERS)).toEqual({
-      wins: 72,
-      losses: 10,
-      ovr: 98.2,
+      wins: 74,
+      losses: 8,
+      ovr: 103,
       gatedCategory: "ftPct",
       winCap: 74,
     });
@@ -82,11 +82,11 @@ describe("projectSeason", () => {
   it("golden master: turnover-machine roster is hard-capped by tov despite high ovr", () => {
     const s = project(TURNOVER_PRONE);
     expect(s).toEqual({
-      wins: 56,
-      losses: 26,
-      ovr: 101.3,
+      wins: 66,
+      losses: 16,
+      ovr: 106.1,
       gatedCategory: "tov",
-      winCap: 56,
+      winCap: 66,
     });
     // The gate genuinely binds: the raw curve at this ovr exceeds the cap.
     expect(s.winCap).toBeLessThan(SEASON_GAMES);

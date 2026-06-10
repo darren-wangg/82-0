@@ -20,17 +20,19 @@ export const Z_CLAMP = 4.5;
 
 /** Per-category weights for the player composite (sum to 1.0). `tov` is already
  *  sign-flipped in AdjustedStats, so its weight is a positive reward for low
- *  turnovers / penalty for high ones. */
+ *  turnovers / penalty for high ones. tpm and tov are deliberately light:
+ *  threes barely existed for most eras and high turnovers are mostly star
+ *  usage tax, so neither should swing a player's value much. */
 export const CAT_WEIGHTS: Record<NineCat, number> = {
-  pts: 0.22,
-  reb: 0.15,
-  ast: 0.15,
+  pts: 0.24,
+  reb: 0.17,
+  ast: 0.16,
   stl: 0.09,
   blk: 0.09,
-  fgPct: 0.08,
+  fgPct: 0.09,
   ftPct: 0.05,
-  tpm: 0.07,
-  tov: 0.1,
+  tpm: 0.04,
+  tov: 0.07,
 };
 
 /** Fraction of playerScore that comes from the ortg/drtg blend (the rest is
@@ -72,8 +74,8 @@ export const GATE_THRESHOLDS: Record<NineCat, number> = {
   blk: -0.15,
   fgPct: -0.05,
   ftPct: -0.85,
-  tpm: -0.85,
-  tov: -2.25,
+  tpm: -1.0,
+  tov: -2.4,
 };
 
 /** Win caps by how far below the cat's threshold the team z falls. */
