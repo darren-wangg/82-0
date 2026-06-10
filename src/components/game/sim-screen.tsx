@@ -264,8 +264,10 @@ export function SimScreen() {
         </p>
         <p
           className={cn(
-            "font-mono text-7xl font-black tracking-tighter tabular-nums",
-            perfect && "text-emerald-400"
+            "font-display text-8xl tracking-tight tabular-nums",
+            perfect
+              ? "bg-gradient-to-br from-emerald-300 to-emerald-500 bg-clip-text text-transparent"
+              : "bg-gradient-to-br from-primary via-orange-300 to-violet-400 bg-clip-text text-transparent"
           )}
           aria-label={`Final record ${season.wins} and ${season.losses}`}
         >

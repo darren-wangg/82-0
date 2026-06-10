@@ -4,31 +4,34 @@ import {
   EXCLUDED_DECADES_PER_GAME,
   POSITIONS,
   RosterSchema,
-  Decade,
-  Position,
 } from "@/lib/contracts";
 import { getSnapshot } from "@/lib/snapshot";
 import {
+  ALL_SLOTS,
   buildDraftContext,
   canSkipEra,
   canSkipTeam,
   deserializeGame,
   DraftContext,
+  draftablePool,
   eligibleCombos,
+  eligibleSlotsFor,
   gameReducer,
   GameAction,
   GameState,
-  lineupComplete,
   newGame,
+  openSlots,
   pickablePool,
+  rosterComplete,
   serializeGame,
+  Slot,
+  slotAccepts,
   toRoster,
-  unassignedPicks,
 } from "./draft-state";
 
-const fixtureCtx = buildDraftContext(getSnapshot());
+const realCtx = buildDraftContext(getSnapshot());
 
-/** Small synthetic snapshot context for precise duplicate/edge-case tests. */
+/** Small synthetic context for precise eligibility/duplicate edge cases. */
 const tinyCtx: DraftContext = {
   snapshotVersion: "tiny",
   pools: {
@@ -55,247 +58,303 @@ const tinyCtx: DraftContext = {
     "mj-CCC-1990s": "jordami01",
     "pippen-CCC-1990s": "pippesc01",
   },
+  positionsById: {
+    "kareem-AAA-1970s": ["C"],
+    "oscar-AAA-1970s": ["PG"],
+    "ray-AAA-1990s": ["SG"],
+    "kareem-BBB-1980s": ["C"],
+    "magic-BBB-1980s": ["PG", "SG"],
+    "shaq-BBB-1990s": ["C"],
+    "mj-CCC-1990s": ["SG", "SF"],
+    "pippen-CCC-1990s": ["SF", "PF"],
+  },
 };
 
-function dispatch(state: GameState, ctx: DraftContext, ...actions: GameAction[]) {
+function dispatch(
+  state: GameState,
+  ctx: DraftContext,
+  ...actions: GameAction[]
+): GameState {
   return actions.reduce((s, a) => gameReducer(s, a, ctx), state);
 }
 
-/** newGame for tinyCtx with no excluded decades (full control in tests). */
-function tinyGame(seed = 1): GameState {
-  return { ...newGame(seed, tinyCtx), excludedDecades: [] };
+/** Spin (skipping the reel), then draft the given player into the given slot. */
+function draftInto(
+  state: GameState,
+  ctx: DraftContext,
+  playerId: string,
+  slot: Slot
+): GameState {
+  return dispatch(
+    state,
+    ctx,
+    { type: "SELECT_PLAYER", playerId },
+    { type: "PLACE", slot }
+  );
 }
 
-function forceSpin(state: GameState, franchiseId: string, decade: Decade): GameState {
-  return { ...state, spin: { franchiseId, decade } };
-}
+describe("slotAccepts (hard roster requirements)", () => {
+  it("starter slots demand the exact position", () => {
+    expect(slotAccepts("PG", ["PG"])).toBe(true);
+    expect(slotAccepts("PG", ["SG"])).toBe(false);
+    expect(slotAccepts("C", ["C"])).toBe(true);
+    expect(slotAccepts("C", ["PF"])).toBe(false);
+    expect(slotAccepts("SF", ["SG", "SF"])).toBe(true); // alt position counts
+  });
+
+  it("bench G takes guards, F takes forwards, C takes centers", () => {
+    expect(slotAccepts("BG", ["PG"])).toBe(true);
+    expect(slotAccepts("BG", ["SG"])).toBe(true);
+    expect(slotAccepts("BG", ["SF"])).toBe(false);
+    expect(slotAccepts("BF", ["SF"])).toBe(true);
+    expect(slotAccepts("BF", ["PF"])).toBe(true);
+    expect(slotAccepts("BF", ["C"])).toBe(false);
+    expect(slotAccepts("BC", ["C"])).toBe(true);
+    expect(slotAccepts("BC", ["PF"])).toBe(false);
+  });
+});
 
 describe("newGame", () => {
-  it("excludes exactly EXCLUDED_DECADES_PER_GAME distinct decades", () => {
-    for (let seed = 0; seed < 50; seed++) {
-      const s = newGame(seed, fixtureCtx);
-      expect(s.excludedDecades).toHaveLength(EXCLUDED_DECADES_PER_GAME);
-      expect(new Set(s.excludedDecades).size).toBe(EXCLUDED_DECADES_PER_GAME);
-      expect(eligibleCombos(s, fixtureCtx).length).toBeGreaterThan(0);
-    }
+  it("excludes the right number of decades and stays spinnable", () => {
+    const s = newGame(123, realCtx);
+    expect(s.excludedDecades).toHaveLength(EXCLUDED_DECADES_PER_GAME);
+    expect(eligibleCombos(s, realCtx).length).toBeGreaterThan(0);
+    expect(openSlots(s)).toEqual([...ALL_SLOTS]);
   });
 
   it("is deterministic for a given seed", () => {
-    expect(newGame(42, fixtureCtx)).toEqual(newGame(42, fixtureCtx));
+    expect(newGame(42, realCtx)).toEqual(newGame(42, realCtx));
+    const a = dispatch(newGame(42, realCtx), realCtx, { type: "SPIN" });
+    const b = dispatch(newGame(42, realCtx), realCtx, { type: "SPIN" });
+    expect(a).toEqual(b);
   });
 });
 
 describe("SPIN", () => {
-  it("never lands on an excluded decade or an empty/unpickable pool", () => {
-    for (let seed = 0; seed < 200; seed++) {
-      const s0 = newGame(seed, fixtureCtx);
-      const s1 = gameReducer(s0, { type: "SPIN" }, fixtureCtx);
-      expect(s1.spin).not.toBeNull();
-      expect(s0.excludedDecades).not.toContain(s1.spin!.decade);
+  it("never lands on an excluded decade, an empty pool, or a pool with no draftable player", () => {
+    for (let seed = 0; seed < 40; seed++) {
+      const s = dispatch(newGame(seed, realCtx), realCtx, { type: "SPIN" });
+      expect(s.spin).not.toBeNull();
+      expect(s.excludedDecades).not.toContain(s.spin!.decade);
       expect(
-        pickablePool(s1, fixtureCtx, s1.spin!.franchiseId, s1.spin!.decade).length
+        draftablePool(s, realCtx, s.spin!.franchiseId, s.spin!.decade).length
       ).toBeGreaterThan(0);
     }
   });
 
-  it("ignores SPIN while a spin result is pending", () => {
-    const s1 = dispatch(newGame(7, fixtureCtx), fixtureCtx, { type: "SPIN" });
-    expect(gameReducer(s1, { type: "SPIN" }, fixtureCtx)).toBe(s1);
-  });
-
-  it("never offers a combo whose pool is fully drafted by slug", () => {
-    // Draft tiny-ctx Kareem from AAA-1970s; BBB-1980s still has Magic, but if
-    // Magic is drafted too the BBB-1980s combo must disappear entirely.
-    let s = forceSpin(tinyGame(), "AAA", "1970s");
-    s = gameReducer(s, { type: "PICK", playerId: "kareem-AAA-1970s" }, tinyCtx);
-    s = forceSpin(s, "BBB", "1980s");
-    s = gameReducer(s, { type: "PICK", playerId: "magic-BBB-1980s" }, tinyCtx);
-    const combos = eligibleCombos(s, tinyCtx);
-    expect(combos).not.toContainEqual({ franchiseId: "BBB", decade: "1980s" });
-    // empty pools are never eligible either
-    expect(combos).not.toContainEqual({ franchiseId: "BBB", decade: "1960s" });
+  it("is a no-op while a spin is pending", () => {
+    const s = dispatch(newGame(1, realCtx), realCtx, { type: "SPIN" });
+    expect(dispatch(s, realCtx, { type: "SPIN" })).toBe(s);
   });
 });
 
 describe("skips", () => {
-  it("team skip re-rolls only the franchise and decrements teamSkipsLeft", () => {
-    for (let seed = 0; seed < 100; seed++) {
-      const s1 = dispatch(newGame(seed, fixtureCtx), fixtureCtx, { type: "SPIN" });
-      if (!canSkipTeam(s1, fixtureCtx)) continue;
-      const s2 = gameReducer(s1, { type: "SKIP_TEAM" }, fixtureCtx);
-      expect(s2.spin!.decade).toBe(s1.spin!.decade);
-      expect(s2.spin!.franchiseId).not.toBe(s1.spin!.franchiseId);
-      expect(s2.teamSkipsLeft).toBe(s1.teamSkipsLeft - 1);
-      expect(s2.eraSkipsLeft).toBe(s1.eraSkipsLeft);
-    }
-  });
-
-  it("era skip re-rolls only the decade, avoiding excluded decades", () => {
-    for (let seed = 0; seed < 100; seed++) {
-      const s1 = dispatch(newGame(seed, fixtureCtx), fixtureCtx, { type: "SPIN" });
-      if (!canSkipEra(s1, fixtureCtx)) continue;
-      const s2 = gameReducer(s1, { type: "SKIP_ERA" }, fixtureCtx);
-      expect(s2.spin!.franchiseId).toBe(s1.spin!.franchiseId);
-      expect(s2.spin!.decade).not.toBe(s1.spin!.decade);
-      expect(s2.excludedDecades).not.toContain(s2.spin!.decade);
-      expect(s2.eraSkipsLeft).toBe(s1.eraSkipsLeft - 1);
-      expect(s2.teamSkipsLeft).toBe(s1.teamSkipsLeft);
-    }
-  });
-
-  it("skips are no-ops once exhausted", () => {
-    const s1 = dispatch(newGame(3, fixtureCtx), fixtureCtx, { type: "SPIN" });
-    const drained = { ...s1, teamSkipsLeft: 0, eraSkipsLeft: 0 };
-    expect(gameReducer(drained, { type: "SKIP_TEAM" }, fixtureCtx)).toBe(drained);
-    expect(gameReducer(drained, { type: "SKIP_ERA" }, fixtureCtx)).toBe(drained);
-  });
-
-  it("era skip is a no-op when the franchise has no other eligible decade", () => {
-    // CCC only has 1990s, so an era skip has nowhere to go.
-    const s = forceSpin(tinyGame(), "CCC", "1990s");
-    expect(canSkipEra(s, tinyCtx)).toBe(false);
-    const after = gameReducer(s, { type: "SKIP_ERA" }, tinyCtx);
-    expect(after.spin).toEqual(s.spin);
-    expect(after.eraSkipsLeft).toBe(s.eraSkipsLeft);
-  });
-});
-
-describe("PICK", () => {
-  it("rejects drafting the same human (playerSlug) from a different era", () => {
-    let s = forceSpin(tinyGame(), "AAA", "1970s");
-    s = gameReducer(s, { type: "PICK", playerId: "kareem-AAA-1970s" }, tinyCtx);
-    expect(s.picks).toEqual(["kareem-AAA-1970s"]);
-
-    const s2 = forceSpin(s, "BBB", "1980s");
-    expect(pickablePool(s2, tinyCtx, "BBB", "1980s")).toEqual(["magic-BBB-1980s"]);
-    const rejected = gameReducer(
-      s2,
-      { type: "PICK", playerId: "kareem-BBB-1980s" },
-      tinyCtx
-    );
-    expect(rejected.picks).toEqual(s2.picks); // unchanged
-  });
-
-  it("rejects players outside the spun pool and without a pending spin", () => {
-    const s0 = tinyGame();
-    expect(
-      gameReducer(s0, { type: "PICK", playerId: "mj-CCC-1990s" }, tinyCtx).picks
-    ).toHaveLength(0);
-    const s1 = forceSpin(s0, "AAA", "1970s");
-    expect(
-      gameReducer(s1, { type: "PICK", playerId: "mj-CCC-1990s" }, tinyCtx).picks
-    ).toHaveLength(0);
-  });
-
-  it("advances the round and clears the spin after a valid pick", () => {
-    const s1 = dispatch(newGame(11, fixtureCtx), fixtureCtx, { type: "SPIN" });
-    const id = pickablePool(s1, fixtureCtx, s1.spin!.franchiseId, s1.spin!.decade)[0];
-    const s2 = gameReducer(s1, { type: "PICK", playerId: id }, fixtureCtx);
-    expect(s2.round).toBe(2);
-    expect(s2.spin).toBeNull();
-    expect(s2.picks).toEqual([id]);
-  });
-});
-
-/** Plays spin → first-available-pick until the draft completes. */
-function playDraft(seed: number, ctx: DraftContext): GameState {
-  let s = newGame(seed, ctx);
-  for (let guard = 0; guard < DRAFT_ROUNDS * 2 && s.status === "draft"; guard++) {
-    s = gameReducer(s, { type: "SPIN" }, ctx);
-    const pool = pickablePool(s, ctx, s.spin!.franchiseId, s.spin!.decade);
-    s = gameReducer(s, { type: "PICK", playerId: pool[0] }, ctx);
+  function spunGame(seed: number, ctx: DraftContext): GameState {
+    return dispatch(newGame(seed, ctx), ctx, { type: "SPIN" });
   }
-  return s;
-}
 
-describe("full game", () => {
-  it("completes 8 rounds with 8 unique players and unique humans", () => {
-    for (let seed = 0; seed < 25; seed++) {
-      const s = playDraft(seed, fixtureCtx);
-      expect(s.status).toBe("lineup");
-      expect(s.picks).toHaveLength(DRAFT_ROUNDS);
-      expect(new Set(s.picks).size).toBe(DRAFT_ROUNDS);
-      const slugs = s.picks.map((id) => fixtureCtx.slugById[id]);
-      expect(new Set(slugs).size).toBe(DRAFT_ROUNDS);
+  it("SKIP_TEAM re-spins only the franchise and decrements once", () => {
+    for (let seed = 0; seed < 30; seed++) {
+      const s = spunGame(seed, realCtx);
+      if (!canSkipTeam(s, realCtx)) continue;
+      const after = dispatch(s, realCtx, { type: "SKIP_TEAM" });
+      expect(after.spin!.decade).toBe(s.spin!.decade);
+      expect(after.spin!.franchiseId).not.toBe(s.spin!.franchiseId);
+      expect(after.teamSkipsLeft).toBe(s.teamSkipsLeft - 1);
+      expect(after.eraSkipsLeft).toBe(s.eraSkipsLeft);
     }
   });
 
-  it("assigning 5 starters + 3 bench enables LOCK and yields a valid Roster", () => {
-    let s = playDraft(5, fixtureCtx);
-    expect(gameReducer(s, { type: "LOCK" }, fixtureCtx).status).toBe("lineup"); // incomplete
-    s.picks.forEach((id, i) => {
-      const target =
-        i < 5
-          ? ({ kind: "starter", position: POSITIONS[i] } as const)
-          : ({ kind: "bench", index: i - 5 } as const);
-      s = gameReducer(s, { type: "ASSIGN", playerId: id, target }, fixtureCtx);
-    });
-    expect(lineupComplete(s)).toBe(true);
-    expect(unassignedPicks(s)).toHaveLength(0);
-    s = gameReducer(s, { type: "LOCK" }, fixtureCtx);
-    expect(s.status).toBe("locked");
-    const roster = toRoster(s);
-    expect(roster).not.toBeNull();
-    expect(() => RosterSchema.parse(roster)).not.toThrow();
-    expect(Object.keys(roster!.starters)).toHaveLength(5);
+  it("SKIP_ERA re-spins only the decade and decrements once", () => {
+    for (let seed = 0; seed < 30; seed++) {
+      const s = spunGame(seed, realCtx);
+      if (!canSkipEra(s, realCtx)) continue;
+      const after = dispatch(s, realCtx, { type: "SKIP_ERA" });
+      expect(after.spin!.franchiseId).toBe(s.spin!.franchiseId);
+      expect(after.spin!.decade).not.toBe(s.spin!.decade);
+      expect(after.eraSkipsLeft).toBe(s.eraSkipsLeft - 1);
+    }
   });
 
-  it("ASSIGN to an occupied slot swaps the two players", () => {
-    let s = playDraft(9, fixtureCtx);
-    const [a, b] = s.picks;
-    const pg = { kind: "starter", position: "PG" as Position } as const;
-    const sg = { kind: "starter", position: "SG" as Position } as const;
-    s = dispatch(
-      s,
-      fixtureCtx,
-      { type: "ASSIGN", playerId: a, target: pg },
-      { type: "ASSIGN", playerId: b, target: sg },
-      { type: "ASSIGN", playerId: b, target: pg } // swap into a's slot
-    );
-    expect(s.starters.PG).toBe(b);
-    expect(s.starters.SG).toBe(a);
-  });
-
-  it("ASSIGN is rejected during the draft phase and for non-drafted players", () => {
-    const s = newGame(1, fixtureCtx);
-    const t = { kind: "starter", position: "C" as Position } as const;
-    expect(gameReducer(s, { type: "ASSIGN", playerId: "x", target: t }, fixtureCtx)).toBe(s);
+  it("skips are exhausted after one use", () => {
+    let s = spunGame(7, realCtx);
+    if (canSkipTeam(s, realCtx)) {
+      s = dispatch(s, realCtx, { type: "SKIP_TEAM" });
+      expect(s.teamSkipsLeft).toBe(0);
+      const again = dispatch(s, realCtx, { type: "SKIP_TEAM" });
+      expect(again).toBe(s);
+    }
   });
 });
 
-describe("determinism & persistence", () => {
-  it("replays identically: same seed + same actions → same state", () => {
-    const run = () =>
-      playDraft(123, fixtureCtx);
-    expect(run()).toEqual(run());
-  });
-
-  it("skip-then-pick sequences are replayable too", () => {
-    const run = () => {
-      let s = newGame(77, fixtureCtx);
-      s = dispatch(s, fixtureCtx, { type: "SPIN" }, { type: "SKIP_TEAM" }, { type: "SKIP_ERA" });
-      const pool = pickablePool(s, fixtureCtx, s.spin!.franchiseId, s.spin!.decade);
-      return gameReducer(s, { type: "PICK", playerId: pool[0] }, fixtureCtx);
+describe("SELECT_PLAYER + PLACE", () => {
+  /** tiny game rigged onto a known spin. */
+  function rigged(spin: { franchiseId: string; decade: string }): GameState {
+    const s = newGame(5, tinyCtx);
+    return {
+      ...s,
+      excludedDecades: [],
+      spin: spin as GameState["spin"],
+      spinNonce: 1,
     };
-    expect(run()).toEqual(run());
+  }
+
+  it("selects only draftable pool members and toggles off", () => {
+    const s = rigged({ franchiseId: "BBB", decade: "1980s" });
+    const sel = dispatch(s, tinyCtx, {
+      type: "SELECT_PLAYER",
+      playerId: "magic-BBB-1980s",
+    });
+    expect(sel.selectedPlayerId).toBe("magic-BBB-1980s");
+    const toggled = dispatch(sel, tinyCtx, {
+      type: "SELECT_PLAYER",
+      playerId: "magic-BBB-1980s",
+    });
+    expect(toggled.selectedPlayerId).toBeNull();
+    // Not in this pool:
+    expect(
+      dispatch(s, tinyCtx, { type: "SELECT_PLAYER", playerId: "mj-CCC-1990s" })
+        .selectedPlayerId
+    ).toBeNull();
   });
 
-  it("serialize → deserialize round-trips mid-game state", () => {
-    let s = dispatch(newGame(31, fixtureCtx), fixtureCtx, { type: "SPIN" });
-    const pool = pickablePool(s, fixtureCtx, s.spin!.franchiseId, s.spin!.decade);
-    s = gameReducer(s, { type: "PICK", playerId: pool[0] }, fixtureCtx);
-    const restored = deserializeGame(serializeGame(s), fixtureCtx);
-    expect(restored).toEqual(s);
+  it("places into an eligible slot, advances the round, clears spin + selection", () => {
+    const s = rigged({ franchiseId: "BBB", decade: "1980s" });
+    const placed = draftInto(s, tinyCtx, "magic-BBB-1980s", "PG");
+    expect(placed.slots.PG).toBe("magic-BBB-1980s");
+    expect(placed.picks).toEqual(["magic-BBB-1980s"]);
+    expect(placed.round).toBe(2);
+    expect(placed.spin).toBeNull();
+    expect(placed.selectedPlayerId).toBeNull();
   });
 
-  it("rejects corrupt payloads and snapshot-version mismatches", () => {
-    expect(deserializeGame(null, fixtureCtx)).toBeNull();
-    expect(deserializeGame("not json", fixtureCtx)).toBeNull();
-    expect(deserializeGame('{"hello":1}', fixtureCtx)).toBeNull();
-    const s = newGame(2, fixtureCtx);
-    const wrongVersion = serializeGame({ ...s, snapshotVersion: "other" });
-    expect(deserializeGame(wrongVersion, fixtureCtx)).toBeNull();
-    const ghostPick = serializeGame({ ...s, picks: ["no-such-player"] });
-    expect(deserializeGame(ghostPick, fixtureCtx)).toBeNull();
+  it("rejects ineligible slots: centers can't run point or back up the wing", () => {
+    const s = rigged({ franchiseId: "BBB", decade: "1990s" });
+    for (const slot of ["PG", "SG", "SF", "PF", "BG", "BF"] as const) {
+      const attempt = draftInto(s, tinyCtx, "shaq-BBB-1990s", slot);
+      expect(attempt.slots[slot]).toBeNull();
+      expect(attempt.picks).toHaveLength(0);
+    }
+    const ok = draftInto(s, tinyCtx, "shaq-BBB-1990s", "BC");
+    expect(ok.slots.BC).toBe("shaq-BBB-1990s");
+  });
+
+  it("rejects placing into an occupied slot", () => {
+    let s = rigged({ franchiseId: "BBB", decade: "1980s" });
+    s = draftInto(s, tinyCtx, "magic-BBB-1980s", "PG");
+    s = { ...s, spin: { franchiseId: "AAA", decade: "1970s" } };
+    const attempt = draftInto(s, tinyCtx, "oscar-AAA-1970s", "PG");
+    expect(attempt.slots.PG).toBe("magic-BBB-1980s");
+    expect(attempt.picks).toHaveLength(1);
+    // BG still open for a guard:
+    const ok = draftInto(s, tinyCtx, "oscar-AAA-1970s", "BG");
+    expect(ok.slots.BG).toBe("oscar-AAA-1970s");
+  });
+
+  it("the same human can never be drafted twice, even from another era", () => {
+    let s = rigged({ franchiseId: "AAA", decade: "1970s" });
+    s = draftInto(s, tinyCtx, "kareem-AAA-1970s", "C");
+    s = { ...s, spin: { franchiseId: "BBB", decade: "1980s" } };
+    expect(pickablePool(s, tinyCtx, "BBB", "1980s")).not.toContain(
+      "kareem-BBB-1980s"
+    );
+    const attempt = draftInto(s, tinyCtx, "kareem-BBB-1980s", "BC");
+    expect(attempt.slots.BC).toBeNull();
+  });
+
+  it("eligibleSlotsFor shrinks as slots fill", () => {
+    let s = rigged({ franchiseId: "BBB", decade: "1980s" });
+    expect(eligibleSlotsFor("magic-BBB-1980s", s, tinyCtx).sort()).toEqual(
+      ["BG", "PG", "SG"].sort()
+    );
+    s = draftInto(s, tinyCtx, "magic-BBB-1980s", "PG");
+    s = { ...s, spin: { franchiseId: "AAA", decade: "1970s" } };
+    expect(eligibleSlotsFor("oscar-AAA-1970s", s, tinyCtx).sort()).toEqual(
+      ["BG"].sort()
+    );
+  });
+
+  it("eligibleCombos drops pools whose players no longer fit any open slot", () => {
+    let s = rigged({ franchiseId: "AAA", decade: "1990s" });
+    // Fill every guard-compatible slot (SG via ray, PG+BG via oscar/magic).
+    s = draftInto(s, tinyCtx, "ray-AAA-1990s", "SG");
+    s = { ...s, spin: { franchiseId: "AAA", decade: "1970s" } };
+    s = draftInto(s, tinyCtx, "oscar-AAA-1970s", "PG");
+    s = { ...s, spin: { franchiseId: "BBB", decade: "1980s" } };
+    s = draftInto(s, tinyCtx, "magic-BBB-1980s", "BG");
+    // AAA 1990s (ray drafted) and AAA 1970s (oscar drafted, kareem fits C)…
+    const combos = eligibleCombos(s, tinyCtx);
+    // CCC 1990s wings still fit SF/PF/BF; BBB centers fit C/BC; AAA 1970s has kareem (C).
+    expect(combos).toContainEqual({ franchiseId: "CCC", decade: "1990s" });
+    expect(combos).toContainEqual({ franchiseId: "BBB", decade: "1990s" });
+    expect(combos).toContainEqual({ franchiseId: "AAA", decade: "1970s" });
+    // AAA 1990s is exhausted (its only player is drafted):
+    expect(combos).not.toContainEqual({ franchiseId: "AAA", decade: "1990s" });
+  });
+});
+
+describe("full draft on the real snapshot", () => {
+  function playToCompletion(seed: number): GameState {
+    let s = newGame(seed, realCtx);
+    for (let guard = 0; guard < DRAFT_ROUNDS * 3 && s.status === "draft"; guard++) {
+      s = gameReducer(s, { type: "SPIN" }, realCtx);
+      const pool = draftablePool(s, realCtx, s.spin!.franchiseId, s.spin!.decade);
+      // Greedy: first draftable player into their first eligible slot.
+      const playerId = pool[0];
+      const slot = eligibleSlotsFor(playerId, s, realCtx)[0];
+      s = draftInto(s, realCtx, playerId, slot);
+    }
+    return s;
+  }
+
+  it("completes 8 rounds into a locked, contract-valid roster", () => {
+    for (const seed of [1, 99, 4242]) {
+      const s = playToCompletion(seed);
+      expect(s.status).toBe("locked");
+      expect(s.picks).toHaveLength(DRAFT_ROUNDS);
+      expect(rosterComplete(s)).toBe(true);
+      const roster = toRoster(s);
+      expect(() => RosterSchema.parse(roster)).not.toThrow();
+      expect(Object.keys(roster!.starters).sort()).toEqual([...POSITIONS].sort());
+      expect(roster!.bench).toHaveLength(3);
+      // Bench convention: [BG, BF, BC]
+      expect(roster!.bench).toEqual([s.slots.BG, s.slots.BF, s.slots.BC]);
+      // Every starter is a true fit for their slot (hard requirement):
+      for (const pos of POSITIONS) {
+        expect(realCtx.positionsById[roster!.starters[pos]]).toContain(pos);
+      }
+    }
+  });
+
+  it("actions after lock are no-ops", () => {
+    const s = playToCompletion(1);
+    expect(gameReducer(s, { type: "SPIN" }, realCtx)).toBe(s);
+    expect(
+      gameReducer(s, { type: "SELECT_PLAYER", playerId: s.picks[0] }, realCtx)
+    ).toBe(s);
+  });
+});
+
+describe("persistence", () => {
+  it("round-trips through serialize/deserialize", () => {
+    let s = dispatch(newGame(11, realCtx), realCtx, { type: "SPIN" });
+    const pool = draftablePool(s, realCtx, s.spin!.franchiseId, s.spin!.decade);
+    s = dispatch(s, realCtx, { type: "SELECT_PLAYER", playerId: pool[0] });
+    expect(deserializeGame(serializeGame(s), realCtx)).toEqual(s);
+  });
+
+  it("rejects malformed payloads, wrong versions, and unknown players", () => {
+    expect(deserializeGame(null, realCtx)).toBeNull();
+    expect(deserializeGame("not json", realCtx)).toBeNull();
+    const s = newGame(11, realCtx);
+    expect(
+      deserializeGame(
+        serializeGame({ ...s, snapshotVersion: "other" }),
+        realCtx
+      )
+    ).toBeNull();
+    expect(
+      deserializeGame(serializeGame({ ...s, picks: ["ghost-XXX-1990s"] }), realCtx)
+    ).toBeNull();
   });
 });

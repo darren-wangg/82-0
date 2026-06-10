@@ -46,7 +46,8 @@ export function SlotReel({
     if (value === null) return null;
     const rng = mulberry32((hashString(value) ^ Math.imul(nonce + 1, 2654435761)) >>> 0);
     const fillers = items.filter((i) => i !== value);
-    const count = Math.min(14, Math.max(6, fillers.length));
+    // Enough rows for a long, satisfying roll before the reel settles.
+    const count = Math.min(24, Math.max(10, fillers.length * 2));
     const picked =
       fillers.length === 0
         ? []

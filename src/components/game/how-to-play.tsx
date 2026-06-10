@@ -27,12 +27,8 @@ const STEPS: { title: string; body: string }[] = [
     body: `You get ${TEAM_SKIPS_PER_GAME} team skip and ${ERA_SKIPS_PER_GAME} era skip per game. A skip re-spins only that axis — spend them wisely.`,
   },
   {
-    title: "Pick",
-    body: "Draft exactly one player from the spun pool. You can never draft the same player twice, even from a different era.",
-  },
-  {
-    title: "Set your lineup",
-    body: "Assign 5 starters (PG / SG / SF / PF / C) and 3 bench spots. Out-of-position starters are allowed, but flagged — and it costs you.",
+    title: "Pick & place",
+    body: "Tap a player from the spun pool, then tap one of their glowing roster slots. Starters need a true PG, SG, SF, PF, and C; the bench takes a guard, a forward, and a center. You can never draft the same player twice, even from a different era.",
   },
   {
     title: "Simulate",

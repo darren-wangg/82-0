@@ -7,7 +7,6 @@ import { useGame } from "./game-provider";
 
 const ROUTE_FOR_STATUS: Record<GameStatus, string> = {
   draft: "/play",
-  lineup: "/lineup",
   locked: "/sim",
 };
 

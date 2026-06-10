@@ -5,11 +5,17 @@
  * same seed + the same action sequence always produces the same state. The
  * reducer never touches the DOM, storage, or module state — persistence lives
  * in the provider (game-provider.tsx).
+ *
+ * Roster model (hard requirements): five starter slots PG/SG/SF/PF/C plus
+ * three bench slots BG (guard: PG|SG), BF (forward: SF|PF), BC (center).
+ * Players are placed into a slot AT DRAFT TIME — pick a player from the spun
+ * pool, then click an open slot they're eligible for. Spins only ever land on
+ * pools containing at least one player who fits an open slot, so the draft
+ * can always be completed.
  */
 
 import { z } from "zod";
 import {
-  BENCH_COUNT,
   DECADES,
   Decade,
   DRAFT_ROUNDS,
@@ -17,12 +23,46 @@ import {
   EXCLUDED_DECADES_PER_GAME,
   POSITIONS,
   Position,
-  PlayerStatLine,
   Roster,
   Snapshot,
   SpinResult,
   TEAM_SKIPS_PER_GAME,
 } from "@/lib/contracts";
+
+// ---------------------------------------------------------------------------
+// Slots
+// ---------------------------------------------------------------------------
+
+export const BENCH_SLOTS = ["BG", "BF", "BC"] as const;
+export type BenchSlot = (typeof BENCH_SLOTS)[number];
+export type Slot = Position | BenchSlot;
+export const ALL_SLOTS: readonly Slot[] = [...POSITIONS, ...BENCH_SLOTS];
+
+export const SLOT_LABELS: Record<Slot, string> = {
+  PG: "PG",
+  SG: "SG",
+  SF: "SF",
+  PF: "PF",
+  C: "C",
+  BG: "G",
+  BF: "F",
+  BC: "C",
+};
+
+/** Starter positions a bench slot accepts. */
+const BENCH_ACCEPTS: Record<BenchSlot, readonly Position[]> = {
+  BG: ["PG", "SG"],
+  BF: ["SF", "PF"],
+  BC: ["C"],
+};
+
+/** Can a player with these listed positions man this slot? */
+export function slotAccepts(slot: Slot, positions: readonly Position[]): boolean {
+  if (slot === "BG" || slot === "BF" || slot === "BC") {
+    return positions.some((p) => BENCH_ACCEPTS[slot].includes(p));
+  }
+  return positions.includes(slot);
+}
 
 // ---------------------------------------------------------------------------
 // Context — static lookup data derived from the snapshot (not part of state)
@@ -33,6 +73,8 @@ export interface DraftContext {
   pools: Record<string, Partial<Record<Decade, string[]>>>;
   /** player id → playerSlug, to block drafting the same human twice. */
   slugById: Record<string, string>;
+  /** player id → [primary position, ...altPositions]. */
+  positionsById: Record<string, Position[]>;
   snapshotVersion: string;
 }
 
@@ -45,8 +87,12 @@ export function buildDraftContext(snapshot: Snapshot): DraftContext {
     }
   }
   const slugById: Record<string, string> = {};
-  for (const p of snapshot.players) slugById[p.id] = p.playerSlug;
-  return { pools, slugById, snapshotVersion: snapshot.version };
+  const positionsById: Record<string, Position[]> = {};
+  for (const p of snapshot.players) {
+    slugById[p.id] = p.playerSlug;
+    positionsById[p.id] = [p.position, ...p.altPositions];
+  }
+  return { pools, slugById, positionsById, snapshotVersion: snapshot.version };
 }
 
 // ---------------------------------------------------------------------------
@@ -82,7 +128,7 @@ function shuffled<T>(items: readonly T[], rng: () => number): T[] {
 // State & actions
 // ---------------------------------------------------------------------------
 
-export type GameStatus = "draft" | "lineup" | "locked";
+export type GameStatus = "draft" | "locked";
 
 export interface GameState {
   snapshotVersion: string;
@@ -100,30 +146,29 @@ export interface GameState {
   eraSkipsLeft: number;
   /** Drafted player ids in pick order. */
   picks: string[];
-  starters: Record<Position, string | null>;
-  bench: (string | null)[];
+  /** The roster being built, one player per slot. */
+  slots: Record<Slot, string | null>;
+  /** Pool player awaiting slot placement (click player → click slot). */
+  selectedPlayerId: string | null;
 }
-
-export type AssignTarget =
-  | { kind: "starter"; position: Position }
-  | { kind: "bench"; index: number }
-  | { kind: "unassigned" };
 
 export type GameAction =
   | { type: "NEW_GAME"; seed: number }
   | { type: "SPIN" }
   | { type: "SKIP_TEAM" }
   | { type: "SKIP_ERA" }
-  | { type: "PICK"; playerId: string }
-  | { type: "ASSIGN"; playerId: string; target: AssignTarget }
-  | { type: "LOCK" };
+  | { type: "SELECT_PLAYER"; playerId: string | null }
+  | { type: "PLACE"; slot: Slot };
 
-const emptyStarters = (): Record<Position, string | null> => ({
+const emptySlots = (): Record<Slot, string | null> => ({
   PG: null,
   SG: null,
   SF: null,
   PF: null,
   C: null,
+  BG: null,
+  BF: null,
+  BC: null,
 });
 
 // ---------------------------------------------------------------------------
@@ -134,7 +179,22 @@ export function draftedSlugs(state: GameState, ctx: DraftContext): Set<string> {
   return new Set(state.picks.map((id) => ctx.slugById[id]).filter(Boolean));
 }
 
-/** Pool for a combo minus players whose human is already on the roster. */
+export function openSlots(state: GameState): Slot[] {
+  return ALL_SLOTS.filter((s) => state.slots[s] === null);
+}
+
+/** Open slots this specific player may fill. */
+export function eligibleSlotsFor(
+  playerId: string,
+  state: GameState,
+  ctx: DraftContext
+): Slot[] {
+  const positions = ctx.positionsById[playerId];
+  if (!positions) return [];
+  return openSlots(state).filter((slot) => slotAccepts(slot, positions));
+}
+
+/** Pool for a combo minus already-drafted humans. */
 export function pickablePool(
   state: GameState,
   ctx: DraftContext,
@@ -147,13 +207,28 @@ export function pickablePool(
   );
 }
 
-/** All spinnable franchise×decade combos: decade allowed, ≥1 pickable player. */
+/** Pool members that can actually fill an open slot right now. */
+export function draftablePool(
+  state: GameState,
+  ctx: DraftContext,
+  franchiseId: string,
+  decade: Decade
+): string[] {
+  return pickablePool(state, ctx, franchiseId, decade).filter(
+    (id) => eligibleSlotsFor(id, state, ctx).length > 0
+  );
+}
+
+/**
+ * All spinnable franchise×decade combos: decade allowed and at least one
+ * pickable player who fits an open slot — a spin can never strand the draft.
+ */
 export function eligibleCombos(state: GameState, ctx: DraftContext): SpinResult[] {
   const out: SpinResult[] = [];
   for (const franchiseId of Object.keys(ctx.pools)) {
     for (const decade of Object.keys(ctx.pools[franchiseId]) as Decade[]) {
       if (state.excludedDecades.includes(decade)) continue;
-      if (pickablePool(state, ctx, franchiseId, decade).length > 0) {
+      if (draftablePool(state, ctx, franchiseId, decade).length > 0) {
         out.push({ franchiseId, decade });
       }
     }
@@ -185,48 +260,19 @@ export function canSkipEra(state: GameState, ctx: DraftContext): boolean {
   return state.eraSkipsLeft > 0 && eraSkipCandidates(state, ctx).length > 0;
 }
 
-export function locationOf(state: GameState, playerId: string): AssignTarget {
-  for (const pos of POSITIONS) {
-    if (state.starters[pos] === playerId) return { kind: "starter", position: pos };
-  }
-  const index = state.bench.indexOf(playerId);
-  if (index >= 0) return { kind: "bench", index };
-  return { kind: "unassigned" };
+export function rosterComplete(state: GameState): boolean {
+  return ALL_SLOTS.every((s) => state.slots[s] != null);
 }
 
-function occupantAt(state: GameState, target: AssignTarget): string | null {
-  if (target.kind === "starter") return state.starters[target.position];
-  if (target.kind === "bench") return state.bench[target.index] ?? null;
-  return null;
-}
-
-export function unassignedPicks(state: GameState): string[] {
-  const placed = new Set<string>([
-    ...Object.values(state.starters).filter((v): v is string => v != null),
-    ...state.bench.filter((v): v is string => v != null),
-  ]);
-  return state.picks.filter((id) => !placed.has(id));
-}
-
-export function lineupComplete(state: GameState): boolean {
-  return (
-    POSITIONS.every((p) => state.starters[p] != null) &&
-    state.bench.length === BENCH_COUNT &&
-    state.bench.every((b) => b != null)
-  );
-}
-
-/** Build the contracts Roster once the lineup is complete. */
+/** Build the contracts Roster. Bench order convention: [BG, BF, BC]. */
 export function toRoster(state: GameState): Roster | null {
-  if (!lineupComplete(state)) return null;
+  if (!rosterComplete(state)) return null;
   const starters = {} as Record<Position, string>;
-  for (const p of POSITIONS) starters[p] = state.starters[p]!;
-  return { starters, bench: state.bench as string[] };
-}
-
-/** True when assigning this player to the position would be out of position. */
-export function isOutOfPosition(player: PlayerStatLine, position: Position): boolean {
-  return player.position !== position && !player.altPositions.includes(position);
+  for (const p of POSITIONS) starters[p] = state.slots[p]!;
+  return {
+    starters,
+    bench: [state.slots.BG!, state.slots.BF!, state.slots.BC!],
+  };
 }
 
 // ---------------------------------------------------------------------------
@@ -247,8 +293,8 @@ export function newGame(seed: number, ctx: DraftContext): GameState {
     teamSkipsLeft: TEAM_SKIPS_PER_GAME,
     eraSkipsLeft: ERA_SKIPS_PER_GAME,
     picks: [],
-    starters: emptyStarters(),
-    bench: Array(BENCH_COUNT).fill(null),
+    slots: emptySlots(),
+    selectedPlayerId: null,
   };
   // Exclude decades for the whole game; retry (deterministically) in the
   // unlikely case an exclusion set leaves no spinnable combos.
@@ -282,6 +328,7 @@ export function gameReducer(
       return {
         ...state,
         spin,
+        selectedPlayerId: null,
         rngCursor: state.rngCursor + 1,
         spinNonce: state.spinNonce + 1,
       };
@@ -298,6 +345,7 @@ export function gameReducer(
       return {
         ...state,
         spin,
+        selectedPlayerId: null,
         teamSkipsLeft: state.teamSkipsLeft - 1,
         rngCursor: state.rngCursor + 1,
         spinNonce: state.spinNonce + 1,
@@ -315,57 +363,56 @@ export function gameReducer(
       return {
         ...state,
         spin,
+        selectedPlayerId: null,
         eraSkipsLeft: state.eraSkipsLeft - 1,
         rngCursor: state.rngCursor + 1,
         spinNonce: state.spinNonce + 1,
       };
     }
 
-    case "PICK": {
+    case "SELECT_PLAYER": {
       if (state.status !== "draft" || !state.spin) return state;
-      if (state.picks.length >= DRAFT_ROUNDS) return state;
-      const pool = pickablePool(
+      if (action.playerId === null) {
+        return state.selectedPlayerId === null
+          ? state
+          : { ...state, selectedPlayerId: null };
+      }
+      const pool = draftablePool(
         state,
         ctx,
         state.spin.franchiseId,
         state.spin.decade
       );
       if (!pool.includes(action.playerId)) return state;
-      const picks = [...state.picks, action.playerId];
-      if (picks.length >= DRAFT_ROUNDS) {
-        return { ...state, picks, spin: null, status: "lineup" };
-      }
-      return { ...state, picks, spin: null, round: state.round + 1 };
+      return {
+        ...state,
+        // Tapping the selected player again deselects.
+        selectedPlayerId:
+          state.selectedPlayerId === action.playerId ? null : action.playerId,
+      };
     }
 
-    case "ASSIGN": {
-      if (state.status !== "lineup") return state;
-      if (!state.picks.includes(action.playerId)) return state;
-      const { target } = action;
-      if (target.kind === "bench" && (target.index < 0 || target.index >= BENCH_COUNT)) {
+    case "PLACE": {
+      if (state.status !== "draft" || !state.spin || !state.selectedPlayerId) {
         return state;
       }
-      const from = locationOf(state, action.playerId);
-      if (JSON.stringify(from) === JSON.stringify(target)) return state;
-      const displaced = occupantAt(state, target);
-
-      const starters = { ...state.starters };
-      const bench = [...state.bench];
-      const set = (slot: AssignTarget, id: string | null) => {
-        if (slot.kind === "starter") starters[slot.position] = id;
-        else if (slot.kind === "bench") bench[slot.index] = id;
+      if (state.picks.length >= DRAFT_ROUNDS) return state;
+      const playerId = state.selectedPlayerId;
+      if (!eligibleSlotsFor(playerId, state, ctx).includes(action.slot)) {
+        return state;
+      }
+      const picks = [...state.picks, playerId];
+      const slots = { ...state.slots, [action.slot]: playerId };
+      const done = picks.length >= DRAFT_ROUNDS;
+      return {
+        ...state,
+        picks,
+        slots,
+        spin: null,
+        selectedPlayerId: null,
+        status: done ? "locked" : "draft",
+        round: done ? state.round : state.round + 1,
       };
-      set(from, null);
-      set(target, action.playerId);
-      // Swap: the displaced player takes the moved player's old slot (or
-      // becomes unassigned when the moved player came from the pool).
-      if (displaced && displaced !== action.playerId) set(from, displaced);
-      return { ...state, starters, bench };
-    }
-
-    case "LOCK": {
-      if (state.status !== "lineup" || !lineupComplete(state)) return state;
-      return { ...state, status: "locked" };
     }
 
     default:
@@ -377,13 +424,15 @@ export function gameReducer(
 // Persistence (serialization only — storage I/O lives in the provider)
 // ---------------------------------------------------------------------------
 
-export const STORAGE_KEY = "eighty-two-zero/game/v1";
+export const STORAGE_KEY = "eighty-two-zero/game/v2";
+
+const SLOT_KEYS = [...POSITIONS, ...BENCH_SLOTS] as [Slot, ...Slot[]];
 
 const PersistedSchema = z.object({
   snapshotVersion: z.string(),
   seed: z.number(),
   rngCursor: z.number().int().min(0),
-  status: z.enum(["draft", "lineup", "locked"]),
+  status: z.enum(["draft", "locked"]),
   excludedDecades: z.array(z.enum(DECADES)),
   round: z.number().int().min(1).max(DRAFT_ROUNDS),
   spin: z
@@ -393,8 +442,8 @@ const PersistedSchema = z.object({
   teamSkipsLeft: z.number().int().min(0).max(TEAM_SKIPS_PER_GAME),
   eraSkipsLeft: z.number().int().min(0).max(ERA_SKIPS_PER_GAME),
   picks: z.array(z.string()).max(DRAFT_ROUNDS),
-  starters: z.record(z.enum(POSITIONS), z.string().nullable()),
-  bench: z.array(z.string().nullable()).length(BENCH_COUNT),
+  slots: z.record(z.enum(SLOT_KEYS), z.string().nullable()),
+  selectedPlayerId: z.string().nullable(),
 });
 
 export function serializeGame(state: GameState): string {
@@ -415,9 +464,9 @@ export function deserializeGame(
     const parsed = PersistedSchema.parse(JSON.parse(raw));
     if (parsed.snapshotVersion !== ctx.snapshotVersion) return null;
     if (parsed.picks.some((id) => !(id in ctx.slugById))) return null;
-    const starters = emptyStarters();
-    for (const p of POSITIONS) starters[p] = parsed.starters[p] ?? null;
-    return { ...parsed, starters };
+    const slots = emptySlots();
+    for (const s of ALL_SLOTS) slots[s] = parsed.slots[s] ?? null;
+    return { ...parsed, slots };
   } catch {
     return null;
   }

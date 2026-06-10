@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { DECADES, Roster, SnapshotSchema } from "./contracts";
+import { DECADES, Roster } from "./contracts";
 import { getBaselines, getPlayerMap, getPool, getSnapshot } from "./snapshot";
 import { mockEngine } from "./engine-mock";
 

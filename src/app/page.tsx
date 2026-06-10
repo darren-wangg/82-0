@@ -15,10 +15,10 @@ export default function Home() {
     <div className="dark flex min-h-dvh flex-1 flex-col bg-background text-foreground">
       <main className="mx-auto flex w-full max-w-md flex-1 flex-col items-center justify-center gap-8 px-6 pt-16 pb-10">
         <div className="flex flex-col items-center gap-4 text-center">
-          <p className="text-xs font-semibold tracking-[0.35em] text-primary/70 uppercase">
+          <p className="text-xs font-semibold tracking-[0.35em] text-primary uppercase">
             The draft game
           </p>
-          <h1 className="bg-gradient-to-b from-foreground to-foreground/55 bg-clip-text font-mono text-[5.5rem] leading-none font-black tracking-tighter text-transparent tabular-nums">
+          <h1 className="bg-gradient-to-br from-primary via-orange-300 to-violet-400 bg-clip-text font-display text-[6.5rem] leading-none tracking-tight text-transparent tabular-nums">
             82-0
           </h1>
           <p className="max-w-xs text-base text-balance text-muted-foreground">
@@ -28,16 +28,16 @@ export default function Home() {
         </div>
 
         <ul className="grid w-full grid-cols-3 gap-2 text-center text-[11px] text-muted-foreground">
-          <li className="rounded-xl border border-border/60 bg-card/60 px-2 py-3">
-            <span className="block text-lg font-bold text-foreground">8</span>
+          <li className="rounded-xl border border-primary/30 bg-primary/10 px-2 py-3">
+            <span className="block font-display text-xl text-primary">8</span>
             slot-machine spins
           </li>
-          <li className="rounded-xl border border-border/60 bg-card/60 px-2 py-3">
-            <span className="block text-lg font-bold text-foreground">5+3</span>
+          <li className="rounded-xl border border-violet-400/30 bg-violet-400/10 px-2 py-3">
+            <span className="block font-display text-xl text-violet-300">5+3</span>
             starters &amp; bench
           </li>
-          <li className="rounded-xl border border-border/60 bg-card/60 px-2 py-3">
-            <span className="block text-lg font-bold text-foreground">82</span>
+          <li className="rounded-xl border border-emerald-400/30 bg-emerald-400/10 px-2 py-3">
+            <span className="block font-display text-xl text-emerald-300">82</span>
             games simulated
           </li>
         </ul>
@@ -47,7 +47,7 @@ export default function Home() {
             href="/play"
             className={cn(
               buttonVariants({ size: "lg" }),
-              "h-14 w-full rounded-2xl text-lg font-bold shadow-lg shadow-primary/20"
+              "h-14 w-full rounded-2xl font-display text-xl tracking-wide shadow-lg shadow-primary/30"
             )}
           >
             Start Draft

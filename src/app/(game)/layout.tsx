@@ -10,7 +10,7 @@ export default function GameLayout({ children }: { children: ReactNode }) {
           <div className="mx-auto flex h-12 w-full max-w-md items-center justify-between px-4">
             <Link
               href="/"
-              className="font-mono text-lg font-black tracking-tighter tabular-nums"
+              className="font-display text-xl tracking-wide text-primary tabular-nums"
             >
               82-0
             </Link>

@@ -24,11 +24,9 @@ describe("validateRoster", () => {
   });
 
   it("rejects a missing starter position", () => {
-    const roster: Roster = {
-      ...validRoster,
-      starters: { ...validRoster.starters },
-    };
-    delete roster.starters.C;
+    const starters: Partial<Roster["starters"]> = { ...validRoster.starters };
+    delete starters.C;
+    const roster = { ...validRoster, starters } as Roster;
     const result = validateRoster(roster, players);
     expect(result.ok).toBe(false);
     if (!result.ok) expect(result.error).toMatch(/starter at C/);
