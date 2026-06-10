@@ -195,7 +195,7 @@ function TeamView({
     })),
   ];
   return (
-    <div className="mt-5 flex items-end gap-1.5">
+    <div className="mt-5 flex items-end gap-1">
       {slots.map(({ label, id }, i) => {
         const player = players.get(id);
         const bench = i >= POSITIONS.length;
@@ -209,8 +209,8 @@ function TeamView({
           >
             <div
               className={cn(
-                "rounded-full ring-2 ring-offset-2 ring-offset-background",
-                bench ? "size-11 ring-muted-foreground/30" : "size-13 ring-primary/50"
+                "rounded-full ring-2 ring-offset-1 ring-offset-background",
+                bench ? "size-9 ring-muted-foreground/30" : "size-10 ring-primary/50"
               )}
             >
               {player && <PlayerHeadshot player={player} className="size-full" />}

@@ -28,13 +28,11 @@ const scoreCache = new Map<string, number>();
 const sc = (id: string) => { if (!scoreCache.has(id)) scoreCache.set(id, score(id)); return scoreCache.get(id)!; };
 
 function draftRoster(): Roster {
-  const excluded = new Set<string>();
-  while (excluded.size < 2) excluded.add(DECADES[Math.floor(rand() * DECADES.length)]);
+  // No decade exclusions — matches EXCLUDED_DECADES_PER_GAME = 0 in the game.
   const picked: string[] = [];
   const slugs = new Set<string>();
   while (picked.length < 8) {
     const [f, d] = combos[Math.floor(rand() * combos.length)];
-    if (excluded.has(d)) continue;
     const pool = snap.pools[f][d].filter(id => !slugs.has(players.get(id)!.playerSlug));
     if (!pool.length) continue;
     // user picks one of the top 3 by score (greedy-ish)

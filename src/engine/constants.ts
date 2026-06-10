@@ -5,7 +5,8 @@
  * using realistic DRAFTED rosters — random franchise×decade spins where the
  * picker takes one of the top 3 pool players — as the reference population
  * (see scripts/etl/dist-check.ts). Targets:
- *  - drafted rosters cluster in the ~50–70 win band,
+ *  - drafted rosters cluster in the ~55–70 win band, with 70+ reachable by
+ *    a top-decile draft,
  *  - the all-time roster (Magic/MJ/Bird/Duncan/Wilt + Curry/Hakeem/Jokić)
  *    clears every gate and reaches 82-0,
  *  - 82-0 is effectively unreachable without deliberate, hole-free
@@ -20,19 +21,20 @@ export const Z_CLAMP = 4.5;
 
 /** Per-category weights for the player composite (sum to 1.0). `tov` is already
  *  sign-flipped in AdjustedStats, so its weight is a positive reward for low
- *  turnovers / penalty for high ones. tpm and tov are deliberately light:
- *  threes barely existed for most eras and high turnovers are mostly star
- *  usage tax, so neither should swing a player's value much. */
+ *  turnovers / penalty for high ones. tpm and tov are deliberately near-zero:
+ *  threes barely existed for most eras, and high turnovers are mostly star
+ *  usage tax — every star-built team sits at tov z ≈ −1 to −2, so any real
+ *  weight here just suppresses the whole win distribution. */
 export const CAT_WEIGHTS: Record<NineCat, number> = {
-  pts: 0.24,
-  reb: 0.17,
-  ast: 0.16,
+  pts: 0.26,
+  reb: 0.18,
+  ast: 0.17,
   stl: 0.09,
   blk: 0.09,
   fgPct: 0.09,
   ftPct: 0.05,
   tpm: 0.04,
-  tov: 0.07,
+  tov: 0.03,
 };
 
 /** Fraction of playerScore that comes from the ortg/drtg blend (the rest is
@@ -51,7 +53,7 @@ export const OVR_BASE = 52;
 export const OVR_SLOPE = 41;
 
 /** wins(curve) = round(82 * (ovr / OVR_MAX) ** WIN_CURVE_EXP). 1.15 keeps the
- *  curve near-linear (drafted teams: OVR ~76–88 → ~53–64 wins) while 82 wins
+ *  curve near-linear (drafted teams: OVR ~80–94 → ~57–69 wins) while 82 wins
  *  still demands OVR at the 110 ceiling. */
 export const WIN_CURVE_EXP = 1.15;
 
@@ -75,7 +77,7 @@ export const GATE_THRESHOLDS: Record<NineCat, number> = {
   fgPct: -0.05,
   ftPct: -0.85,
   tpm: -1.0,
-  tov: -2.4,
+  tov: -2.8,
 };
 
 /** Win caps by how far below the cat's threshold the team z falls. */

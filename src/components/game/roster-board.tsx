@@ -33,7 +33,9 @@ function SlotCircle({
   const { state, players } = useGame();
   const id = state?.slots[slot] ?? null;
   const player = id ? players.get(id) : undefined;
-  const size = small ? "size-12" : "size-14";
+  // Sized so 5 starters + divider + 3 bench fit a 375px viewport without
+  // the circles (and their rings) overlapping.
+  const size = small ? "size-9" : "size-10";
 
   return (
     <div className="flex min-w-0 flex-1 flex-col items-center gap-1">
@@ -54,7 +56,7 @@ function SlotCircle({
               : { type: "spring", stiffness: 380, damping: 20 }
           }
           className={cn(
-            "rounded-full ring-2 ring-offset-2 ring-offset-background",
+            "rounded-full ring-2 ring-offset-1 ring-offset-background",
             size,
             moveSource
               ? "ring-sky-400 shadow-lg shadow-sky-400/40"
@@ -157,7 +159,7 @@ export function RosterBoard({ className }: { className?: string }) {
 
   return (
     <div className={cn("flex flex-col gap-2", className)}>
-      <div className="flex items-end gap-1.5">
+      <div className="flex items-end gap-1">
         {POSITIONS.map((p) => (
           <SlotCircle
             key={p}
@@ -167,7 +169,7 @@ export function RosterBoard({ className }: { className?: string }) {
             onTap={onTap}
           />
         ))}
-        <div className="mx-0.5 h-12 w-px shrink-0 self-center bg-border" />
+        <div className="mx-0.5 h-10 w-px shrink-0 self-center bg-border" />
         {BENCH_SLOTS.map((s) => (
           <SlotCircle
             key={s}
