@@ -1,0 +1,58 @@
+/**
+ * Pure roster validation against the player snapshot. The zod RosterSchema
+ * (contracts) handles shape; this enforces the game rules:
+ *   - all five positions have a starter
+ *   - exactly BENCH_COUNT bench players
+ *   - every id exists in the snapshot
+ *   - no player (playerSlug) appears twice
+ */
+
+import {
+  BENCH_COUNT,
+  PlayerStatLine,
+  POSITIONS,
+  Roster,
+} from "@/lib/contracts";
+
+export type RosterValidation =
+  | { ok: true; playerIds: string[] }
+  | { ok: false; error: string };
+
+export function validateRoster(
+  roster: Roster,
+  players: Map<string, PlayerStatLine>
+): RosterValidation {
+  const missing = POSITIONS.filter((pos) => !roster.starters[pos]);
+  if (missing.length > 0) {
+    return { ok: false, error: `Missing starter at ${missing.join(", ")}` };
+  }
+
+  if (roster.bench.length !== BENCH_COUNT) {
+    return {
+      ok: false,
+      error: `Bench must have exactly ${BENCH_COUNT} players (got ${roster.bench.length})`,
+    };
+  }
+
+  const ids = [...POSITIONS.map((pos) => roster.starters[pos]!), ...roster.bench];
+
+  const unknown = ids.filter((id) => !players.has(id));
+  if (unknown.length > 0) {
+    return { ok: false, error: `Unknown player id(s): ${unknown.join(", ")}` };
+  }
+
+  if (new Set(ids).size !== ids.length) {
+    return { ok: false, error: "Roster contains duplicate player entries" };
+  }
+
+  const slugs = ids.map((id) => players.get(id)!.playerSlug);
+  const seen = new Set<string>();
+  for (const slug of slugs) {
+    if (seen.has(slug)) {
+      return { ok: false, error: `Player drafted twice: ${slug}` };
+    }
+    seen.add(slug);
+  }
+
+  return { ok: true, playerIds: ids };
+}
