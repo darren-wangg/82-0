@@ -1,13 +1,16 @@
 /**
  * Tuning constants for the 82-0 Plus simulation engine.
  *
- * Calibrated against fixtures/snapshot-mini.json so that:
+ * Calibrated against public/data/snapshot-v1.json (the production ETL output)
+ * using realistic DRAFTED rosters — random franchise×decade spins where the
+ * picker takes one of the top 3 pool players — as the reference population
+ * (see scripts/etl/dist-check.ts). Targets:
+ *  - drafted rosters cluster in the ~50–70 win band,
  *  - the all-time roster (Magic/MJ/Bird/Duncan/Wilt + Curry/Hakeem/Jokić)
- *    lands at OVR ~108 and ~80 wins with every category gate cleared,
- *  - a balanced-but-unspectacular star roster lands in the 50–68 win band,
- *  - random valid 8-man rosters cluster in the 45–75 win band, and 82-0 is
- *    effectively unreachable without a transcendent, hole-free roster,
- *  - one glaring categorical weakness caps the record via the gate table.
+ *    clears every gate and reaches 82-0,
+ *  - 82-0 is effectively unreachable without deliberate, hole-free
+ *    construction around transcendent anchors,
+ *  - one glaring categorical weakness caps the record via per-cat gates.
  */
 
 import { NineCat } from "@/lib/contracts";
@@ -45,23 +48,42 @@ export const POSITION_PENALTY = [1.0, 0.92, 0.85, 0.8, 0.75] as const;
 export const OVR_BASE = 52;
 export const OVR_SLOPE = 41;
 
-/** wins(curve) = round(82 * (ovr / OVR_MAX) ** WIN_CURVE_EXP). */
-export const WIN_CURVE_EXP = 1.9;
+/** wins(curve) = round(82 * (ovr / OVR_MAX) ** WIN_CURVE_EXP). 1.15 keeps the
+ *  curve near-linear (drafted teams: OVR ~76–88 → ~53–64 wins) while 82 wins
+ *  still demands OVR at the 110 ceiling. */
+export const WIN_CURVE_EXP = 1.15;
 
 /**
  * Category gates — the signature mechanic. Each cat's team z (weighted-average
  * catProfile value) maps to a win cap; the binding gate is the min across cats.
- * Thresholds are tuned to the star-heavy pool: even legends average slightly
- * negative team tov z (~ -0.7), so the first gate sits below that, while a
- * genuine hole (z ≤ -0.85) starts costing wins.
+ *
+ * Thresholds are PER CATEGORY because the cats live on very different team-z
+ * scales for drafted rosters (drafted p05/p50/p95 measured on snapshot-v1:
+ * pts 0.64/1.33/2.02 but tov -1.57/-0.89/-0.23 — every star-built team is
+ * below pool average on turnovers, and the all-time greats run -2.07). Each
+ * threshold sits just under the drafted p05 for its cat, so a genuine hole —
+ * not normal star tax — triggers the gate.
  */
-export const GATE_TABLE: ReadonlyArray<readonly [minZ: number, winCap: number]> = [
-  [-0.85, 82],
-  [-1.25, 74],
-  [-1.75, 66],
-  [-2.5, 56],
+export const GATE_THRESHOLDS: Record<NineCat, number> = {
+  pts: 0.4,
+  reb: 0.3,
+  ast: -0.3,
+  stl: -0.25,
+  blk: -0.15,
+  fgPct: -0.05,
+  ftPct: -0.85,
+  tpm: -0.85,
+  tov: -2.25,
+};
+
+/** Win caps by how far below the cat's threshold the team z falls. */
+export const GATE_STEPS: ReadonlyArray<readonly [offset: number, winCap: number]> = [
+  [0, 82],
+  [-0.4, 74],
+  [-0.8, 66],
+  [-1.2, 56],
 ];
-/** Win cap when a cat's team z falls below every GATE_TABLE threshold. */
+/** Win cap when a cat's team z falls below every GATE_STEPS offset. */
 export const GATE_FLOOR_CAP = 46;
 
 /** Weights for the 0–100 offensive sub-rating (over team-average z values). */

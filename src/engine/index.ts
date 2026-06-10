@@ -34,7 +34,8 @@ import {
   CAT_WEIGHTS,
   DEF_WEIGHTS,
   GATE_FLOOR_CAP,
-  GATE_TABLE,
+  GATE_STEPS,
+  GATE_THRESHOLDS,
   MATCHUP_EDGE_SCALE,
   MATCHUP_OVR_BLEND,
   MATCHUP_OVR_SCALE,
@@ -168,10 +169,11 @@ function teamRating(
   };
 }
 
-/** Win cap implied by one category's team z. */
-export function gateCapFor(teamZ: number): number {
-  for (const [minZ, cap] of GATE_TABLE) {
-    if (teamZ >= minZ) return cap;
+/** Win cap implied by one category's team z (thresholds are per cat). */
+export function gateCapFor(cat: NineCat, teamZ: number): number {
+  const threshold = GATE_THRESHOLDS[cat];
+  for (const [offset, cap] of GATE_STEPS) {
+    if (teamZ >= threshold + offset) return cap;
   }
   return GATE_FLOOR_CAP;
 }
@@ -179,14 +181,15 @@ export function gateCapFor(teamZ: number): number {
 function projectSeason(rating: TeamRating): SeasonResult {
   let winCap = SEASON_GAMES;
   let gatedCategory: NineCat | null = null;
-  let gatedZ = Infinity;
+  let gatedMargin = Infinity;
   for (const cat of NINE_CATS) {
     const z = rating.catProfile[cat];
-    const cap = gateCapFor(z);
-    if (cap < winCap || (cap === winCap && cap < SEASON_GAMES && z < gatedZ)) {
+    const cap = gateCapFor(cat, z);
+    const margin = z - GATE_THRESHOLDS[cat];
+    if (cap < winCap || (cap === winCap && cap < SEASON_GAMES && margin < gatedMargin)) {
       winCap = cap;
       gatedCategory = cat;
-      gatedZ = z;
+      gatedMargin = margin;
     }
   }
   const curve = Math.round(

@@ -1,11 +1,10 @@
 /**
- * Single access point for the player-data snapshot. Currently serves the mini
- * fixture; Wave 2 integration points this at public/data/snapshot-v1.json
- * (the ETL output). Consumers must not import snapshot JSON directly.
+ * Single access point for the player-data snapshot (the ETL output).
+ * Consumers must not import snapshot JSON directly.
  */
 
 import { Snapshot, SnapshotSchema, PlayerStatLine, Decade } from "./contracts";
-import rawSnapshot from "../../fixtures/snapshot-mini.json";
+import rawSnapshot from "../../public/data/snapshot-v1.json";
 
 let cached: Snapshot | null = null;
 

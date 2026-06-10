@@ -3,10 +3,13 @@
  * not exported from the engine entry point.
  */
 
-import { Position, POSITIONS, Roster } from "@/lib/contracts";
-import { getBaselines, getPlayerMap } from "@/lib/snapshot";
+import { DECADES, Position, POSITIONS, Roster } from "@/lib/contracts";
+import { getBaselines, getPlayerMap, getSnapshot } from "@/lib/snapshot";
 import { mulberry32 } from "./rng";
 
+// Tests run against the production snapshot (public/data/snapshot-v1.json):
+// the engine's tuning only means anything on real data. Regenerating the ETL
+// snapshot is a deliberate re-baselining event for the golden masters below.
 export const players = getPlayerMap();
 export const baselines = getBaselines();
 
@@ -100,4 +103,61 @@ export function randomRoster(rand: () => number): Roster {
 export function randomRosters(seed: number, count: number): Roster[] {
   const rand = mulberry32(seed);
   return Array.from({ length: count }, () => randomRoster(rand));
+}
+
+/**
+ * Simulate a realistic DRAFT (the engine's reference population): random
+ * franchise×decade spins with 2 excluded decades, picker takes one of the
+ * top 3 pool players by playerScore, starters assigned natural-position-first.
+ * Mirrors scripts/etl/dist-check.ts.
+ */
+export function draftedRosters(
+  seed: number,
+  count: number,
+  score: (id: string) => number
+): Roster[] {
+  const snapshot = getSnapshot();
+  const combos: [string, Position | string][] = [];
+  for (const [f, decs] of Object.entries(snapshot.pools))
+    for (const [d, ids] of Object.entries(decs)) if (ids.length) combos.push([f, d]);
+  const rand = mulberry32(seed);
+  const cache = new Map<string, number>();
+  const sc = (id: string) => {
+    if (!cache.has(id)) cache.set(id, score(id));
+    return cache.get(id)!;
+  };
+
+  return Array.from({ length: count }, () => {
+    const excluded = new Set<string>();
+    while (excluded.size < 2)
+      excluded.add(DECADES[Math.floor(rand() * DECADES.length)]);
+    const picked: string[] = [];
+    const slugs = new Set<string>();
+    while (picked.length < 8) {
+      const [f, d] = combos[Math.floor(rand() * combos.length)];
+      if (excluded.has(d as string)) continue;
+      const pool = snapshot.pools[f][d as string].filter(
+        (id) => !slugs.has(players.get(id)!.playerSlug)
+      );
+      if (!pool.length) continue;
+      const top = [...pool].sort((a, b) => sc(b) - sc(a)).slice(0, 3);
+      const id = top[Math.floor(rand() * top.length)];
+      picked.push(id);
+      slugs.add(players.get(id)!.playerSlug);
+    }
+    const sorted = [...picked].sort((a, b) => sc(b) - sc(a));
+    const starters = {} as Record<Position, string>;
+    const used = new Set<string>();
+    for (const id of sorted) {
+      if (Object.keys(starters).length === 5) break;
+      const p = players.get(id)!;
+      const prefs = [p.position, ...p.altPositions, ...POSITIONS];
+      const slot = prefs.find((pos) => !(pos in starters));
+      if (slot) {
+        starters[slot] = id;
+        used.add(id);
+      }
+    }
+    return { starters, bench: picked.filter((id) => !used.has(id)).slice(0, 3) };
+  });
 }

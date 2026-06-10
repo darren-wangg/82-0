@@ -1,6 +1,12 @@
 import { describe, expect, it } from "vitest";
-import { Roster, SEASON_GAMES } from "@/lib/contracts";
-import { engine, GATE_FLOOR_CAP, gateCapFor, GATE_TABLE } from "./index";
+import { NINE_CATS, NineCat, Roster, SEASON_GAMES } from "@/lib/contracts";
+import {
+  engine,
+  GATE_FLOOR_CAP,
+  gateCapFor,
+  GATE_STEPS,
+  GATE_THRESHOLDS,
+} from "./index";
 import {
   ALL_CENTERS,
   ALL_TIME,
@@ -15,40 +21,49 @@ const project = (r: Roster) =>
   engine.projectSeason(engine.teamRating(r, players, baselines));
 
 describe("gateCapFor", () => {
-  it("maps team z to graduated win caps", () => {
-    expect(gateCapFor(2)).toBe(SEASON_GAMES);
-    expect(gateCapFor(GATE_TABLE[0][0])).toBe(SEASON_GAMES);
-    expect(gateCapFor(-1.0)).toBe(74);
-    expect(gateCapFor(-1.5)).toBe(66);
-    expect(gateCapFor(-2.0)).toBe(56);
-    expect(gateCapFor(-3.5)).toBe(GATE_FLOOR_CAP);
+  it("maps team z to graduated win caps relative to each cat's threshold", () => {
+    for (const cat of NINE_CATS) {
+      const t = GATE_THRESHOLDS[cat];
+      expect(gateCapFor(cat, t + 1)).toBe(SEASON_GAMES);
+      expect(gateCapFor(cat, t)).toBe(SEASON_GAMES);
+      expect(gateCapFor(cat, t - 0.2)).toBe(74);
+      expect(gateCapFor(cat, t - 0.6)).toBe(66);
+      expect(gateCapFor(cat, t - 1.0)).toBe(56);
+      expect(gateCapFor(cat, t - 5)).toBe(GATE_FLOOR_CAP);
+    }
   });
 
-  it("gate table is sorted strictly by threshold and cap", () => {
-    for (let i = 1; i < GATE_TABLE.length; i++) {
-      expect(GATE_TABLE[i][0]).toBeLessThan(GATE_TABLE[i - 1][0]);
-      expect(GATE_TABLE[i][1]).toBeLessThan(GATE_TABLE[i - 1][1]);
+  it("gate steps are sorted strictly by offset and cap", () => {
+    for (let i = 1; i < GATE_STEPS.length; i++) {
+      expect(GATE_STEPS[i][0]).toBeLessThan(GATE_STEPS[i - 1][0]);
+      expect(GATE_STEPS[i][1]).toBeLessThan(GATE_STEPS[i - 1][1]);
     }
-    expect(GATE_FLOOR_CAP).toBeLessThan(GATE_TABLE[GATE_TABLE.length - 1][1]);
+    expect(GATE_FLOOR_CAP).toBeLessThan(GATE_STEPS[GATE_STEPS.length - 1][1]);
+  });
+
+  it("the tov threshold sits below the star tax but above a deliberate stack", () => {
+    // All-star teams inherently run negative tov z (~ -0.9 median for drafted
+    // rosters); the gate must not punish that, only true turnover machines.
+    expect(GATE_THRESHOLDS.tov).toBeLessThan(-1.57); // drafted p05
   });
 });
 
 describe("projectSeason", () => {
-  it("golden master: all-time roster clears every gate and wins ~80", () => {
+  it("golden master: all-time roster clears every gate and goes 82-0", () => {
     expect(project(ALL_TIME)).toEqual({
-      wins: 80,
-      losses: 2,
-      ovr: 108.4,
+      wins: 82,
+      losses: 0,
+      ovr: 110,
       gatedCategory: null,
       winCap: 82,
     });
   });
 
-  it("golden master: balanced roster wins 50–68 (exactly 53)", () => {
+  it("golden master: balanced roster lands mid-band (exactly 65-17)", () => {
     expect(project(BALANCED)).toEqual({
-      wins: 53,
-      losses: 29,
-      ovr: 87.1,
+      wins: 65,
+      losses: 17,
+      ovr: 89.4,
       gatedCategory: null,
       winCap: 82,
     });
@@ -56,9 +71,9 @@ describe("projectSeason", () => {
 
   it("golden master: all-centers roster is gated by free-throw shooting", () => {
     expect(project(ALL_CENTERS)).toEqual({
-      wins: 59,
-      losses: 23,
-      ovr: 92.6,
+      wins: 72,
+      losses: 10,
+      ovr: 98.2,
       gatedCategory: "ftPct",
       winCap: 74,
     });
@@ -69,13 +84,13 @@ describe("projectSeason", () => {
     expect(s).toEqual({
       wins: 56,
       losses: 26,
-      ovr: 97.6,
+      ovr: 101.3,
       gatedCategory: "tov",
       winCap: 56,
     });
     // The gate genuinely binds: the raw curve at this ovr exceeds the cap.
-    const curve = Math.round(SEASON_GAMES * Math.pow(s.ovr / 110, 1.9));
-    expect(curve).toBeGreaterThan(s.winCap);
+    expect(s.winCap).toBeLessThan(SEASON_GAMES);
+    expect(s.wins).toBe(s.winCap);
   });
 
   it("a glaring weakness caps the record even at high OVR", () => {
@@ -101,10 +116,12 @@ describe("projectSeason", () => {
     const tr = engine.teamRating(ALL_CENTERS, players, baselines);
     const s = engine.projectSeason(tr);
     const minCap = Math.min(
-      ...Object.values(tr.catProfile).map((z) => gateCapFor(z))
+      ...NINE_CATS.map((cat) => gateCapFor(cat, tr.catProfile[cat]))
     );
     expect(s.winCap).toBe(minCap);
-    expect(gateCapFor(tr.catProfile[s.gatedCategory!])).toBe(minCap);
+    expect(gateCapFor(s.gatedCategory as NineCat, tr.catProfile[s.gatedCategory!])).toBe(
+      minCap
+    );
   });
 
   it("is a pure function of the rating", () => {
