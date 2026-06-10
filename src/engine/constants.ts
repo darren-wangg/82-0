@@ -26,15 +26,15 @@ export const Z_CLAMP = 4.5;
  *  usage tax — every star-built team sits at tov z ≈ −1 to −2, so any real
  *  weight here just suppresses the whole win distribution. */
 export const CAT_WEIGHTS: Record<NineCat, number> = {
-  pts: 0.26,
-  reb: 0.18,
-  ast: 0.17,
+  pts: 0.28,
+  reb: 0.19,
+  ast: 0.18,
   stl: 0.09,
   blk: 0.09,
   fgPct: 0.09,
   ftPct: 0.05,
-  tpm: 0.04,
-  tov: 0.03,
+  tpm: 0.02,
+  tov: 0.01,
 };
 
 /** Fraction of playerScore that comes from the ortg/drtg blend (the rest is
@@ -53,7 +53,7 @@ export const OVR_BASE = 52;
 export const OVR_SLOPE = 41;
 
 /** wins(curve) = round(82 * (ovr / OVR_MAX) ** WIN_CURVE_EXP). 1.15 keeps the
- *  curve near-linear (drafted teams: OVR ~80–94 → ~57–69 wins) while 82 wins
+ *  curve near-linear (drafted teams: OVR ~82–97 → ~58–71 wins) while 82 wins
  *  still demands OVR at the 110 ceiling. */
 export const WIN_CURVE_EXP = 1.15;
 

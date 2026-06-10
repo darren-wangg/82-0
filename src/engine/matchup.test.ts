@@ -35,7 +35,7 @@ describe("simulateMatchup", () => {
     const m = engine.simulateMatchup(A, B, 42);
     expect(m.winner).toBe("A");
     expect(m.seriesScore).toEqual([4, 0]);
-    expect(m.pGameA).toBeCloseTo(0.876, 3);
+    expect(m.pGameA).toBeCloseTo(0.856, 3);
     expect(m.seed).toBe(42);
   });
 

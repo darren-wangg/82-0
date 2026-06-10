@@ -14,12 +14,13 @@ const rate = (r: Roster) => engine.teamRating(r, players, baselines);
 
 describe("positionFactor", () => {
   const wilt = players.get("chambwi01-GSW-1960s")!; // C, no alts
-  const magic = players.get("johnsma02-LAL-1980s")!; // PG, alt SG
+  const magic = players.get("johnsma02-LAL-1980s")!; // PG, alts SG + PF
 
   it("is 1.0 at the primary position and at alt positions", () => {
     expect(positionFactor("C", wilt)).toBe(1.0);
     expect(positionFactor("PG", magic)).toBe(1.0);
     expect(positionFactor("SG", magic)).toBe(1.0);
+    expect(positionFactor("PF", magic)).toBe(1.0);
   });
 
   it("penalizes by positional distance: adjacent mild, PG↔C harsh", () => {
@@ -28,7 +29,7 @@ describe("positionFactor", () => {
     expect(positionFactor("SG", wilt)).toBe(POSITION_PENALTY[3]);
     expect(positionFactor("PG", wilt)).toBe(POSITION_PENALTY[4]);
     expect(positionFactor("SF", magic)).toBe(POSITION_PENALTY[1]); // via SG alt
-    expect(positionFactor("C", magic)).toBe(POSITION_PENALTY[3]);
+    expect(positionFactor("C", magic)).toBe(POSITION_PENALTY[1]); // via PF alt
   });
 
   it("penalties are monotone decreasing with distance", () => {
@@ -49,12 +50,12 @@ describe("teamRating", () => {
   });
 
   it("golden master: balanced roster lands in the strong-but-mortal band", () => {
-    expect(rate(BALANCED).ovr).toBe(95.4);
+    expect(rate(BALANCED).ovr).toBe(97.7);
   });
 
   it("golden master: all-centers roster is big-skewed (great D, weak ftPct)", () => {
     const tr = rate(ALL_CENTERS);
-    expect(tr.ovr).toBe(106.8);
+    expect(tr.ovr).toBe(110);
     expect(tr.defRating).toBeGreaterThan(tr.offRating);
     expect(tr.catProfile.ftPct).toBeCloseTo(-0.947, 3);
     expect(tr.catProfile.blk).toBeGreaterThan(2);

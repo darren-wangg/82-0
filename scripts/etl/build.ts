@@ -151,6 +151,66 @@ function buildLeagueShooting(rows: CsvRow[]): Map<string, LeagueShooting> {
   return out;
 }
 
+// ---------------------------------------------------------------------------
+// Career positions — the dataset lists ONE position per season, which makes
+// drafted rosters too rigid. Two extra signals widen altPositions:
+//  1. every position a player was EVER listed at across his career (any
+//     season, qualifying or not), and
+//  2. play-by-play minute shares (1996-97+): a position is "played" when it
+//     covers >= PBP_SHARE_MIN of tracked career minutes and >= PBP_MIN_MINUTES.
+// ---------------------------------------------------------------------------
+
+const PBP_SHARE_MIN = 0.15;
+const PBP_MIN_MINUTES = 200;
+const PBP_POS_COLS: ReadonlyArray<[string, Position]> = [
+  ["pg_percent", "PG"],
+  ["sg_percent", "SG"],
+  ["sf_percent", "SF"],
+  ["pf_percent", "PF"],
+  ["c_percent", "C"],
+];
+
+function buildCareerPositions(
+  perGame: CsvRow[],
+  playByPlay: CsvRow[]
+): Map<string, Set<Position>> {
+  const career = new Map<string, Set<Position>>();
+  const add = (slug: string, pos: Position) =>
+    (career.get(slug) ?? career.set(slug, new Set()).get(slug)!).add(pos);
+
+  for (const r of perGame) {
+    const season = num(r.season);
+    if (!season || season < FIRST_SEASON) continue;
+    if (r.lg !== "NBA" && r.lg !== "ABA") continue;
+    if (r.pos && (POSITIONS as readonly string[]).includes(r.pos)) {
+      add(r.player_id, r.pos as Position);
+    }
+  }
+
+  const minutesAt = new Map<string, Record<Position, number>>();
+  for (const r of playByPlay) {
+    if (r.lg !== "NBA" || r.team.endsWith("TM")) continue;
+    const mp = num(r.mp);
+    if (!mp) continue;
+    const acc =
+      minutesAt.get(r.player_id) ??
+      minutesAt.set(r.player_id, { PG: 0, SG: 0, SF: 0, PF: 0, C: 0 }).get(r.player_id)!;
+    for (const [col, pos] of PBP_POS_COLS) {
+      acc[pos] += (mp * (num(r[col]) ?? 0)) / 100;
+    }
+  }
+  for (const [slug, acc] of minutesAt) {
+    const total = POSITIONS.reduce((s, p) => s + acc[p], 0);
+    if (total <= 0) continue;
+    for (const pos of POSITIONS) {
+      if (acc[pos] / total >= PBP_SHARE_MIN && acc[pos] >= PBP_MIN_MINUTES) {
+        add(slug, pos);
+      }
+    }
+  }
+  return career;
+}
+
 /**
  * Composite 9-cat per-game production score, used both to pick a player's
  * peak season and to rank the franchise x decade pool:
@@ -178,10 +238,12 @@ async function main() {
   const perGame = parseCsv(await fetchDatasetCsv("Player Per Game"));
   const per100 = parseCsv(await fetchDatasetCsv("Per 100 Poss"));
   const teamSummaries = parseCsv(await fetchDatasetCsv("Team Summaries"));
+  const playByPlay = parseCsv(await fetchDatasetCsv("Player Play By Play"));
   const nbaApiSource = await fetchCached(NBA_API_PLAYERS_URL, "nba_api_players.py");
 
   const league = buildLeagueContext(teamSummaries);
   const leagueShooting = buildLeagueShooting(perGame);
+  const careerPositions = buildCareerPositions(perGame, playByPlay);
   const nbaIds = buildNbaIdIndex(nbaApiSource);
   const nicknames: Record<string, string> = JSON.parse(readFileSync(NICKNAMES_FILE, "utf8"));
 
@@ -361,7 +423,12 @@ async function main() {
       const nameKey = normalizeName(c.name);
       const nbaId =
         slugsByName.get(nameKey)?.size === 1 ? nbaIds.get(nameKey) : undefined;
-      const alt = [...(posBySlugDecade.get(`${c.slug}|${c.decade}`) ?? [])]
+      const alt = [
+        ...new Set([
+          ...(posBySlugDecade.get(`${c.slug}|${c.decade}`) ?? []),
+          ...(careerPositions.get(c.slug) ?? []),
+        ]),
+      ]
         .filter((p) => p !== c.position)
         .sort((a, b) => POSITIONS.indexOf(a) - POSITIONS.indexOf(b));
       players.push({
@@ -443,6 +510,11 @@ async function main() {
   console.log(
     `  headshots: ${withId}/${modern.length} (${((100 * withId) / modern.length).toFixed(1)}%) for 1990s+; ` +
       `${players.filter((p) => p.nbaPlayerId !== undefined).length}/${players.length} overall`
+  );
+  const multiPos = players.filter((p) => p.altPositions.length > 0).length;
+  console.log(
+    `  positions: ${multiPos}/${players.length} lines (${((100 * multiPos) / players.length).toFixed(1)}%) ` +
+      "list at least one alt position (career listings + play-by-play minute shares)"
   );
   const withNick = new Set(players.filter((p) => p.nickname).map((p) => p.playerSlug)).size;
   console.log(`  nicknames: ${withNick} players matched from data/nicknames.json`);
