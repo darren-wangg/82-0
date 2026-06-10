@@ -9,7 +9,7 @@
   --color-foreground: var(--foreground);
   --font-sans: var(--font-sans);
   --font-mono: var(--font-geist-mono);
-  --font-heading: var(--font-sans);
+  --font-heading: var(--font-display);
   --font-display: var(--font-display);
   --color-sidebar-ring: var(--sidebar-ring);
   --color-sidebar-border: var(--sidebar-border);
@@ -101,8 +101,8 @@
   --accent: oklch(0.34 0.09 296);
   --accent-foreground: oklch(0.97 0.01 280);
   --destructive: oklch(0.66 0.21 23);
-  --border: oklch(0.97 0.01 280 / 12%);
-  --input: oklch(0.97 0.01 280 / 16%);
+  --border: oklch(0.97 0.015 280 / 22%);
+  --input: oklch(0.97 0.01 280 / 20%);
   --ring: oklch(0.72 0.185 45 / 60%);
   --chart-1: oklch(0.72 0.185 45);
   --chart-2: oklch(0.75 0.13 185);

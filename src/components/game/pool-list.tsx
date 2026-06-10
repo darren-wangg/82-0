@@ -82,8 +82,8 @@ export function PoolList({
                 className={cn(
                   "flex w-full items-center gap-2.5 rounded-xl border p-2 text-left transition-colors",
                   selected
-                    ? "border-primary bg-primary/15 shadow-md shadow-primary/20"
-                    : "border-border/60 bg-card/70",
+                    ? "border-primary bg-primary/15 shadow-lg shadow-primary/25"
+                    : "border-border/80 bg-card/70 shadow-md shadow-black/25",
                   draftable ? "active:scale-[0.99]" : "opacity-40 grayscale"
                 )}
               >

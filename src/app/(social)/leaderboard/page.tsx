@@ -96,7 +96,7 @@ export default async function LeaderboardPage({
             <li key={e.teamSlug}>
               <Link
                 href={`/t/${e.teamSlug}`}
-                className="flex items-center gap-3 rounded-xl border border-border/60 bg-card/70 px-3 py-2.5"
+                className="flex items-center gap-3 rounded-xl border border-border/80 bg-card/70 px-3 py-2.5 shadow-md shadow-black/25"
               >
                 <span
                   className={cn(

@@ -4,7 +4,6 @@ import { useEffect, useMemo, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { AnimatePresence, motion } from "framer-motion";
 import { RefreshCcw, RotateCcw } from "lucide-react";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
@@ -153,26 +152,20 @@ export function PlayScreen() {
           <Button
             variant="outline"
             size="sm"
-            className="h-9 rounded-lg px-2.5"
+            className="h-9 rounded-lg border-red-500/60 px-3 font-bold text-red-400 shadow-md shadow-red-950/50 disabled:opacity-35 disabled:grayscale"
             disabled={!skipTeamOk}
             onClick={() => dispatch({ type: "SKIP_TEAM" })}
           >
             <RefreshCcw className="size-3.5" /> Team
-            <Badge variant="secondary" className="px-1 font-mono">
-              {state.teamSkipsLeft}
-            </Badge>
           </Button>
           <Button
             variant="outline"
             size="sm"
-            className="h-9 rounded-lg px-2.5"
+            className="h-9 rounded-lg border-orange-500/60 px-3 font-bold text-orange-400 shadow-md shadow-orange-950/50 disabled:opacity-35 disabled:grayscale"
             disabled={!skipEraOk}
             onClick={() => dispatch({ type: "SKIP_ERA" })}
           >
             <RefreshCcw className="size-3.5" /> Era
-            <Badge variant="secondary" className="px-1 font-mono">
-              {state.eraSkipsLeft}
-            </Badge>
           </Button>
         </div>
       </div>
@@ -180,15 +173,23 @@ export function PlayScreen() {
       {state.challengeSlug && <ChallengeBanner slug={state.challengeSlug} />}
 
       {/* slot machine — team and era side by side */}
-      <Card className="mt-3 shrink-0 gap-0 overflow-hidden border-primary/25 bg-gradient-to-br from-card via-card to-accent/30 py-0">
-        <div className="flex items-stretch gap-2 px-3 py-3">
+      <Card className="mt-3 shrink-0 gap-0 overflow-hidden border border-primary/40 bg-gradient-to-br from-card via-card to-accent/30 py-0 shadow-xl shadow-black/50">
+        <div className="flex gap-2 px-3 pt-2.5">
+          <span className="flex-[1.6] text-center font-display text-[11px] tracking-[0.3em] text-red-400">
+            TEAM
+          </span>
+          <span className="flex-1 text-center font-display text-[11px] tracking-[0.3em] text-orange-400">
+            ERA
+          </span>
+        </div>
+        <div className="flex items-stretch gap-2 px-3 pt-1.5 pb-3">
           <SlotReel
             value={franchiseName}
             items={franchiseNames}
             nonce={state.spinNonce}
             duration={FRANCHISE_REEL_S}
             idleLabel={PLACEHOLDER_TEAM}
-            className="flex-[1.6] rounded-lg bg-background/40"
+            className="flex-[1.6] rounded-lg bg-background/40 ring-1 ring-red-500/30"
             rowClassName="font-display text-lg tracking-wide text-center leading-tight px-1"
           />
           <SlotReel
@@ -198,7 +199,7 @@ export function PlayScreen() {
             duration={FRANCHISE_REEL_S - 0.2}
             delay={DECADE_REEL_DELAY_S}
             idleLabel={PLACEHOLDER_ERA}
-            className="flex-1 rounded-lg bg-background/40"
+            className="flex-1 rounded-lg bg-background/40 ring-1 ring-orange-500/30"
             rowClassName={cn(
               "font-display text-2xl tracking-wider",
               spin ? DECADE_COLORS[spin.decade].text : "text-primary"
@@ -227,7 +228,7 @@ export function PlayScreen() {
                   className="h-16 w-full rounded-2xl font-display text-2xl tracking-wide shadow-xl shadow-primary/30"
                   onClick={() => dispatch({ type: "SPIN" })}
                 >
-                  {state.picks.length === 0 ? "Spin the wheel" : "Spin next pick"}
+                  Spin
                 </Button>
               </motion.div>
             </motion.div>

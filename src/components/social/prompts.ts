@@ -14,7 +14,7 @@ import {
   TeamRating,
 } from "@/lib/contracts";
 
-export const PROMPT_VERSION = "v1";
+export const PROMPT_VERSION = "v2";
 export const EXPLAIN_MODEL = "claude-sonnet-4-6";
 
 export const CAT_LABELS: Record<NineCat, string> = {
@@ -43,11 +43,16 @@ export interface MatchupExplainPayload {
 }
 
 const SYSTEM_PROMPT =
-  "You are a sharp, fun NBA analyst for a fantasy draft game where users build " +
-  "8-player all-time rosters that get simulated. Category values are " +
-  "era-adjusted z-scores (higher is always better, including turnovers which " +
-  "are sign-flipped). Be concrete and reference the numbers you are given. " +
-  "Never invent stats that are not in the data. Plain text only, no markdown headings.";
+  "You are Coach Buckets — a washed ex-journeyman turned loudmouth podcast " +
+  "analyst covering a fantasy game where people draft 8-player all-time NBA " +
+  "rosters that get simulated. Your takes are SHORT, funny, and ruthless. " +
+  "Talk like the barbershop: slang (cooked, washed, bricks, no cap, him), " +
+  "trash talk, and mild profanity (damn, hell, ass) are all fair game — " +
+  "never slurs, never mean about real people's looks or lives. " +
+  "Ground every take in the numbers you're given: category values are " +
+  "era-adjusted z-scores (higher is always better; turnovers are " +
+  "sign-flipped). Never invent stats. Plain text only, no markdown, no " +
+  "headings, no bullet points. Respect the word limit like it's the shot clock.";
 
 export function buildTeamSystemPrompt(): string {
   return SYSTEM_PROMPT;
@@ -62,14 +67,12 @@ export function buildTeamPrompt(payload: TeamExplainPayload): string {
     .join(", ");
 
   return [
-    `Analyze this all-time fantasy roster in exactly 3 short paragraphs:`,
-    `1) The team's biggest strengths.`,
-    `2) The weakness capping its record${
+    `Give your take on this roster in ONE paragraph, 60 words max:`,
+    `why they're nice, what's holding them back${
       season.gatedCategory
-        ? ` — the binding gate is ${CAT_LABELS[season.gatedCategory]} (win cap ${season.winCap})`
-        : " — note that no category gate applied (win cap 82)"
-    }.`,
-    `3) One concrete improvement (which kind of player to swap in, and where).`,
+        ? ` (the binding weakness is ${CAT_LABELS[season.gatedCategory]} — it capped them at ${season.winCap} wins, call it out)`
+        : " (no category gate applied — nothing capped them)"
+    }, and the one fix you'd make.`,
     ``,
     `Team: "${teamName}"`,
     `Projected record: ${season.wins}-${season.losses}`,
@@ -96,8 +99,8 @@ export function buildMatchupPrompt(payload: MatchupExplainPayload): string {
     .join("\n");
 
   return [
-    `Write a punchy 2-paragraph recap of a simulated best-of-7 series explaining why the winner won.`,
-    `Lead with the result, then use the category edges to explain it. Keep it under 150 words.`,
+    `Recap this simulated best-of-7 in ONE paragraph, 45 words max.`,
+    `Lead with who got cooked (or how close it was), then point at the category edges that decided it.`,
     ``,
     `Matchup: "${teamA.teamName}" (OVR ${teamA.rating.ovr.toFixed(1)}) vs "${teamB.teamName}" (OVR ${teamB.rating.ovr.toFixed(1)})`,
     `Winner: "${winner}" over "${loser}", series ${result.seriesScore[0]}-${result.seriesScore[1]} (score is teamA-teamB)`,
