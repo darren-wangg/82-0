@@ -42,3 +42,6 @@ next-env.d.ts
 
 # generated prisma client
 src/generated/
+
+# ETL source-data cache (re-fetched on demand; do not commit)
+scripts/etl/.cache/
