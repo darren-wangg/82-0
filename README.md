@@ -23,6 +23,12 @@ npm run etl            # rebuild public/data/snapshot-v1.json from source data
 npm run etl:headshots  # resolve fallback player images (cached, resumable)
 ```
 
+## Docs
+
+- [System design](docs/system-design.md) — architecture and flow diagrams
+- [Technical overview](docs/technical-overview.md) — core components and logic
+- [Scaling plan](docs/scaling.md) — concrete productionization steps
+
 ## Architecture notes
 
 - `src/lib/contracts.ts` is the shared surface: all types, zod schemas, the
