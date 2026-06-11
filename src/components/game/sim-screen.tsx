@@ -10,6 +10,7 @@ import {
   Share2,
   Swords,
   TriangleAlert,
+  Users,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -302,6 +303,29 @@ export function SimScreen() {
       });
       if (!res.ok) throw new Error(`save failed: ${res.status}`);
       const data: SaveTeamResponse = await res.json();
+      // Lobby draft: enter the team and jump to the standings.
+      if (state.lobbyCode) {
+        try {
+          const l = await fetch("/api/lobbies/enter", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              code: state.lobbyCode,
+              teamSlug: data.team.slug,
+            }),
+          });
+          if (l.ok) {
+            router.push(`/l/${state.lobbyCode}`);
+            return;
+          }
+          const err = (await l.json().catch(() => null)) as { error?: string } | null;
+          setToast(err?.error ?? "Saved! Couldn't enter the lobby right now.");
+        } catch {
+          setToast("Saved! Couldn't enter the lobby right now.");
+        }
+        setSave({ phase: "saved", url: data.url });
+        return;
+      }
       // Challenge draft: run the head-to-head and jump to the result page.
       if (state.challengeSlug) {
         try {
@@ -365,12 +389,18 @@ export function SimScreen() {
           <DialogContent className="dark border-border bg-background text-foreground">
             <DialogHeader>
               <DialogTitle>
-                {state.challengeSlug ? "Save & battle" : "Save & share"}
+                {state.lobbyCode
+                  ? "Save & enter lobby"
+                  : state.challengeSlug
+                    ? "Save & battle"
+                    : "Save & share"}
               </DialogTitle>
               <DialogDescription>
-                {state.challengeSlug
-                  ? "Name your team — saving runs the best-of-7 against your rival."
-                  : "Name your team to get a share link."}
+                {state.lobbyCode
+                  ? `Name your team — saving enters it into lobby ${state.lobbyCode}.`
+                  : state.challengeSlug
+                    ? "Name your team — saving runs the best-of-7 against your rival."
+                    : "Name your team to get a share link."}
               </DialogDescription>
             </DialogHeader>
             {save.phase === "saved" ? (
@@ -407,9 +437,11 @@ export function SimScreen() {
                 >
                   {save.phase === "saving"
                     ? "Saving…"
-                    : state.challengeSlug
-                      ? "Save & Battle"
-                      : "Save & Share"}
+                    : state.lobbyCode
+                      ? "Save & Enter Lobby"
+                      : state.challengeSlug
+                        ? "Save & Battle"
+                        : "Save & Share"}
                 </Button>
               </div>
             )}
@@ -503,7 +535,15 @@ export function SimScreen() {
 
       {/* thumb-zone footer */}
       <div className="sticky bottom-0 mt-auto flex flex-col gap-2 bg-gradient-to-t from-background via-background/95 to-transparent pt-4 pb-[max(1rem,env(safe-area-inset-bottom))]">
-        {state.challengeSlug && save.phase !== "saved" && (
+        {state.lobbyCode && save.phase !== "saved" && (
+          <Button
+            className="h-14 w-full rounded-2xl font-display text-xl tracking-wide shadow-lg shadow-primary/30"
+            onClick={() => setShareOpen(true)}
+          >
+            <Users className="size-5" /> Enter the lobby
+          </Button>
+        )}
+        {state.challengeSlug && !state.lobbyCode && save.phase !== "saved" && (
           <Button
             className="h-14 w-full rounded-2xl font-display text-xl tracking-wide shadow-lg shadow-primary/30"
             onClick={() => setShareOpen(true)}

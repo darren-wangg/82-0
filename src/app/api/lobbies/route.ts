@@ -1,9 +1,12 @@
-/** POST /api/lobbies — create a lobby with a fresh join code. */
+/** POST /api/lobbies — create a lobby with a fresh join code. The calling
+ *  device becomes the creator: only it may end the lobby early. */
 
 import { CreateLobbyRequestSchema, LobbyResponse } from "@/lib/contracts";
 import { prisma } from "@/lib/db";
+import { getOrCreateAnonId } from "@/lib/auth";
 import { makeLobbyCode } from "@/components/social/hashing";
 import { isDbUnavailable, jsonError } from "../_lib/teams";
+import { lobbyClosesAt } from "../_lib/lobbies";
 
 const CODE_ATTEMPTS = 5;
 
@@ -21,16 +24,20 @@ export async function POST(request: Request) {
   }
 
   try {
+    const creatorAnonId = await getOrCreateAnonId();
     for (let attempt = 0; attempt < CODE_ATTEMPTS; attempt++) {
       const code = makeLobbyCode();
       try {
         const lobby = await prisma.lobby.create({
-          data: { code, name: parsed.data.name },
+          data: { code, name: parsed.data.name, creatorAnonId },
         });
         const response: LobbyResponse = {
           code: lobby.code,
           name: lobby.name,
           createdAt: lobby.createdAt.toISOString(),
+          closesAt: lobbyClosesAt(lobby.createdAt).toISOString(),
+          status: "open",
+          winner: null,
           standings: [],
         };
         return Response.json(response, { status: 201 });

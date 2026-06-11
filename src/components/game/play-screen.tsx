@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { AnimatePresence, motion } from "framer-motion";
-import { RefreshCcw, RotateCcw } from "lucide-react";
+import { RefreshCcw, RotateCcw, Users } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
@@ -51,25 +51,37 @@ export function PlayScreen() {
   const { state, dispatch, ctx, players, franchiseById } = useGame();
   const allowed = usePhaseGuard(["draft"]);
 
-  // Arriving via /play?challenge={slug} retargets the draft at that team.
-  // A fresh (or already-matching) game adopts it silently; an in-progress
-  // draft asks before being scrapped.
-  const challengeParam = useSearchParams().get("challenge");
+  // Arriving via /play?challenge={slug} retargets the draft at that team;
+  // /play?lobby={code} starts a draft destined for that lobby. A fresh (or
+  // already-matching) game adopts it silently; an in-progress draft asks
+  // before being scrapped.
+  const searchParams = useSearchParams();
+  const challengeParam = searchParams.get("challenge");
+  const lobbyParam = searchParams.get("lobby");
   const stateChallenge = state?.challengeSlug ?? null;
+  const stateLobby = state?.lobbyCode ?? null;
   const statePicks = state?.picks.length ?? 0;
   const stateReady = state !== null;
   useEffect(() => {
-    if (!stateReady || !challengeParam || challengeParam === stateChallenge) {
-      return;
-    }
+    if (!stateReady) return;
+    const wantsChallenge = challengeParam && challengeParam !== stateChallenge;
+    const wantsLobby = lobbyParam && lobbyParam !== stateLobby;
+    if (!wantsChallenge && !wantsLobby) return;
     if (
       statePicks > 0 &&
-      !window.confirm("Start a challenge draft? Your current draft will be scrapped.")
+      !window.confirm(
+        `Start a ${wantsLobby ? "lobby" : "challenge"} draft? Your current draft will be scrapped.`
+      )
     ) {
       return;
     }
-    dispatch({ type: "NEW_GAME", seed: freshSeed(), challengeSlug: challengeParam });
-  }, [stateReady, challengeParam, stateChallenge, statePicks, dispatch]);
+    dispatch({
+      type: "NEW_GAME",
+      seed: freshSeed(),
+      challengeSlug: wantsChallenge ? challengeParam : null,
+      lobbyCode: wantsLobby ? lobbyParam : null,
+    });
+  }, [stateReady, challengeParam, stateChallenge, lobbyParam, stateLobby, statePicks, dispatch]);
 
   // Nonce of the last spin whose reel animation has finished. Every (re)spin —
   // including a restored pending spin on mount — counts as a reel roll: the
@@ -178,6 +190,22 @@ export function PlayScreen() {
       </div>
 
       {state.challengeSlug && <ChallengeBanner slug={state.challengeSlug} />}
+      {state.lobbyCode && (
+        <motion.div
+          initial={{ opacity: 0, y: -8 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="mt-2 flex items-center gap-2 rounded-lg border border-sky-400/40 bg-sky-400/10 px-2.5 py-1.5 text-xs"
+        >
+          <Users className="size-3.5 shrink-0 text-sky-300" />
+          <span className="min-w-0 truncate">
+            Lobby draft — your team enters{" "}
+            <span className="font-mono font-bold tracking-widest text-sky-300">
+              {state.lobbyCode}
+            </span>{" "}
+            when you save
+          </span>
+        </motion.div>
+      )}
 
       {/* slot machine — team and era side by side */}
       <Card className="mt-3 shrink-0 gap-0 overflow-hidden border-2 border-primary/40 bg-gradient-to-br from-card via-card to-accent/30 py-0 shadow-xl shadow-black/50">

@@ -1,6 +1,7 @@
 /**
- * /l/new — create an async group lobby: friends submit saved teams and the
- * standings update with round-robin head-to-head sims as entries arrive.
+ * /l/new — create an async group lobby: anyone with the link drafts a fresh
+ * team (one per device) within 24 hours, standings run round-robin sims as
+ * entries arrive, and a winner is crowned when the lobby closes.
  */
 
 import type { Metadata } from "next";
@@ -22,8 +23,9 @@ export default function NewLobbyPage() {
           Settle it as a group
         </h1>
         <p className="mx-auto mt-2 max-w-xs text-sm text-muted-foreground">
-          Create a lobby, share the link, and everyone submits a saved team.
-          Standings run every matchup head-to-head — round-robin, best-of-7s.
+          Create a lobby and share the link — everyone drafts a fresh team,
+          one per device, within 24 hours. Every matchup runs head-to-head,
+          and the winner is crowned when the lobby closes.
         </p>
       </div>
       <CreateLobbyForm />

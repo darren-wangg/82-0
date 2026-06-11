@@ -155,6 +155,11 @@ model Lobby {
   code      String       @id // short join code
   name      String
   createdAt DateTime     @default(now())
+  // Entries close 24h after creation, or when the creator ends the lobby.
+  closedAt  DateTime?
+  // AnonIdentity.id of the device that created the lobby (may close it early).
+  // Nullable only for rows that predate creator tracking.
+  creatorAnonId String?
   entries   LobbyEntry[]
 }
 
@@ -164,9 +169,12 @@ model LobbyEntry {
   lobbyCode String
   team      Team     @relation(fields: [teamSlug], references: [slug])
   teamSlug  String
+  // Device that entered; one entry per device per lobby (NULL = legacy row).
+  anonIdentityId String?
   createdAt DateTime @default(now())
 
   @@unique([lobbyCode, teamSlug])
+  @@unique([lobbyCode, anonIdentityId])
 }
 
 // AI explanation cache: one explanation per unique content hash

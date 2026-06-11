@@ -155,10 +155,17 @@ export interface GameState {
   selectedPlayerId: string | null;
   /** Saved-team slug this draft is challenging head-to-head, if any. */
   challengeSlug: string | null;
+  /** Lobby code this draft will be entered into on save, if any. */
+  lobbyCode: string | null;
 }
 
 export type GameAction =
-  | { type: "NEW_GAME"; seed: number; challengeSlug?: string | null }
+  | {
+      type: "NEW_GAME";
+      seed: number;
+      challengeSlug?: string | null;
+      lobbyCode?: string | null;
+    }
   | { type: "SPIN" }
   | { type: "SKIP_TEAM" }
   | { type: "SKIP_ERA" }
@@ -315,7 +322,8 @@ export function toRoster(state: GameState): Roster | null {
 export function newGame(
   seed: number,
   ctx: DraftContext,
-  challengeSlug: string | null = null
+  challengeSlug: string | null = null,
+  lobbyCode: string | null = null
 ): GameState {
   const rng = mulberry32(seed >>> 0);
   const base: GameState = {
@@ -334,6 +342,7 @@ export function newGame(
     slots: emptySlots(),
     selectedPlayerId: null,
     challengeSlug,
+    lobbyCode,
   };
   // Exclude decades for the whole game; retry (deterministically) in the
   // unlikely case an exclusion set leaves no spinnable combos.
@@ -356,7 +365,12 @@ export function gameReducer(
 ): GameState {
   switch (action.type) {
     case "NEW_GAME":
-      return newGame(action.seed, ctx, action.challengeSlug ?? null);
+      return newGame(
+        action.seed,
+        ctx,
+        action.challengeSlug ?? null,
+        action.lobbyCode ?? null
+      );
 
     case "SPIN": {
       if (state.status !== "draft" || state.spin !== null) return state;
@@ -501,8 +515,9 @@ const PersistedSchema = z.object({
   picks: z.array(z.string()).max(DRAFT_ROUNDS),
   slots: z.record(z.enum(SLOT_KEYS), z.string().nullable()),
   selectedPlayerId: z.string().nullable(),
-  // Optional for saves written before challenges existed.
+  // Optional for saves written before challenges / lobbies existed.
   challengeSlug: z.string().nullable().default(null),
+  lobbyCode: z.string().nullable().default(null),
 });
 
 export function serializeGame(state: GameState): string {
