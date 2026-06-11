@@ -52,8 +52,8 @@ export const POSITION_PENALTY = [1.0, 0.92, 0.85, 0.8, 0.75] as const;
  *  Steep on purpose (base holds the drafted median at ~65 wins): calibrated
  *  on the realistic top-3 drafter so a perfect 82-0 lands ~1 in 50 drafts
  *  (med 65, p90 75, min ~44 on snapshot-v1). */
-export const OVR_BASE = 30.3;
-export const OVR_SLOPE = 56;
+export const OVR_BASE = 43.1;
+export const OVR_SLOPE = 42;
 
 /** wins(curve) = round(82 * (ovr / OVR_MAX) ** WIN_CURVE_EXP). 1.15 keeps the
  *  curve near-linear (drafted teams: OVR ~75–88 → ~58–71 wins) while 82 wins
