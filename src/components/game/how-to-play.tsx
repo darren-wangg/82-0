@@ -23,7 +23,7 @@ const STEPS: { title: string; body: string }[] = [
   },
   {
     title: "Skip (maybe)",
-    body: `You get ${TEAM_SKIPS_PER_GAME} team re-spin and ${ERA_SKIPS_PER_GAME} era re-spin per game. A re-spin rolls only that axis — spend them wisely. You also get 1 Replace during the draft: cut anyone you've drafted and spin fresh for their successor.`,
+    body: `You get ${TEAM_SKIPS_PER_GAME} team re-spin and ${ERA_SKIPS_PER_GAME} era re-spin per game. A re-spin rolls only that axis — spend them wisely.`,
   },
   {
     title: "Pick & place",

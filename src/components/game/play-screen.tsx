@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { AnimatePresence, motion } from "framer-motion";
-import { RefreshCcw, RotateCcw, UserRoundX } from "lucide-react";
+import { RefreshCcw, RotateCcw } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
@@ -76,16 +76,6 @@ export function PlayScreen() {
   // pool and skips unlock only once the reels settle.
   const [settledNonce, setSettledNonce] = useState(-1);
 
-  // Replace mode: the header toggle arms it, the roster board consumes it.
-  // Selecting a pool player disarms it (derived reset during render).
-  const [replaceMode, setReplaceMode] = useState(false);
-  const placing = state?.selectedPlayerId ?? null;
-  const [prevPlacing, setPrevPlacing] = useState(placing);
-  if (placing !== prevPlacing) {
-    setPrevPlacing(placing);
-    if (placing) setReplaceMode(false);
-  }
-
   const spinNonce = state?.spinNonce ?? 0;
   const hasSpin = state?.spin != null;
   const spinning = hasSpin && settledNonce !== spinNonce;
@@ -119,7 +109,6 @@ export function PlayScreen() {
   const settled = spin !== null && !spinning;
   const skipTeamOk = settled && canSkipTeam(state, ctx);
   const skipEraOk = settled && canSkipEra(state, ctx);
-  const replaceOk = state.replacesLeft > 0 && state.picks.length > 0;
 
   const newGame = () => {
     if (
@@ -184,20 +173,6 @@ export function PlayScreen() {
             onClick={() => dispatch({ type: "SKIP_ERA" })}
           >
             <RefreshCcw className="size-3.5" /> Era
-          </Button>
-          <Button
-            variant="outline"
-            size="sm"
-            className={cn(
-              "h-9 rounded-lg px-3 font-bold shadow-md shadow-rose-950/50 transition-transform active:scale-95 disabled:opacity-35 disabled:grayscale",
-              replaceMode
-                ? "border-rose-400 bg-rose-500/15 text-rose-300"
-                : "border-rose-500/60 text-rose-400"
-            )}
-            disabled={!replaceOk}
-            onClick={() => setReplaceMode((m) => !m)}
-          >
-            <UserRoundX className="size-3.5" /> Replace
           </Button>
         </div>
       </div>
@@ -297,10 +272,7 @@ export function PlayScreen() {
 
       {/* the roster being built */}
       <div className="shrink-0 border-t border-border/60 bg-gradient-to-t from-background to-transparent pt-2 pb-[max(0.75rem,env(safe-area-inset-bottom))]">
-        <RosterBoard
-          replaceMode={replaceMode}
-          onReplaceDone={() => setReplaceMode(false)}
-        />
+        <RosterBoard />
       </div>
     </div>
   );

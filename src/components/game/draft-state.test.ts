@@ -24,7 +24,6 @@ import {
   newGame,
   openSlots,
   pickablePool,
-  REPLACES_PER_GAME,
   rosterComplete,
   serializeGame,
   Slot,
@@ -453,51 +452,6 @@ describe("duplicate team+era prevention", () => {
       ],
     };
     expect(eligibleCombos(s, tinyCtx).length).toBeGreaterThan(0);
-  });
-});
-
-describe("REPLACE (one roster do-over per game)", () => {
-  /** magic at PG and shaq at BC, no spin pending. */
-  function board(): GameState {
-    let s = newGame(5, tinyCtx);
-    s = { ...s, spin: { franchiseId: "BBB", decade: "1980s" }, spinNonce: 1 };
-    s = draftInto(s, tinyCtx, "magic-BBB-1980s", "PG");
-    s = { ...s, spin: { franchiseId: "BBB", decade: "1990s" } };
-    s = draftInto(s, tinyCtx, "shaq-BBB-1990s", "BC");
-    return s;
-  }
-
-  it("evicts the player, reopens the slot, rewinds the round, and decrements", () => {
-    const s = board();
-    expect(s.replacesLeft).toBe(REPLACES_PER_GAME);
-    const r = gameReducer(s, { type: "REPLACE", slot: "PG" }, tinyCtx);
-    expect(r.slots.PG).toBeNull();
-    expect(r.picks).toEqual(["shaq-BBB-1990s"]);
-    expect(r.replacesLeft).toBe(REPLACES_PER_GAME - 1);
-    expect(r.status).toBe("draft");
-    expect(r.round).toBe(2);
-  });
-
-  it("is a no-op once the roster is locked", () => {
-    const locked = { ...board(), status: "locked" as const };
-    expect(gameReducer(locked, { type: "REPLACE", slot: "BC" }, tinyCtx)).toBe(
-      locked
-    );
-  });
-
-  it("frees the evicted human to be drafted again", () => {
-    const r = gameReducer(board(), { type: "REPLACE", slot: "PG" }, tinyCtx);
-    const respun = { ...r, spin: { franchiseId: "BBB", decade: "1980s" } } as GameState;
-    expect(pickablePool(respun, tinyCtx, "BBB", "1980s")).toContain(
-      "magic-BBB-1980s"
-    );
-  });
-
-  it("is a no-op on empty slots and once exhausted", () => {
-    const s = board();
-    expect(gameReducer(s, { type: "REPLACE", slot: "SF" }, tinyCtx)).toBe(s);
-    const spent = gameReducer(s, { type: "REPLACE", slot: "PG" }, tinyCtx);
-    expect(gameReducer(spent, { type: "REPLACE", slot: "BC" }, tinyCtx)).toBe(spent);
   });
 });
 

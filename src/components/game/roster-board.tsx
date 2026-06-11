@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { AnimatePresence, motion } from "framer-motion";
+import { motion } from "framer-motion";
 import { POSITIONS } from "@/lib/contracts";
 import { cn } from "@/lib/utils";
 import {
@@ -19,7 +19,6 @@ function SlotCircle({
   slot,
   highlighted,
   moveSource,
-  replaceTarget,
   onTap,
   small,
 }: {
@@ -28,8 +27,6 @@ function SlotCircle({
   highlighted: boolean;
   /** This filled slot is currently selected for moving. */
   moveSource: boolean;
-  /** Replace mode: tapping this filled slot evicts its player. */
-  replaceTarget: boolean;
   onTap: (slot: Slot) => void;
   small?: boolean;
 }) {
@@ -45,29 +42,27 @@ function SlotCircle({
       {player ? (
         <motion.button
           type="button"
-          aria-label={`${player.name} at ${SLOT_LABELS[slot]}${replaceTarget ? " — tap to replace" : highlighted ? " — tap to swap here" : moveSource ? " — selected" : " — tap to move"}`}
+          aria-label={`${player.name} at ${SLOT_LABELS[slot]}${highlighted ? " — tap to swap here" : moveSource ? " — selected" : " — tap to move"}`}
           onClick={() => onTap(slot)}
           initial={{ scale: 0.3, opacity: 0, rotate: -8 }}
           animate={
-            highlighted || replaceTarget
+            highlighted
               ? { scale: [1, 1.1, 1], opacity: 1, rotate: 0 }
               : { scale: 1, opacity: 1, rotate: 0 }
           }
           transition={
-            highlighted || replaceTarget
+            highlighted
               ? { repeat: Infinity, duration: 1.1 }
               : { type: "spring", stiffness: 380, damping: 20 }
           }
           className={cn(
             "rounded-full ring-2 ring-offset-1 ring-offset-background",
             size,
-            replaceTarget
-              ? "ring-rose-500 shadow-lg shadow-rose-500/40"
-              : moveSource
-                ? "ring-sky-400 shadow-lg shadow-sky-400/40"
-                : highlighted
-                  ? "ring-primary shadow-lg shadow-primary/40"
-                  : "ring-primary/40"
+            moveSource
+              ? "ring-sky-400 shadow-lg shadow-sky-400/40"
+              : highlighted
+                ? "ring-primary shadow-lg shadow-primary/40"
+                : "ring-primary/40"
           )}
         >
           <PlayerHeadshot player={player} className="size-full" />
@@ -108,28 +103,17 @@ function SlotCircle({
 /**
  * The live roster: 5 starter slots + 3 bench slots (G/F/C).
  *
- * Three interactions:
+ * Two interactions:
  *  - Placement: while a pool player is selected, their eligible open slots
  *    pulse; tapping one drafts them into it.
  *  - Rearranging: with no pool selection, tapping a filled slot selects it
  *    (blue ring) and pulses every slot that player can move to — empty ones,
  *    or filled ones where the two players can legally swap.
- *  - Replace (once per game, armed by the header toggle via `replaceMode`):
- *    every filled slot pulses; tapping one cuts that player so a fresh spin
- *    can re-fill the slot.
  *
  * Shows only basic team per-game averages; the full engine breakdown stays
  * hidden until the season simulates.
  */
-export function RosterBoard({
-  className,
-  replaceMode = false,
-  onReplaceDone,
-}: {
-  className?: string;
-  replaceMode?: boolean;
-  onReplaceDone?: () => void;
-}) {
+export function RosterBoard({ className }: { className?: string }) {
   const { state, dispatch, ctx, players } = useGame();
   const [moveFrom, setMoveFrom] = useState<Slot | null>(null);
 
@@ -140,12 +124,6 @@ export function RosterBoard({
   if (placing !== prevPlacing) {
     setPrevPlacing(placing);
     if (placing) setMoveFrom(null);
-  }
-  // Arming replace mode likewise drops any half-finished move.
-  const [prevReplace, setPrevReplace] = useState(replaceMode);
-  if (replaceMode !== prevReplace) {
-    setPrevReplace(replaceMode);
-    if (replaceMode) setMoveFrom(null);
   }
 
   if (!state) return null;
@@ -158,13 +136,6 @@ export function RosterBoard({
         : []
   );
   const onTap = (slot: Slot) => {
-    if (replaceMode) {
-      if (state.slots[slot]) {
-        dispatch({ type: "REPLACE", slot });
-        onReplaceDone?.();
-      }
-      return;
-    }
     if (placing) {
       if (highlights.has(slot)) dispatch({ type: "PLACE", slot });
       return;
@@ -187,18 +158,6 @@ export function RosterBoard({
 
   return (
     <div className={cn("flex flex-col gap-2", className)}>
-      <AnimatePresence>
-        {replaceMode && (
-          <motion.p
-            initial={{ opacity: 0, height: 0 }}
-            animate={{ opacity: 1, height: "auto" }}
-            exit={{ opacity: 0, height: 0 }}
-            className="overflow-hidden text-center text-[10px] font-semibold text-rose-400"
-          >
-            Tap a player to cut them, then spin for the replacement
-          </motion.p>
-        )}
-      </AnimatePresence>
       <div className="flex items-end gap-1">
         {POSITIONS.map((p) => (
           <SlotCircle
@@ -206,7 +165,6 @@ export function RosterBoard({
             slot={p}
             highlighted={highlights.has(p)}
             moveSource={moveFrom === p}
-            replaceTarget={replaceMode && state.slots[p] !== null}
             onTap={onTap}
           />
         ))}
@@ -217,7 +175,6 @@ export function RosterBoard({
             slot={s}
             highlighted={highlights.has(s)}
             moveSource={moveFrom === s}
-            replaceTarget={replaceMode && state.slots[s] !== null}
             onTap={onTap}
             small
           />

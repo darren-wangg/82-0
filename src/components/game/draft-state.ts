@@ -130,9 +130,6 @@ function shuffled<T>(items: readonly T[], rng: () => number): T[] {
 
 export type GameStatus = "draft" | "locked";
 
-/** One roster do-over per game: evict a player, spin fresh, draft a sub. */
-export const REPLACES_PER_GAME = 1;
-
 export interface GameState {
   snapshotVersion: string;
   seed: number;
@@ -147,7 +144,6 @@ export interface GameState {
   spinNonce: number;
   teamSkipsLeft: number;
   eraSkipsLeft: number;
-  replacesLeft: number;
   /** Every franchise×decade combo the reels have landed on ("fid|decade") —
    *  the same combo never comes up twice in one game. */
   spunCombos: string[];
@@ -168,8 +164,7 @@ export type GameAction =
   | { type: "SKIP_ERA" }
   | { type: "SELECT_PLAYER"; playerId: string | null }
   | { type: "PLACE"; slot: Slot }
-  | { type: "MOVE"; from: Slot; to: Slot }
-  | { type: "REPLACE"; slot: Slot };
+  | { type: "MOVE"; from: Slot; to: Slot };
 
 export const comboKey = (c: SpinResult) => `${c.franchiseId}|${c.decade}`;
 
@@ -334,7 +329,6 @@ export function newGame(
     spinNonce: 0,
     teamSkipsLeft: TEAM_SKIPS_PER_GAME,
     eraSkipsLeft: ERA_SKIPS_PER_GAME,
-    replacesLeft: REPLACES_PER_GAME,
     spunCombos: [],
     picks: [],
     slots: emptySlots(),
@@ -440,23 +434,6 @@ export function gameReducer(
       };
     }
 
-    case "REPLACE": {
-      // Once per game, draft phase only: evict a rostered player, freeing the
-      // slot to be re-drafted from a fresh spin.
-      if (state.status !== "draft" || state.replacesLeft <= 0) return state;
-      const evicted = state.slots[action.slot];
-      if (!evicted) return state;
-      const picks = state.picks.filter((id) => id !== evicted);
-      return {
-        ...state,
-        replacesLeft: state.replacesLeft - 1,
-        picks,
-        slots: { ...state.slots, [action.slot]: null },
-        selectedPlayerId: null,
-        round: picks.length + 1,
-      };
-    }
-
     case "MOVE": {
       if (state.status !== "draft") return state;
       if (!moveTargetsFor(action.from, state, ctx).includes(action.to)) {
@@ -519,8 +496,7 @@ const PersistedSchema = z.object({
   spinNonce: z.number().int().min(0),
   teamSkipsLeft: z.number().int().min(0).max(TEAM_SKIPS_PER_GAME),
   eraSkipsLeft: z.number().int().min(0).max(ERA_SKIPS_PER_GAME),
-  // Optional for saves written before replace / duplicate-combo tracking.
-  replacesLeft: z.number().int().min(0).max(REPLACES_PER_GAME).default(REPLACES_PER_GAME),
+  // Optional for saves written before duplicate-combo tracking.
   spunCombos: z.array(z.string()).default([]),
   picks: z.array(z.string()).max(DRAFT_ROUNDS),
   slots: z.record(z.enum(SLOT_KEYS), z.string().nullable()),
