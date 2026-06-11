@@ -148,7 +148,7 @@ export default async function MatchupPage({ params }: PageProps<"/m/[id]">) {
           Build your own team
         </Link>
         <ShareButton
-          title={`${teamA.teamName} vs ${teamB.teamName} — 82-0 Plus`}
+          title={`${teamA.teamName} vs ${teamB.teamName} — Ultimate Draft`}
           path={`/m/${matchup.id}`}
           label="Share this result"
           className="w-full"

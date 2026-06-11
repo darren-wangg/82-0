@@ -7,7 +7,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 
 export const metadata: Metadata = {
-  title: { default: "82-0 Plus", template: "%s — 82-0 Plus" },
+  title: { default: "Ultimate Draft", template: "%s — Ultimate Draft" },
   description:
     "Draft an 8-player all-time NBA roster and see how close to 82-0 it gets.",
 };
@@ -17,10 +17,9 @@ export default function SocialLayout({ children }: { children: React.ReactNode }
     <div className="dark flex w-full flex-1 flex-col items-center bg-background font-sans text-foreground">
       <div className="flex w-full max-w-md flex-1 flex-col px-4 pb-12 pt-5">
         <header className="mb-5 flex items-center justify-between">
-          <Link href="/" className="text-sm font-black tracking-tight">
-            <span className="text-primary">82</span>
-            <span className="text-muted-foreground">–</span>0{" "}
-            <span className="font-semibold text-muted-foreground">PLUS</span>
+          <Link href="/" className="font-display text-sm tracking-wide uppercase">
+            <span className="text-primary">Ultimate</span>{" "}
+            <span className="text-foreground">Draft</span>
           </Link>
           <Link
             href="/play"

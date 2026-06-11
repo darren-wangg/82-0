@@ -11,6 +11,7 @@ import {
 import {
   Check,
   Copy,
+  ImageDown,
   RotateCcw,
   Save as SaveIcon,
   Share2,
@@ -531,6 +532,14 @@ export function SimScreen() {
                     {copied ? "Copied" : "Copy"}
                   </Button>
                 </div>
+                <a
+                  href={`${save.url}/card`}
+                  download
+                  className="text-center text-xs font-semibold text-primary underline-offset-2 hover:underline"
+                >
+                  <ImageDown className="mr-1 inline size-3.5" />
+                  Download the retro team card
+                </a>
               </div>
             ) : (
               <div className="flex flex-col gap-3">
@@ -577,10 +586,10 @@ export function SimScreen() {
               : undefined
           }
           className={cn(
-            "font-display text-8xl tracking-tight tabular-nums",
+            "animate-gradient-x bg-[length:200%_auto] bg-clip-text font-display text-8xl tracking-tight text-transparent tabular-nums",
             perfect
-              ? "bg-gradient-to-br from-emerald-300 to-emerald-500 bg-clip-text text-transparent"
-              : "bg-gradient-to-br from-primary via-orange-300 to-violet-400 bg-clip-text text-transparent"
+              ? "bg-gradient-to-r from-emerald-300 via-emerald-500 to-emerald-300"
+              : "bg-gradient-to-r from-primary via-violet-400 to-primary"
           )}
           aria-label={`Final record ${season.wins} and ${season.losses}`}
         >

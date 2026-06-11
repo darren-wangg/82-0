@@ -20,7 +20,7 @@ const anton = Anton({
   subsets: ["latin"],
 });
 
-const SITE_TITLE = "82-0 — Draft the Perfect Season";
+const SITE_TITLE = "Ultimate Draft — Chase the Perfect 82-0 Season";
 const SITE_DESCRIPTION =
   "Spin for a random NBA franchise and era, draft an 8-man all-time roster, and see if your team can go 82-0.";
 
@@ -31,7 +31,7 @@ export const metadata: Metadata = {
   openGraph: {
     title: SITE_TITLE,
     description: SITE_DESCRIPTION,
-    siteName: "82-0",
+    siteName: "Ultimate Draft",
     type: "website",
     locale: "en_US",
   },

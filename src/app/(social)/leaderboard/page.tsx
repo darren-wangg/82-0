@@ -13,7 +13,7 @@ import { cn } from "@/lib/utils";
 
 export const metadata: Metadata = {
   title: "Leaderboard",
-  description: "The winningest 82-0 Plus rosters ever drafted.",
+  description: "The winningest Ultimate Draft rosters ever drafted.",
 };
 
 export default async function LeaderboardPage({

@@ -1,4 +1,6 @@
-# 82-0 Plus
+# Ultimate Draft
+
+(formerly "82-0 Plus")
 
 Mobile-first web game expanding the viral 82-0 NBA draft format: spin for a
 random franchise and era, draft an 8-player all-time roster (5 starters + 3

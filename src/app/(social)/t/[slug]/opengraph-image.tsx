@@ -9,7 +9,7 @@ import { SavedTeam, POSITIONS } from "@/lib/contracts";
 import { getPlayerMap } from "@/lib/snapshot";
 import { loadSavedTeam } from "@/app/api/_lib/teams";
 
-export const alt = "82-0 Plus team card";
+export const alt = "Ultimate Draft team card";
 export const size = { width: 1200, height: 630 };
 export const contentType = "image/png";
 
@@ -54,7 +54,7 @@ export default async function Image({
           }}
         >
           <div style={{ display: "flex" }}>
-            <span style={{ color: accent }}>82</span>–0 PLUS
+            <span style={{ color: accent, marginRight: 24 }}>ULTIMATE</span> DRAFT
           </div>
           <div style={{ fontSize: 32, color: muted, marginTop: 16 }}>
             Draft an all-time NBA roster
@@ -95,7 +95,7 @@ export default async function Image({
         >
           <div style={{ display: "flex", flexDirection: "column" }}>
             <div style={{ fontSize: 28, fontWeight: 700, color: accent }}>
-              82–0 PLUS
+              ULTIMATE DRAFT
             </div>
             <div
               style={{

@@ -5,7 +5,6 @@ import { useSearchParams } from "next/navigation";
 import { AnimatePresence, motion } from "framer-motion";
 import { RefreshCcw, RotateCcw, Users } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Card } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { Skeleton } from "@/components/ui/skeleton";
 import { DECADES, DRAFT_ROUNDS } from "@/lib/contracts";
@@ -207,37 +206,35 @@ export function PlayScreen() {
         </motion.div>
       )}
 
-      {/* slot machine — team and era side by side */}
-      <Card className="mt-3 shrink-0 gap-0 overflow-hidden border-2 border-primary/40 bg-gradient-to-br from-card via-card to-accent/30 py-0 shadow-xl shadow-black/50">
-        <div className="flex items-stretch gap-2.5 px-3 py-3">
-          <SlotReel
-            value={franchiseName}
-            items={franchiseNames}
-            nonce={state.spinNonce}
-            duration={FRANCHISE_REEL_S}
-            idleLabel={PLACEHOLDER_TEAM}
-            className="flex-[1.6] rounded-xl bg-background/40 ring-2 ring-red-500/50"
-            rowClassName="font-display text-lg tracking-wide text-center leading-tight px-1"
-          />
-          <SlotReel
-            value={spin?.decade ?? null}
-            items={[...DECADES]}
-            nonce={state.spinNonce}
-            duration={FRANCHISE_REEL_S - 0.2}
-            delay={DECADE_REEL_DELAY_S}
-            idleLabel={PLACEHOLDER_ERA}
-            className={cn(
-              "flex-1 rounded-xl bg-background/40 ring-2 transition-shadow",
-              // The era box takes on the decade's color identity once it lands.
-              settled && spin ? DECADE_COLORS[spin.decade].ring : "ring-orange-500/50"
-            )}
-            rowClassName={cn(
-              "font-display text-2xl tracking-wider",
-              spin ? DECADE_COLORS[spin.decade].text : "text-primary"
-            )}
-          />
-        </div>
-      </Card>
+      {/* slot machine — team and era cards side by side */}
+      <div className="mt-3 flex shrink-0 items-stretch gap-2.5">
+        <SlotReel
+          value={franchiseName}
+          items={franchiseNames}
+          nonce={state.spinNonce}
+          duration={FRANCHISE_REEL_S}
+          idleLabel={PLACEHOLDER_TEAM}
+          className="flex-[1.6] rounded-xl bg-card shadow-lg shadow-black/40 ring-2 ring-red-500/50"
+          rowClassName="font-display text-lg tracking-wide text-center leading-tight px-1"
+        />
+        <SlotReel
+          value={spin?.decade ?? null}
+          items={[...DECADES]}
+          nonce={state.spinNonce}
+          duration={FRANCHISE_REEL_S - 0.2}
+          delay={DECADE_REEL_DELAY_S}
+          idleLabel={PLACEHOLDER_ERA}
+          className={cn(
+            "flex-1 rounded-xl bg-card shadow-lg shadow-black/40 ring-2 transition-shadow",
+            // The era box takes on the decade's color identity once it lands.
+            settled && spin ? DECADE_COLORS[spin.decade].ring : "ring-orange-500/50"
+          )}
+          rowClassName={cn(
+            "font-display text-2xl tracking-wider",
+            spin ? DECADE_COLORS[spin.decade].text : "text-primary"
+          )}
+        />
+      </div>
 
       {/* pool appears automatically once the reels settle */}
       <div className="mt-2 flex min-h-0 flex-1 flex-col">

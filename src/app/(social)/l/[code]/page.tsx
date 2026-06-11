@@ -141,7 +141,7 @@ export default async function LobbyPage({ params }: PageProps<"/l/[code]">) {
       {open && (
         <>
           <ShareButton
-            title={`Join my "${lobby.name}" lobby on 82-0 Plus`}
+            title={`Join my "${lobby.name}" lobby on Ultimate Draft`}
             path={`/l/${lobby.code}`}
             label="Invite friends"
             className="w-full"

@@ -1,82 +1,91 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { Shirt, Trophy, UsersRound } from "lucide-react";
 import { buttonVariants } from "@/components/ui/button";
 import { HowToPlayDialog } from "@/components/game/how-to-play";
 import { cn } from "@/lib/utils";
 
 export const metadata: Metadata = {
-  title: "82-0 — Draft the perfect season",
+  title: "Ultimate Draft — Chase the perfect 82-0 season",
   description:
     "Spin for a franchise and an era, draft 8 legends, and chase the perfect 82-0 season.",
 };
 
+const NAV_TILES = [
+  {
+    href: "/leaderboard",
+    label: "Leaderboard",
+    icon: Trophy,
+    className:
+      "border-amber-400/40 bg-amber-400/10 text-amber-300 hover:bg-amber-400/20",
+  },
+  {
+    href: "/l/new",
+    label: "Create a Lobby",
+    icon: UsersRound,
+    className: "border-sky-400/40 bg-sky-400/10 text-sky-300 hover:bg-sky-400/20",
+  },
+  {
+    href: "/teams",
+    label: "My Teams",
+    icon: Shirt,
+    className:
+      "border-emerald-400/40 bg-emerald-400/10 text-emerald-300 hover:bg-emerald-400/20",
+  },
+] as const;
+
 export default function Home() {
   return (
-    <div className="dark flex min-h-dvh flex-1 flex-col bg-background text-foreground">
-      <main className="mx-auto flex w-full max-w-md flex-1 flex-col items-center justify-center gap-8 px-6 pt-16 pb-10">
-        <div className="flex flex-col items-center gap-4 text-center">
-          <h1 className="bg-gradient-to-br from-primary via-orange-300 to-violet-400 bg-clip-text font-display text-[6.5rem] leading-none tracking-tight text-transparent tabular-nums">
-            82-0
+    <div className="dark relative flex min-h-dvh flex-1 flex-col overflow-hidden bg-background text-foreground">
+      {/* ambient court glow — pure CSS, decorative only */}
+      <div
+        aria-hidden
+        className="pointer-events-none absolute -top-32 left-1/2 size-96 -translate-x-1/2 rounded-full bg-primary/15 blur-3xl"
+      />
+      <div
+        aria-hidden
+        className="pointer-events-none absolute -bottom-40 -left-24 size-80 rounded-full bg-violet-500/10 blur-3xl"
+      />
+      <main className="relative mx-auto flex w-full max-w-md flex-1 flex-col items-center justify-center gap-8 px-6 pt-16 pb-10">
+        <div className="flex animate-in flex-col items-center gap-4 text-center duration-700 fade-in slide-in-from-bottom-4">
+          <h1 className="animate-gradient-x bg-gradient-to-r from-primary via-violet-400 to-primary bg-[length:200%_auto] bg-clip-text text-center font-display text-6xl leading-[0.95] tracking-tight text-transparent uppercase">
+            Ultimate
+            <br />
+            Draft
           </h1>
           <p className="max-w-xs text-base text-balance text-muted-foreground">
             Spin for a franchise and an era, draft 8 legends, and chase the
-            perfect season.
+            perfect <span className="font-semibold text-foreground">82-0</span>{" "}
+            season.
           </p>
         </div>
 
-        <ul className="grid w-full grid-cols-3 gap-2 text-center text-[11px] text-muted-foreground">
-          <li className="rounded-xl border border-primary/30 bg-primary/10 px-2 py-3">
-            <span className="block font-display text-xl text-primary">8</span>
-            slot-machine spins
-          </li>
-          <li className="rounded-xl border border-violet-400/30 bg-violet-400/10 px-2 py-3">
-            <span className="block font-display text-xl text-violet-300">5+3</span>
-            starters &amp; bench
-          </li>
-          <li className="rounded-xl border border-emerald-400/30 bg-emerald-400/10 px-2 py-3">
-            <span className="block font-display text-xl text-emerald-300">82</span>
-            games simulated
-          </li>
-        </ul>
-
-        <div className="flex w-full flex-col items-center gap-3 pt-2">
+        <div className="flex w-full animate-in flex-col items-center gap-3 pt-2 delay-150 duration-700 fade-in slide-in-from-bottom-4 fill-mode-both">
           <Link
             href="/play"
             className={cn(
               buttonVariants({ size: "lg" }),
-              "h-14 w-full rounded-2xl font-display text-xl tracking-wide shadow-lg shadow-primary/30"
+              "h-14 w-full rounded-2xl font-display text-xl tracking-wide shadow-lg shadow-primary/30 transition-transform active:scale-95"
             )}
           >
             Start Draft
           </Link>
-          <div className="flex w-full items-center justify-center gap-1">
-            <Link
-              href="/leaderboard"
-              className={cn(
-                buttonVariants({ variant: "ghost", size: "lg" }),
-                "h-11 flex-1 px-2 text-muted-foreground"
-              )}
-            >
-              Leaderboard
-            </Link>
-            <Link
-              href="/l/new"
-              className={cn(
-                buttonVariants({ variant: "ghost", size: "lg" }),
-                "h-11 flex-1 px-2 text-muted-foreground"
-              )}
-            >
-              Group lobby
-            </Link>
-            <Link
-              href="/teams"
-              className={cn(
-                buttonVariants({ variant: "ghost", size: "lg" }),
-                "h-11 flex-1 px-2 text-muted-foreground"
-              )}
-            >
-              My teams
-            </Link>
+          <div className="grid w-full grid-cols-3 gap-2">
+            {NAV_TILES.map(({ href, label, icon: Icon, className }) => (
+              <Link
+                key={href}
+                href={href}
+                className={cn(
+                  "flex h-20 flex-col items-center justify-center gap-1.5 rounded-xl border text-center transition-[transform,background-color] active:scale-95",
+                  className
+                )}
+              >
+                <Icon className="size-5" />
+                <span className="px-1 text-[11px] leading-tight font-semibold text-foreground">
+                  {label}
+                </span>
+              </Link>
+            ))}
           </div>
           <HowToPlayDialog />
         </div>

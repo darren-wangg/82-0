@@ -5,6 +5,7 @@
 
 import type { Metadata } from "next";
 import Link from "next/link";
+import { ImageDown } from "lucide-react";
 import { notFound } from "next/navigation";
 import { Suspense } from "react";
 import { SavedTeam } from "@/lib/contracts";
@@ -115,11 +116,21 @@ export default async function TeamPage({ params }: PageProps<"/t/[slug]">) {
           Build your own
         </Link>
         <ShareButton
-          title={`${team.teamName} — 82-0 Plus`}
+          title={`${team.teamName} — Ultimate Draft`}
           path={`/t/${team.slug}`}
           label="Share this team"
           className="w-full"
         />
+        <a
+          href={`/t/${team.slug}/card`}
+          download={`ultimate-draft-${team.slug}.png`}
+          className={cn(
+            buttonVariants({ variant: "outline", size: "lg" }),
+            "w-full"
+          )}
+        >
+          <ImageDown className="size-4" /> Download team card
+        </a>
       </div>
     </main>
   );
