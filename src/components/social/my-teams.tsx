@@ -13,8 +13,8 @@ import {
   loadLocalTeams,
   removeLocalTeam,
 } from "@/components/game/local-teams";
-import { getSnapshot } from "@/lib/snapshot";
 import { Badge } from "@/components/ui/badge";
+import { Skeleton } from "@/components/ui/skeleton";
 import { cn } from "@/lib/utils";
 
 /** Positive when `a` has the better record: wins, then losses, then OVR. */
@@ -30,7 +30,7 @@ function formatDate(iso: string): string {
   });
 }
 
-export function MyTeams() {
+export function MyTeams({ snapshotVersion }: { snapshotVersion: string }) {
   // null until mounted — localStorage is unavailable on the server.
   const [teams, setTeams] = useState<LocalTeam[] | null>(null);
 
@@ -41,7 +41,17 @@ export function MyTeams() {
     );
   }, []);
 
-  if (!teams) return null;
+  if (!teams) {
+    return (
+      <ul className="mt-4 space-y-1.5" aria-hidden>
+        {[0, 1, 2].map((i) => (
+          <li key={i}>
+            <Skeleton className="h-[3.25rem] w-full rounded-xl" />
+          </li>
+        ))}
+      </ul>
+    );
+  }
 
   if (teams.length === 0) {
     return (
@@ -54,7 +64,6 @@ export function MyTeams() {
     );
   }
 
-  const snapshotVersion = getSnapshot().version;
   const bestId = teams.reduce((a, b) => (compareRecords(b, a) > 0 ? b : a)).id;
 
   return (

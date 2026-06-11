@@ -4,6 +4,7 @@
  */
 
 import type { Metadata } from "next";
+import { getSnapshot } from "@/lib/snapshot";
 import { MyTeams } from "@/components/social/my-teams";
 
 export const metadata: Metadata = {
@@ -18,7 +19,8 @@ export default function TeamsPage() {
       <p className="mt-1 text-sm text-muted-foreground">
         Saved on this device only.
       </p>
-      <MyTeams />
+      {/* Version passed from the server so the client needn't fetch the snapshot. */}
+      <MyTeams snapshotVersion={getSnapshot().version} />
     </main>
   );
 }

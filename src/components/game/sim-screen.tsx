@@ -2,7 +2,12 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
-import { AnimatePresence, animate, motion } from "framer-motion";
+import {
+  AnimatePresence,
+  animate,
+  motion,
+  useReducedMotion,
+} from "framer-motion";
 import {
   Check,
   Copy,
@@ -37,10 +42,11 @@ import {
   type SaveTeamResponse,
 } from "@/lib/contracts";
 import { getEngine } from "@/lib/engine-provider";
-import { getBaselines } from "@/lib/snapshot";
+import { getBaselines } from "@/lib/snapshot-client";
 import { cn } from "@/lib/utils";
 import { CatProfileInfo } from "@/components/social/cat-profile-info";
 import { analyzeCost } from "./cost-analysis";
+import { Confetti } from "./confetti";
 import { toRoster } from "./draft-state";
 import { saveLocalTeam } from "./local-teams";
 import { CAT_FRIENDLY, CAT_LABELS } from "./format";
@@ -53,8 +59,14 @@ const COUNT_UP_SECONDS = 2.2;
 const CAT_RANGE = 3;
 
 function useCountUp(target: number, duration: number, delay = 0): number {
+  const reducedMotion = useReducedMotion();
   const [value, setValue] = useState(0);
   useEffect(() => {
+    if (reducedMotion) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- settle instantly instead of animating
+      setValue(target);
+      return;
+    }
     const controls = animate(0, target, {
       duration,
       delay,
@@ -62,7 +74,7 @@ function useCountUp(target: number, duration: number, delay = 0): number {
       onUpdate: (v) => setValue(Math.round(v)),
     });
     return () => controls.stop();
-  }, [target, duration, delay]);
+  }, [target, duration, delay, reducedMotion]);
   return value;
 }
 
@@ -256,6 +268,7 @@ export function SimScreen() {
   const { state, dispatch, players } = useGame();
   const allowed = usePhaseGuard(["locked"]);
   const router = useRouter();
+  const reducedMotion = useReducedMotion();
 
   const [teamName, setTeamName] = useState("");
   const [save, setSave] = useState<SaveState>({ phase: "idle" });
@@ -400,6 +413,9 @@ export function SimScreen() {
 
   return (
     <div className="flex flex-1 flex-col px-4 pt-[max(0.75rem,env(safe-area-inset-top))]">
+      {/* perfect-season celebration, timed to the record landing */}
+      {perfect && !reducedMotion && <Confetti delay={COUNT_UP_SECONDS} />}
+
       {/* save (device) + share icons, top right */}
       <div className="flex justify-end gap-2">
         <Dialog

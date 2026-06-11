@@ -2,7 +2,6 @@
 
 import { useMemo, useState } from "react";
 import { motion } from "framer-motion";
-import { Star } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import type { NineCat, PlayerStatLine } from "@/lib/contracts";
 import { cn } from "@/lib/utils";
@@ -101,12 +100,6 @@ export function PoolList({
                 <PlayerHeadshot player={p} className="size-11 shrink-0" />
                 <div className="min-w-0 flex-1">
                   <div className="flex items-center gap-1.5">
-                    {legendary && (
-                      <Star
-                        aria-hidden
-                        className="size-3.5 shrink-0 fill-amber-300 text-amber-300"
-                      />
-                    )}
                     <span
                       className={cn(
                         "truncate text-sm font-bold",

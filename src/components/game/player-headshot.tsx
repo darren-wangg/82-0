@@ -3,7 +3,7 @@
 import { useState } from "react";
 import Image from "next/image";
 import { type PlayerStatLine } from "@/lib/contracts";
-import { headshotSources } from "@/lib/headshots";
+import { headshotSources } from "@/lib/headshots-client";
 import { cn } from "@/lib/utils";
 import { RetroCardPlaceholder } from "./retro-card";
 

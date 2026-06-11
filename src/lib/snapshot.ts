@@ -1,20 +1,26 @@
 /**
- * Single access point for the player-data snapshot (the ETL output).
+ * SERVER access point for the player-data snapshot (the ETL output).
  * Consumers must not import snapshot JSON directly.
+ *
+ * The static import below compiles the full snapshot into whatever bundle
+ * includes this module — that is fine on the server and in tests/scripts, but
+ * client components must use src/lib/snapshot-client.ts (which fetches the
+ * JSON from the CDN) instead.
  */
 
-import { Snapshot, SnapshotSchema, PlayerStatLine, Decade } from "./contracts";
+import { Snapshot, PlayerStatLine, Decade, EraBaselines } from "./contracts";
+import { baselinesOf, parseSnapshot, playerMapOf, poolOf } from "./snapshot-core";
 import rawSnapshot from "../../public/data/snapshot-v1.json";
 
 let cached: Snapshot | null = null;
 
 export function getSnapshot(): Snapshot {
-  if (!cached) cached = SnapshotSchema.parse(rawSnapshot);
+  if (!cached) cached = parseSnapshot(rawSnapshot);
   return cached;
 }
 
 export function getPlayerMap(snapshot = getSnapshot()): Map<string, PlayerStatLine> {
-  return new Map(snapshot.players.map((p) => [p.id, p]));
+  return playerMapOf(snapshot);
 }
 
 export function getPool(
@@ -22,14 +28,9 @@ export function getPool(
   decade: Decade,
   snapshot = getSnapshot()
 ): PlayerStatLine[] {
-  const ids = snapshot.pools[franchiseId]?.[decade] ?? [];
-  const map = getPlayerMap(snapshot);
-  return ids.flatMap((id) => map.get(id) ?? []);
+  return poolOf(snapshot, franchiseId, decade);
 }
 
-export function getBaselines(snapshot = getSnapshot()) {
-  return Object.fromEntries(snapshot.baselines.map((b) => [b.decade, b])) as Record<
-    Decade,
-    (typeof snapshot.baselines)[number]
-  >;
+export function getBaselines(snapshot = getSnapshot()): EraBaselines {
+  return baselinesOf(snapshot);
 }

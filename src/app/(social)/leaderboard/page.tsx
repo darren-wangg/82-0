@@ -6,15 +6,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { LeaderboardEntry } from "@/lib/contracts";
-import { getAnonIdFromCookie } from "@/lib/auth";
-import { prisma } from "@/lib/db";
-import { getSnapshot } from "@/lib/snapshot";
-import {
-  LEADERBOARD_SIZE,
-  rankLeaderboard,
-  WEEKLY_WINDOW_MS,
-} from "@/components/social/leaderboard";
-import { ownerDisplayName, teamInclude } from "@/app/api/_lib/teams";
+import { loadLeaderboardEntries } from "@/app/api/_lib/leaderboard";
 import { Badge } from "@/components/ui/badge";
 import { Unavailable } from "@/components/social/unavailable";
 import { cn } from "@/lib/utils";
@@ -24,33 +16,6 @@ export const metadata: Metadata = {
   description: "The winningest 82-0 Plus rosters ever drafted.",
 };
 
-async function loadEntries(scope: "global" | "weekly"): Promise<LeaderboardEntry[]> {
-  // Read-only: flags this device's own entries ("You") without creating an identity.
-  const anonId = await getAnonIdFromCookie();
-  const teams = await prisma.team.findMany({
-    where: {
-      snapshotVersion: getSnapshot().version,
-      ...(scope === "weekly"
-        ? { createdAt: { gte: new Date(Date.now() - WEEKLY_WINDOW_MS) } }
-        : {}),
-    },
-    orderBy: [{ wins: "desc" }, { ovr: "desc" }],
-    take: LEADERBOARD_SIZE,
-    include: teamInclude,
-  });
-  return rankLeaderboard(
-    teams.map((t) => ({
-      teamSlug: t.slug,
-      teamName: t.teamName,
-      displayName: ownerDisplayName(t),
-      wins: t.wins,
-      losses: t.losses,
-      ovr: t.ovr,
-      viewer: anonId !== null && t.anonIdentityId === anonId,
-    }))
-  );
-}
-
 export default async function LeaderboardPage({
   searchParams,
 }: PageProps<"/leaderboard">) {
@@ -59,7 +24,7 @@ export default async function LeaderboardPage({
 
   let entries: LeaderboardEntry[];
   try {
-    entries = await loadEntries(scope);
+    entries = await loadLeaderboardEntries(scope);
   } catch {
     return <Unavailable what="the leaderboard" />;
   }

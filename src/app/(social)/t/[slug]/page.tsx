@@ -6,6 +6,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { Suspense } from "react";
 import { SavedTeam } from "@/lib/contracts";
 import { loadSavedTeam } from "@/app/api/_lib/teams";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -19,6 +20,16 @@ import { CatProfileInfo } from "@/components/social/cat-profile-info";
 import { ExplainStream } from "@/components/social/explain-stream";
 import { ShareButton } from "@/components/social/share-button";
 import { Unavailable } from "@/components/social/unavailable";
+
+/** Teams are immutable once saved; ISR caches the rendered page so share
+ *  links don't hit Postgres per view. Battle history may lag by up to 60s.
+ *  The empty generateStaticParams opts the route into runtime ISR — nothing
+ *  is prerendered at build, every slug is cached on first visit. */
+export const revalidate = 60;
+
+export function generateStaticParams(): { slug: string }[] {
+  return [];
+}
 
 export async function generateMetadata({
   params,
@@ -76,7 +87,10 @@ export default async function TeamPage({ params }: PageProps<"/t/[slug]">) {
         </CardContent>
       </Card>
 
-      <BattleHistory slug={team.slug} />
+      {/* Streams in after the hero/roster paint — it's a separate DB query. */}
+      <Suspense fallback={null}>
+        <BattleHistory slug={team.slug} />
+      </Suspense>
 
       <Card>
         <CardHeader>

@@ -6,7 +6,9 @@
  */
 
 import { getEngine } from "@/lib/engine-provider";
-import { getBaselines, getSnapshot } from "@/lib/snapshot";
+// Client accessor: legends are only computed inside the game UI, after
+// GameProvider has awaited the snapshot fetch.
+import { getBaselines, getSnapshot } from "@/lib/snapshot-client";
 
 export const LEGEND_COUNT = 25;
 
