@@ -336,6 +336,13 @@ export interface LeaderboardResponse {
 export const ExplainRequestSchema = z.discriminatedUnion("kind", [
   z.object({ kind: z.literal("team"), teamSlug: z.string() }),
   z.object({ kind: z.literal("matchup"), matchupId: z.string() }),
+  /** Unsaved draft straight from /sim: the server re-runs the engine on the
+   *  roster (server-authoritative) and explains it like a saved team. */
+  z.object({
+    kind: z.literal("draft"),
+    roster: RosterSchema,
+    snapshotVersion: z.string(),
+  }),
 ]);
 export type ExplainRequest = z.infer<typeof ExplainRequestSchema>;
 // ExplainResponse is a streamed text response (Vercel AI SDK data stream).

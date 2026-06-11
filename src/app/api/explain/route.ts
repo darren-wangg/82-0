@@ -9,10 +9,17 @@
 
 import { streamText } from "ai";
 import { anthropic } from "@ai-sdk/anthropic";
-import { ExplainRequestSchema, MatchupResult, RosterSchema } from "@/lib/contracts";
+import {
+  ExplainRequestSchema,
+  MatchupResult,
+  Roster,
+  RosterSchema,
+  TeamRating,
+} from "@/lib/contracts";
 import { prisma } from "@/lib/db";
 import { getEngine } from "@/lib/engine-provider";
-import { getPlayerMap } from "@/lib/snapshot";
+import { getBaselines, getPlayerMap, getSnapshot } from "@/lib/snapshot";
+import { validateRoster } from "@/components/social/validation";
 import { explanationContentHash } from "@/components/social/hashing";
 import {
   buildMatchupPrompt,
@@ -36,12 +43,14 @@ const TEXT_STREAM_HEADERS = {
   "content-type": "text/plain; charset=utf-8",
 } as const;
 
-function buildTeamPayload(team: TeamWithOwner): TeamExplainPayload {
-  const rating = ratingFromRow(team);
+function payloadFromRoster(
+  teamName: string,
+  roster: Roster,
+  rating: TeamRating
+): TeamExplainPayload {
   const season = getEngine().projectSeason(rating);
   const players = getPlayerMap();
 
-  const roster = RosterSchema.parse(team.roster);
   const describe = (id: string, bench: boolean) => {
     const p = players.get(id);
     return p
@@ -50,7 +59,7 @@ function buildTeamPayload(team: TeamWithOwner): TeamExplainPayload {
   };
 
   return {
-    teamName: team.teamName,
+    teamName,
     players: [
       ...Object.values(roster.starters).map((id) => describe(id, false)),
       ...roster.bench.map((id) => describe(id, true)),
@@ -58,6 +67,14 @@ function buildTeamPayload(team: TeamWithOwner): TeamExplainPayload {
     rating,
     season,
   };
+}
+
+function buildTeamPayload(team: TeamWithOwner): TeamExplainPayload {
+  return payloadFromRoster(
+    team.teamName,
+    RosterSchema.parse(team.roster),
+    ratingFromRow(team)
+  );
 }
 
 export async function POST(request: Request) {
@@ -86,6 +103,22 @@ export async function POST(request: Request) {
       if (!team) return jsonError(404, "Team not found");
       kind = "team";
       const teamPayload = buildTeamPayload(team);
+      payload = teamPayload;
+      system = buildTeamSystemPrompt();
+      prompt = buildTeamPrompt(teamPayload);
+    } else if (req.kind === "draft") {
+      // Unsaved roster from /sim — no DB row; re-run the engine server-side.
+      if (req.snapshotVersion !== getSnapshot().version) {
+        return jsonError(422, "Snapshot version mismatch — refresh and redraft");
+      }
+      const players = getPlayerMap();
+      const valid = validateRoster(req.roster, players);
+      if (!valid.ok) return jsonError(422, valid.error);
+      const rating = getEngine().teamRating(req.roster, players, getBaselines());
+      kind = "team";
+      // Constant name: identical rosters share one cache entry pre- and
+      // post-naming would not (the saved variant hashes the real team name).
+      const teamPayload = payloadFromRoster("This draft", req.roster, rating);
       payload = teamPayload;
       system = buildTeamSystemPrompt();
       prompt = buildTeamPrompt(teamPayload);

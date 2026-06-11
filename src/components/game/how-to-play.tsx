@@ -19,15 +19,15 @@ import {
 const STEPS: { title: string; body: string }[] = [
   {
     title: "Spin",
-    body: `Each of the ${DRAFT_ROUNDS} rounds spins up a random franchise and decade — every era from the 1960s on is in play, and the same team-and-era combo never comes up twice in one game.`,
+    body: `Each of the ${DRAFT_ROUNDS} rounds spins a random team and era. The same team-and-era combo never comes up twice in one game.`,
   },
   {
-    title: "Skip (maybe)",
+    title: "Re-spins",
     body: `You get ${TEAM_SKIPS_PER_GAME} team re-spin and ${ERA_SKIPS_PER_GAME} era re-spin per game. A re-spin rolls only that axis — spend them wisely.`,
   },
   {
     title: "Pick & place",
-    body: "Tap a player from the spun pool, then tap one of their glowing roster slots. Starters need a true PG, SG, SF, PF, and C; the bench takes a guard, a forward, and a center. You can never draft the same player twice, even from a different era — and you can rearrange drafted players between eligible slots any time during the draft.",
+    body: "Tap a player, then tap one of their glowing roster slots. Starters need a true PG, SG, SF, PF, and C; the bench takes a guard, a forward, and a center. You can never draft the same player twice, even from a different era — and you can rearrange drafted players between eligible slots any time during the draft.",
   },
   {
     title: "Simulate",
@@ -48,9 +48,6 @@ export function HowToPlayDialog() {
       <DialogContent className="dark max-h-[85dvh] overflow-y-auto border-border bg-background text-foreground">
         <DialogHeader>
           <DialogTitle className="text-lg">How to play</DialogTitle>
-          <DialogDescription>
-            Build the greatest team of all time, one spin at a time.
-          </DialogDescription>
         </DialogHeader>
         <ol className="flex flex-col gap-4 pb-1">
           {STEPS.map((step, i) => (

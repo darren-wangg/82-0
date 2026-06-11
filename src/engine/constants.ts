@@ -9,8 +9,9 @@
  *    a top-decile draft,
  *  - the all-time roster (Magic/MJ/Bird/Duncan/Wilt + Curry/Hakeem/Jokić)
  *    clears every gate and reaches 82-0,
- *  - a perfect 82-0 lands roughly 1 in 50 drafts — rare enough to chase,
- *    common enough to believe in,
+ *  - a perfect 82-0 is a genuinely rare event: ~1 in 200 for the casual
+ *    top-3 drafter, ~1 in 40 when every pick is one of the two best on the
+ *    board (the OVR ceiling is what's rare — gates rarely bind good teams),
  *  - one glaring categorical weakness caps the record via per-cat gates.
  */
 
@@ -49,11 +50,12 @@ export const RATING_BLEND = 0.3;
 export const POSITION_PENALTY = [1.0, 0.92, 0.85, 0.8, 0.75] as const;
 
 /** OVR = clamp(OVR_BASE + OVR_SLOPE * weighted-average playerScore, 0, OVR_MAX).
- *  Steep on purpose (base holds the drafted median at ~65 wins): calibrated
- *  on the realistic top-3 drafter so a perfect 82-0 lands ~1 in 50 drafts
- *  (med 65, p90 75, min ~44 on snapshot-v1). */
-export const OVR_BASE = 43.1;
-export const OVR_SLOPE = 42;
+ *  Base holds the drafted median at ~65 wins (base = 81.5 − slope·0.915);
+ *  the slope sets how rare the OVR-100 ceiling (and so 82-0) is: at 44,
+ *  ~1 in 200 for the top-3 drafter, ~1 in 38 for a top-2 drafter, ~1 in 6
+ *  for an omniscient best-pick drafter (snapshot-v1). */
+export const OVR_BASE = 41.2;
+export const OVR_SLOPE = 44;
 
 /** wins(curve) = round(82 * (ovr / OVR_MAX) ** WIN_CURVE_EXP). 1.15 keeps the
  *  curve near-linear (drafted teams: OVR ~75–88 → ~58–71 wins) while 82 wins

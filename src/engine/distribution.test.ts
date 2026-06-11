@@ -1,8 +1,10 @@
 /**
  * Distribution tests for the tuning targets, measured over realistic DRAFTED
  * rosters (random franchise×decade spins, picker takes a top-3 pool player):
- * mostly 44–78 wins with a ~65-win median, a perfect 82-0 roughly 1 in 50
- * drafts (rare but chaseable), gates firing on a meaningful minority.
+ * mostly 44–78 wins with a ~65-win median, a perfect 82-0 a genuinely rare
+ * event for the top-3 drafter (sharp top-pick drafters land it far more
+ * often — see scripts/etl/dist-check.ts), gates firing on a meaningful
+ * minority.
  */
 
 import { describe, expect, it } from "vitest";
@@ -34,10 +36,9 @@ describe("win distribution over drafted rosters", () => {
     expect(inBand / N).toBeGreaterThan(0.9);
   });
 
-  it("keeps 82-0 rare but chaseable (~1 in 50 drafts)", () => {
+  it("keeps 82-0 genuinely rare for the top-3 drafter", () => {
     const perfect = wins.filter((w) => w === 82).length;
-    expect(perfect / N).toBeGreaterThan(0.005);
-    expect(perfect / N).toBeLessThan(0.05);
+    expect(perfect / N).toBeLessThan(0.02);
   });
 
   it("has a sane central tendency (median in the mid-50s to mid-60s)", () => {

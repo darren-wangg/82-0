@@ -46,6 +46,7 @@ import { getEngine } from "@/lib/engine-provider";
 import { getBaselines } from "@/lib/snapshot-client";
 import { cn } from "@/lib/utils";
 import { CatProfileInfo } from "@/components/social/cat-profile-info";
+import { ExplainStream } from "@/components/social/explain-stream";
 import { analyzeCost } from "./cost-analysis";
 import { Confetti } from "./confetti";
 import { toRoster } from "./draft-state";
@@ -737,6 +738,26 @@ export function SimScreen() {
           </Card>
         </motion.div>
       )}
+
+      {/* AI scouting report on the unsaved draft (server re-runs the engine) */}
+      <motion.div
+        initial={{ opacity: 0, y: 10 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: COUNT_UP_SECONDS + 0.6 }}
+      >
+        <Card className="mt-3 gap-1.5 border-border/60 bg-card/80 p-4">
+          <p className="text-[11px] font-semibold tracking-wide text-muted-foreground uppercase">
+            Scouting report
+          </p>
+          <ExplainStream
+            request={{
+              kind: "draft",
+              roster,
+              snapshotVersion: state.snapshotVersion,
+            }}
+          />
+        </Card>
+      </motion.div>
 
       {/* thumb-zone footer */}
       <div className="sticky bottom-0 mt-auto flex flex-col gap-2 bg-gradient-to-t from-background via-background/95 to-transparent pt-4 pb-[max(1rem,env(safe-area-inset-bottom))]">
