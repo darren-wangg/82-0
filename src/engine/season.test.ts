@@ -53,7 +53,7 @@ describe("projectSeason", () => {
     expect(project(ALL_TIME)).toEqual({
       wins: 82,
       losses: 0,
-      ovr: 110,
+      ovr: 100,
       gatedCategory: null,
       winCap: 82,
     });
@@ -63,7 +63,7 @@ describe("projectSeason", () => {
     expect(project(BALANCED)).toEqual({
       wins: 72,
       losses: 10,
-      ovr: 97.7,
+      ovr: 88.9,
       gatedCategory: null,
       winCap: 82,
     });
@@ -73,7 +73,7 @@ describe("projectSeason", () => {
     expect(project(ALL_CENTERS)).toEqual({
       wins: 74,
       losses: 8,
-      ovr: 110,
+      ovr: 100,
       gatedCategory: "ftPct",
       winCap: 74,
     });
@@ -84,7 +84,7 @@ describe("projectSeason", () => {
     expect(s).toEqual({
       wins: 74,
       losses: 8,
-      ovr: 110,
+      ovr: 100,
       gatedCategory: "tov",
       winCap: 74,
     });

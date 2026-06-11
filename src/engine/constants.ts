@@ -48,13 +48,15 @@ export const RATING_BLEND = 0.3;
  */
 export const POSITION_PENALTY = [1.0, 0.92, 0.85, 0.8, 0.75] as const;
 
-/** OVR = clamp(OVR_BASE + OVR_SLOPE * weighted-average playerScore, 0, OVR_MAX). */
-export const OVR_BASE = 52;
-export const OVR_SLOPE = 41;
+/** OVR = clamp(OVR_BASE + OVR_SLOPE * weighted-average playerScore, 0, OVR_MAX).
+ *  Base/slope are the original 52/41 calibration rescaled by 100/110 when the
+ *  ceiling moved from 110 to 100 — win-curve ratios are unchanged. */
+export const OVR_BASE = 47.3;
+export const OVR_SLOPE = 37.3;
 
 /** wins(curve) = round(82 * (ovr / OVR_MAX) ** WIN_CURVE_EXP). 1.15 keeps the
- *  curve near-linear (drafted teams: OVR ~82–97 → ~58–71 wins) while 82 wins
- *  still demands OVR at the 110 ceiling. */
+ *  curve near-linear (drafted teams: OVR ~75–88 → ~58–71 wins) while 82 wins
+ *  still demands OVR at the 100 ceiling. */
 export const WIN_CURVE_EXP = 1.15;
 
 /**
@@ -112,7 +114,9 @@ export const DEF_WEIGHTS = {
 export const SUBRATING_SLOPE = 16;
 
 /** Logistic scale for the OVR-difference term of per-game win probability. */
-export const MATCHUP_OVR_SCALE = 7;
+// 6.36 ≈ the original 7 rescaled by 100/110 with the OVR ceiling, so OVR
+// differences carry the same matchup weight they did on the 110 scale.
+export const MATCHUP_OVR_SCALE = 6.36;
 /** Logistic scale for the weighted category-edge term. */
 export const MATCHUP_EDGE_SCALE = 0.4;
 /** Blend between the OVR term (this fraction) and the category-edge term. */

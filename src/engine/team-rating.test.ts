@@ -42,7 +42,7 @@ describe("positionFactor", () => {
 describe("teamRating", () => {
   it("golden master: all-time roster pins the OVR ceiling", () => {
     const tr = rate(ALL_TIME);
-    expect(tr.ovr).toBe(110);
+    expect(tr.ovr).toBe(100);
     expect(tr.offRating).toBe(79);
     expect(tr.defRating).toBe(75);
     expect(tr.catProfile.pts).toBeCloseTo(2.934, 3);
@@ -50,12 +50,12 @@ describe("teamRating", () => {
   });
 
   it("golden master: balanced roster lands in the strong-but-mortal band", () => {
-    expect(rate(BALANCED).ovr).toBe(97.7);
+    expect(rate(BALANCED).ovr).toBe(88.9);
   });
 
   it("golden master: all-centers roster is big-skewed (great D, weak ftPct)", () => {
     const tr = rate(ALL_CENTERS);
-    expect(tr.ovr).toBe(110);
+    expect(tr.ovr).toBe(100);
     expect(tr.defRating).toBeGreaterThan(tr.offRating);
     expect(tr.catProfile.ftPct).toBeCloseTo(-0.947, 3);
     expect(tr.catProfile.blk).toBeGreaterThan(2);

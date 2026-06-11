@@ -62,7 +62,7 @@ describe("win distribution over drafted rosters", () => {
 describe("anchor rosters hit their bands", () => {
   it("all-time roster: 82-0 at the OVR ceiling, no gate", () => {
     const s = project(ALL_TIME);
-    expect(s.ovr).toBe(110);
+    expect(s.ovr).toBe(100);
     expect(s.wins).toBe(82);
     expect(s.gatedCategory).toBeNull();
   });

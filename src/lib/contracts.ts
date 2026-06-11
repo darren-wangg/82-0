@@ -56,7 +56,7 @@ export const TEAM_SKIPS_PER_GAME = 1;
 export const ERA_SKIPS_PER_GAME = 1;
 export const SEASON_GAMES = 82;
 /** Team OVR scale ceiling (mirrors the documented 0–110 convention). */
-export const OVR_MAX = 110;
+export const OVR_MAX = 100;
 
 // ---------------------------------------------------------------------------
 // Snapshot (data pipeline output, game input) — zod-first so ETL validation
