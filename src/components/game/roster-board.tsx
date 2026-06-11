@@ -1,13 +1,10 @@
 "use client";
 
 import { useState } from "react";
-import { motion } from "framer-motion";
-import { UserRoundX } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { AnimatePresence, motion } from "framer-motion";
 import { POSITIONS } from "@/lib/contracts";
 import { cn } from "@/lib/utils";
 import {
-  ALL_SLOTS,
   BENCH_SLOTS,
   eligibleSlotsFor,
   moveTargetsFor,
@@ -65,7 +62,7 @@ function SlotCircle({
             "rounded-full ring-2 ring-offset-1 ring-offset-background",
             size,
             replaceTarget
-              ? "ring-red-500 shadow-lg shadow-red-500/40"
+              ? "ring-rose-500 shadow-lg shadow-rose-500/40"
               : moveSource
                 ? "ring-sky-400 shadow-lg shadow-sky-400/40"
                 : highlighted
@@ -117,27 +114,38 @@ function SlotCircle({
  *  - Rearranging: with no pool selection, tapping a filled slot selects it
  *    (blue ring) and pulses every slot that player can move to — empty ones,
  *    or filled ones where the two players can legally swap.
- *  - Replace (once per game): the Replace toggle pulses every filled slot
- *    red; tapping one cuts that player so a fresh spin can re-fill the slot.
+ *  - Replace (once per game, armed by the header toggle via `replaceMode`):
+ *    every filled slot pulses; tapping one cuts that player so a fresh spin
+ *    can re-fill the slot.
  *
  * Shows only basic team per-game averages; the full engine breakdown stays
  * hidden until the season simulates.
  */
-export function RosterBoard({ className }: { className?: string }) {
+export function RosterBoard({
+  className,
+  replaceMode = false,
+  onReplaceDone,
+}: {
+  className?: string;
+  replaceMode?: boolean;
+  onReplaceDone?: () => void;
+}) {
   const { state, dispatch, ctx, players } = useGame();
   const [moveFrom, setMoveFrom] = useState<Slot | null>(null);
-  const [replaceMode, setReplaceMode] = useState(false);
 
   const placing = state?.selectedPlayerId ?? null;
-  // A new pool selection cancels any in-progress move or replace (state
-  // adjusted during render, per the React "derived reset" pattern).
+  // A new pool selection cancels any in-progress move (state adjusted during
+  // render, per the React "derived reset" pattern).
   const [prevPlacing, setPrevPlacing] = useState(placing);
   if (placing !== prevPlacing) {
     setPrevPlacing(placing);
-    if (placing) {
-      setMoveFrom(null);
-      setReplaceMode(false);
-    }
+    if (placing) setMoveFrom(null);
+  }
+  // Arming replace mode likewise drops any half-finished move.
+  const [prevReplace, setPrevReplace] = useState(replaceMode);
+  if (replaceMode !== prevReplace) {
+    setPrevReplace(replaceMode);
+    if (replaceMode) setMoveFrom(null);
   }
 
   if (!state) return null;
@@ -149,14 +157,11 @@ export function RosterBoard({ className }: { className?: string }) {
         ? moveTargetsFor(moveFrom, state, ctx)
         : []
   );
-  const filledSlots = ALL_SLOTS.filter((s) => state.slots[s] !== null);
-  const canReplace = state.replacesLeft > 0 && filledSlots.length > 0;
-
   const onTap = (slot: Slot) => {
     if (replaceMode) {
       if (state.slots[slot]) {
         dispatch({ type: "REPLACE", slot });
-        setReplaceMode(false);
+        onReplaceDone?.();
       }
       return;
     }
@@ -182,31 +187,18 @@ export function RosterBoard({ className }: { className?: string }) {
 
   return (
     <div className={cn("flex flex-col gap-2", className)}>
-      {canReplace && (
-        <div className="flex items-center justify-end gap-2">
-          {replaceMode && (
-            <span className="text-[10px] font-semibold text-red-400">
-              Tap a player to cut them, then spin for the replacement
-            </span>
-          )}
-          <Button
-            variant="outline"
-            size="sm"
-            className={cn(
-              "h-6 rounded-md px-2 text-[10px] font-bold",
-              replaceMode
-                ? "border-red-500 text-red-400"
-                : "border-red-500/40 text-red-400/80"
-            )}
-            onClick={() => {
-              setReplaceMode((m) => !m);
-              setMoveFrom(null);
-            }}
+      <AnimatePresence>
+        {replaceMode && (
+          <motion.p
+            initial={{ opacity: 0, height: 0 }}
+            animate={{ opacity: 1, height: "auto" }}
+            exit={{ opacity: 0, height: 0 }}
+            className="overflow-hidden text-center text-[10px] font-semibold text-rose-400"
           >
-            <UserRoundX className="size-3" /> Replace · 1 left
-          </Button>
-        </div>
-      )}
+            Tap a player to cut them, then spin for the replacement
+          </motion.p>
+        )}
+      </AnimatePresence>
       <div className="flex items-end gap-1">
         {POSITIONS.map((p) => (
           <SlotCircle

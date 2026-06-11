@@ -441,15 +441,14 @@ export function gameReducer(
     }
 
     case "REPLACE": {
-      // Once per game: evict a rostered player (during the draft or after the
-      // roster locks), freeing the slot to be re-drafted from a fresh spin.
-      if (state.replacesLeft <= 0) return state;
+      // Once per game, draft phase only: evict a rostered player, freeing the
+      // slot to be re-drafted from a fresh spin.
+      if (state.status !== "draft" || state.replacesLeft <= 0) return state;
       const evicted = state.slots[action.slot];
       if (!evicted) return state;
       const picks = state.picks.filter((id) => id !== evicted);
       return {
         ...state,
-        status: "draft",
         replacesLeft: state.replacesLeft - 1,
         picks,
         slots: { ...state.slots, [action.slot]: null },

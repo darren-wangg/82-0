@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { AnimatePresence, motion } from "framer-motion";
-import { RefreshCcw, RotateCcw } from "lucide-react";
+import { RefreshCcw, RotateCcw, UserRoundX } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
@@ -76,6 +76,16 @@ export function PlayScreen() {
   // pool and skips unlock only once the reels settle.
   const [settledNonce, setSettledNonce] = useState(-1);
 
+  // Replace mode: the header toggle arms it, the roster board consumes it.
+  // Selecting a pool player disarms it (derived reset during render).
+  const [replaceMode, setReplaceMode] = useState(false);
+  const placing = state?.selectedPlayerId ?? null;
+  const [prevPlacing, setPrevPlacing] = useState(placing);
+  if (placing !== prevPlacing) {
+    setPrevPlacing(placing);
+    if (placing) setReplaceMode(false);
+  }
+
   const spinNonce = state?.spinNonce ?? 0;
   const hasSpin = state?.spin != null;
   const spinning = hasSpin && settledNonce !== spinNonce;
@@ -109,6 +119,7 @@ export function PlayScreen() {
   const settled = spin !== null && !spinning;
   const skipTeamOk = settled && canSkipTeam(state, ctx);
   const skipEraOk = settled && canSkipEra(state, ctx);
+  const replaceOk = state.replacesLeft > 0 && state.picks.length > 0;
 
   const newGame = () => {
     if (
@@ -128,9 +139,16 @@ export function PlayScreen() {
           <div className="flex items-center gap-1">
             <p className="text-sm font-semibold">
               Pick{" "}
-              <span className="font-mono tabular-nums">
+              {/* keyed by round so each pick pops the counter */}
+              <motion.span
+                key={state.picks.length}
+                initial={{ scale: 1.5, color: "var(--primary)" }}
+                animate={{ scale: 1, color: "var(--foreground)" }}
+                transition={{ type: "spring", stiffness: 400, damping: 16 }}
+                className="inline-block font-mono tabular-nums"
+              >
                 {Math.min(state.picks.length + 1, DRAFT_ROUNDS)} of {DRAFT_ROUNDS}
-              </span>
+              </motion.span>
             </p>
             <Button
               variant="ghost"
@@ -167,29 +185,35 @@ export function PlayScreen() {
           >
             <RefreshCcw className="size-3.5" /> Era
           </Button>
+          <Button
+            variant="outline"
+            size="sm"
+            className={cn(
+              "h-9 rounded-lg px-3 font-bold shadow-md shadow-rose-950/50 transition-transform active:scale-95 disabled:opacity-35 disabled:grayscale",
+              replaceMode
+                ? "border-rose-400 bg-rose-500/15 text-rose-300"
+                : "border-rose-500/60 text-rose-400"
+            )}
+            disabled={!replaceOk}
+            onClick={() => setReplaceMode((m) => !m)}
+          >
+            <UserRoundX className="size-3.5" /> Replace
+          </Button>
         </div>
       </div>
 
       {state.challengeSlug && <ChallengeBanner slug={state.challengeSlug} />}
 
       {/* slot machine — team and era side by side */}
-      <Card className="mt-3 shrink-0 gap-0 overflow-hidden border border-primary/40 bg-gradient-to-br from-card via-card to-accent/30 py-0 shadow-xl shadow-black/50">
-        <div className="flex gap-2 px-3 pt-2.5">
-          <span className="flex-[1.6] text-center font-display text-[11px] tracking-[0.3em] text-red-400">
-            TEAM
-          </span>
-          <span className="flex-1 text-center font-display text-[11px] tracking-[0.3em] text-orange-400">
-            ERA
-          </span>
-        </div>
-        <div className="flex items-stretch gap-2 px-3 pt-1.5 pb-3">
+      <Card className="mt-3 shrink-0 gap-0 overflow-hidden border-2 border-primary/40 bg-gradient-to-br from-card via-card to-accent/30 py-0 shadow-xl shadow-black/50">
+        <div className="flex items-stretch gap-2.5 px-3 py-3">
           <SlotReel
             value={franchiseName}
             items={franchiseNames}
             nonce={state.spinNonce}
             duration={FRANCHISE_REEL_S}
             idleLabel={PLACEHOLDER_TEAM}
-            className="flex-[1.6] rounded-lg bg-background/40 ring-1 ring-red-500/30"
+            className="flex-[1.6] rounded-xl bg-background/40 ring-2 ring-red-500/50"
             rowClassName="font-display text-lg tracking-wide text-center leading-tight px-1"
           />
           <SlotReel
@@ -199,7 +223,11 @@ export function PlayScreen() {
             duration={FRANCHISE_REEL_S - 0.2}
             delay={DECADE_REEL_DELAY_S}
             idleLabel={PLACEHOLDER_ERA}
-            className="flex-1 rounded-lg bg-background/40 ring-1 ring-orange-500/30"
+            className={cn(
+              "flex-1 rounded-xl bg-background/40 ring-2 transition-shadow",
+              // The era box takes on the decade's color identity once it lands.
+              settled && spin ? DECADE_COLORS[spin.decade].ring : "ring-orange-500/50"
+            )}
             rowClassName={cn(
               "font-display text-2xl tracking-wider",
               spin ? DECADE_COLORS[spin.decade].text : "text-primary"
@@ -225,7 +253,7 @@ export function PlayScreen() {
                 className="w-full"
               >
                 <Button
-                  className="h-16 w-full rounded-2xl font-display text-2xl tracking-wide shadow-xl shadow-primary/30 transition-transform active:scale-95"
+                  className="h-16 w-full rounded-2xl bg-gradient-to-r from-primary via-orange-400 to-primary bg-[length:200%_100%] bg-left font-display text-2xl tracking-wide shadow-xl shadow-primary/30 transition-[transform,background-position] duration-500 hover:bg-right active:scale-95"
                   onClick={() => dispatch({ type: "SPIN" })}
                 >
                   Spin
@@ -233,15 +261,24 @@ export function PlayScreen() {
               </motion.div>
             </motion.div>
           ) : spinning ? (
-            <motion.p
+            <motion.div
               key="rolling"
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
-              className="flex flex-1 items-center justify-center font-display text-lg tracking-widest text-muted-foreground"
+              className="flex flex-1 items-center justify-center gap-1.5"
             >
-              ROLLING…
-            </motion.p>
+              {"ROLLING…".split("").map((ch, i) => (
+                <motion.span
+                  key={i}
+                  animate={{ y: [0, -6, 0], opacity: [0.5, 1, 0.5] }}
+                  transition={{ repeat: Infinity, duration: 0.9, delay: i * 0.08 }}
+                  className="font-display text-lg tracking-widest text-primary/80"
+                >
+                  {ch}
+                </motion.span>
+              ))}
+            </motion.div>
           ) : (
             <motion.div
               key={`pool-${state.spinNonce}`}
@@ -260,7 +297,10 @@ export function PlayScreen() {
 
       {/* the roster being built */}
       <div className="shrink-0 border-t border-border/60 bg-gradient-to-t from-background to-transparent pt-2 pb-[max(0.75rem,env(safe-area-inset-bottom))]">
-        <RosterBoard />
+        <RosterBoard
+          replaceMode={replaceMode}
+          onReplaceDone={() => setReplaceMode(false)}
+        />
       </div>
     </div>
   );

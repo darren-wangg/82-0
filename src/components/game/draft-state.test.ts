@@ -478,12 +478,11 @@ describe("REPLACE (one roster do-over per game)", () => {
     expect(r.round).toBe(2);
   });
 
-  it("unlocks a completed roster back into the draft", () => {
+  it("is a no-op once the roster is locked", () => {
     const locked = { ...board(), status: "locked" as const };
-    const r = gameReducer(locked, { type: "REPLACE", slot: "BC" }, tinyCtx);
-    expect(r.status).toBe("draft");
-    expect(r.slots.BC).toBeNull();
-    expect(openSlots(r)).toContain("BC");
+    expect(gameReducer(locked, { type: "REPLACE", slot: "BC" }, tinyCtx)).toBe(
+      locked
+    );
   });
 
   it("frees the evicted human to be drafted again", () => {

@@ -50,14 +50,14 @@ export const SORT_OPTIONS: { cat: NineCat; label: string }[] = [
 ];
 
 /** A color identity per decade, used on chips and the era reel. */
-export const DECADE_COLORS: Record<Decade, { text: string; chip: string }> = {
-  "1960s": { text: "text-amber-400", chip: "border-amber-400/40 bg-amber-400/15 text-amber-300" },
-  "1970s": { text: "text-orange-400", chip: "border-orange-400/40 bg-orange-400/15 text-orange-300" },
-  "1980s": { text: "text-pink-400", chip: "border-pink-400/40 bg-pink-400/15 text-pink-300" },
-  "1990s": { text: "text-red-400", chip: "border-red-400/40 bg-red-400/15 text-red-300" },
-  "2000s": { text: "text-sky-400", chip: "border-sky-400/40 bg-sky-400/15 text-sky-300" },
-  "2010s": { text: "text-violet-400", chip: "border-violet-400/40 bg-violet-400/15 text-violet-300" },
-  "2020s": { text: "text-emerald-400", chip: "border-emerald-400/40 bg-emerald-400/15 text-emerald-300" },
+export const DECADE_COLORS: Record<Decade, { text: string; chip: string; ring: string }> = {
+  "1960s": { text: "text-amber-400", chip: "border-amber-400/40 bg-amber-400/15 text-amber-300", ring: "ring-amber-400/70" },
+  "1970s": { text: "text-orange-400", chip: "border-orange-400/40 bg-orange-400/15 text-orange-300", ring: "ring-orange-400/70" },
+  "1980s": { text: "text-pink-400", chip: "border-pink-400/40 bg-pink-400/15 text-pink-300", ring: "ring-pink-400/70" },
+  "1990s": { text: "text-red-400", chip: "border-red-400/40 bg-red-400/15 text-red-300", ring: "ring-red-400/70" },
+  "2000s": { text: "text-sky-400", chip: "border-sky-400/40 bg-sky-400/15 text-sky-300", ring: "ring-sky-400/70" },
+  "2010s": { text: "text-violet-400", chip: "border-violet-400/40 bg-violet-400/15 text-violet-300", ring: "ring-violet-400/70" },
+  "2020s": { text: "text-emerald-400", chip: "border-emerald-400/40 bg-emerald-400/15 text-emerald-300", ring: "ring-emerald-400/70" },
 };
 
 /** Running per-game averages over drafted players (the only stats shown
