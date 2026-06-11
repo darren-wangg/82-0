@@ -63,7 +63,7 @@ describe("projectSeason", () => {
     expect(project(BALANCED)).toEqual({
       wins: 72,
       losses: 10,
-      ovr: 88.9,
+      ovr: 89.1,
       gatedCategory: null,
       winCap: 82,
     });

@@ -31,10 +31,10 @@ export const CAT_WEIGHTS: Record<NineCat, number> = {
   ast: 0.18,
   stl: 0.09,
   blk: 0.09,
-  fgPct: 0.09,
+  fgPct: 0.095,
   ftPct: 0.05,
   tpm: 0.02,
-  tov: 0.01,
+  tov: 0.005,
 };
 
 /** Fraction of playerScore that comes from the ortg/drtg blend (the rest is
