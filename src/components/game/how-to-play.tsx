@@ -27,7 +27,11 @@ const STEPS: { title: string; body: string }[] = [
   },
   {
     title: "Pick & place",
-    body: "Tap a player, then tap one of their glowing roster slots. Starters need a true PG, SG, SF, PF, and C; the bench takes a guard, a forward, and a center. You can never draft the same player twice, even from a different era — and you can rearrange drafted players between eligible slots any time during the draft.",
+    body: "Tap a player, then tap one of their roster slots. Starters need a true PG, SG, SF, PF, and C; the bench takes a guard, a forward, and a center. You can't draft the same player twice, even from a different era.",
+  },
+  {
+    title: "Optimize",
+    body: "You can rearrange drafted players between eligible slots any time during the draft."
   },
   {
     title: "Simulate",
