@@ -1,8 +1,8 @@
 /**
  * Distribution tests for the tuning targets, measured over realistic DRAFTED
  * rosters (random franchise×decade spins, picker takes a top-3 pool player):
- * mostly 45–75 wins, median high-50s, 82-0 effectively unreachable without
- * deliberate construction, gates firing on a meaningful minority.
+ * mostly 44–78 wins with a ~65-win median, a perfect 82-0 roughly 1 in 50
+ * drafts (rare but chaseable), gates firing on a meaningful minority.
  */
 
 import { describe, expect, it } from "vitest";
@@ -29,14 +29,15 @@ describe("win distribution over drafted rosters", () => {
   const seasons = draftedRosters(SAMPLE_SEED, N, score).map(project);
   const wins = seasons.map((s) => s.wins);
 
-  it("lands mostly in the 45–75 band", () => {
-    const inBand = wins.filter((w) => w >= 45 && w <= 75).length;
+  it("lands mostly in the 44–78 band", () => {
+    const inBand = wins.filter((w) => w >= 44 && w <= 78).length;
     expect(inBand / N).toBeGreaterThan(0.9);
   });
 
-  it("makes 82-0 effectively unreachable by casual drafting", () => {
+  it("keeps 82-0 rare but chaseable (~1 in 50 drafts)", () => {
     const perfect = wins.filter((w) => w === 82).length;
-    expect(perfect / N).toBeLessThan(0.02);
+    expect(perfect / N).toBeGreaterThan(0.005);
+    expect(perfect / N).toBeLessThan(0.05);
   });
 
   it("has a sane central tendency (median in the mid-50s to mid-60s)", () => {
@@ -67,10 +68,10 @@ describe("anchor rosters hit their bands", () => {
     expect(s.gatedCategory).toBeNull();
   });
 
-  it("balanced-but-unspectacular roster: 50–74 wins", () => {
+  it("balanced-but-unspectacular roster: 60–78 wins", () => {
     const s = project(BALANCED);
-    expect(s.wins).toBeGreaterThanOrEqual(50);
-    expect(s.wins).toBeLessThanOrEqual(74);
+    expect(s.wins).toBeGreaterThanOrEqual(60);
+    expect(s.wins).toBeLessThanOrEqual(78);
   });
 
   it("the all-time roster beats nearly every drafted roster", () => {
@@ -78,7 +79,8 @@ describe("anchor rosters hit their bands", () => {
     const better = draftedRosters(7777, 300, score)
       .map(project)
       .filter((s) => s.wins >= allTime).length;
-    expect(better / 300).toBeLessThan(0.01);
+    // 82-0 is deliberately ~1-in-50 now, so "nearly every" means ≥95%.
+    expect(better / 300).toBeLessThan(0.05);
   });
 
   it("careless uniform-random rosters (role players included) are clearly worse", () => {

@@ -60,11 +60,11 @@ describe("projectSeason", () => {
     });
   });
 
-  it("golden master: balanced roster lands mid-band (exactly 73-9)", () => {
+  it("golden master: balanced roster lands in the strong-but-mortal band (76-6)", () => {
     expect(project(BALANCED)).toEqual({
-      wins: 73,
-      losses: 9,
-      ovr: 90.7,
+      wins: 76,
+      losses: 6,
+      ovr: 93.7,
       gatedCategory: null,
       winCap: 82,
     });

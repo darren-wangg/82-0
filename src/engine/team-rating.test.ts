@@ -50,7 +50,7 @@ describe("teamRating", () => {
   });
 
   it("golden master: balanced roster lands in the strong-but-mortal band", () => {
-    expect(rate(BALANCED).ovr).toBe(90.7);
+    expect(rate(BALANCED).ovr).toBe(93.7);
   });
 
   it("golden master: all-centers roster is big-skewed (great D, weak ftPct)", () => {

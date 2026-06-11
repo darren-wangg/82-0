@@ -300,6 +300,19 @@ export function SimScreen() {
     return () => window.clearTimeout(t);
   }, [toast]);
 
+  // Buzz when the 82-0 lands (Android; iOS has no vibration API — no-op).
+  useEffect(() => {
+    if (sim?.season.wins !== SEASON_GAMES) return;
+    const t = window.setTimeout(() => {
+      try {
+        navigator.vibrate?.([120, 60, 120, 60, 240]);
+      } catch {
+        // best-effort haptics only
+      }
+    }, COUNT_UP_SECONDS * 1000);
+    return () => window.clearTimeout(t);
+  }, [sim]);
+
   if (!state || !allowed || !sim) return <SimSkeleton />;
 
   const { rating, season, roster, cost } = sim;

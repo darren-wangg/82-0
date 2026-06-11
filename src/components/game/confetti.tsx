@@ -43,13 +43,20 @@ const PIECES: Piece[] = (() => {
   }));
 })();
 
-export function Confetti({ delay = 0 }: { delay?: number }) {
+export function Confetti({
+  delay = 0,
+  pieces = PIECE_COUNT,
+}: {
+  delay?: number;
+  /** Fewer pieces = the "minimal" variant (e.g. a legendary pull). */
+  pieces?: number;
+}) {
   return (
     <div
       aria-hidden
       className="pointer-events-none fixed inset-0 z-40 overflow-hidden"
     >
-      {PIECES.map((p, i) => (
+      {PIECES.slice(0, pieces).map((p, i) => (
         <motion.span
           key={i}
           className={`absolute top-0 rounded-[2px] ${p.color}`}
