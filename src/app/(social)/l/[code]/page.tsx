@@ -61,7 +61,6 @@ export default async function LobbyPage({ params }: PageProps<"/l/[code]">) {
       <div className="text-center">
         <h1 className="text-2xl font-black tracking-tight">{lobby.name}</h1>
         <p className="mt-1.5 flex items-center justify-center gap-2 text-xs text-muted-foreground">
-          Lobby code
           <CopyCode code={lobby.code} />
           {open ? (
             <LobbyRefresh />
@@ -69,14 +68,6 @@ export default async function LobbyPage({ params }: PageProps<"/l/[code]">) {
             <span className="font-semibold text-amber-400">Closed</span>
           )}
         </p>
-        {open && (
-          <p className="mt-1 text-[11px] text-muted-foreground">
-            {teamCount === 0
-              ? "Waiting for the first team"
-              : `${teamCount} ${teamCount === 1 ? "team" : "teams"} in`}{" "}
-            · open until the creator ends it
-          </p>
-        )}
       </div>
 
       {lobby.winner && (
@@ -146,9 +137,6 @@ export default async function LobbyPage({ params }: PageProps<"/l/[code]">) {
         <CardHeader>
           <CardTitle className="text-sm">
             Standings
-            <span className="ml-2 font-normal text-muted-foreground">
-              round-robin, every team plays every team
-            </span>
           </CardTitle>
         </CardHeader>
         <CardContent>

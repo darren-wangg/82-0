@@ -20,7 +20,7 @@ export function LobbyRefresh() {
       className="inline-flex items-center gap-1.5 font-semibold text-emerald-400 transition-opacity active:opacity-70"
     >
       <span className="size-2 rounded-full bg-emerald-400" />
-      Open
+      Live
       <RefreshCw
         className={cn("size-3 text-muted-foreground", pending && "animate-spin")}
       />

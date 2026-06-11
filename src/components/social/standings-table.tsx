@@ -22,7 +22,7 @@ export function StandingsTable({
   if (standings.length === 0) {
     return (
       <p className="rounded-xl border border-dashed border-border p-4 text-center text-sm text-muted-foreground">
-        No teams yet — draft yours and set the bar.
+        No teams yet
       </p>
     );
   }
