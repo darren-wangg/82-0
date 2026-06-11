@@ -9,7 +9,10 @@
  *      its hash against the placeholder's, and
  *   2. for misses, resolves a Wikipedia page-summary thumbnail by name —
  *      direct title first, then the search API — accepting only
- *      basketball-related, non-disambiguation pages.
+ *      basketball-related, non-disambiguation pages, and
+ *   3. for players Wikipedia still misses, matches against a bulk Wikidata
+ *      query of every basketball player with a Commons image (P18) —
+ *      unambiguous name matches only, each thumb verified with a HEAD.
  *
  * Output: public/data/headshot-fallbacks-v1.json — playerSlug → image URL on
  * upload.wikimedia.org. The UI chains NBA CDN → fallback → silhouette and
@@ -33,6 +36,11 @@ const CACHE_FILE = path.join(
   ".cache",
   "headshot-checks.json"
 );
+const WIKIDATA_CACHE_FILE = path.join(
+  path.dirname(fileURLToPath(import.meta.url)),
+  ".cache",
+  "wikidata-basketball.json"
+);
 
 const USER_AGENT =
   "82-0-plus-etl/1.0 (one-time headshot fallback resolution; contact: repo owner)";
@@ -41,10 +49,13 @@ const CONCURRENCY = 8;
  *  nulls, so a throttled burst would otherwise look like "no image". */
 const WIKI_CONCURRENCY = 2;
 
-async function wikiFetch(url: string): Promise<Response | null> {
+async function wikiFetch(url: string, timeoutMs = 20_000): Promise<Response | null> {
   for (let attempt = 0; attempt < 4; attempt++) {
     try {
-      const res = await fetch(url, { headers: { "user-agent": USER_AGENT } });
+      const res = await fetch(url, {
+        headers: { "user-agent": USER_AGENT },
+        signal: AbortSignal.timeout(timeoutMs),
+      });
       if (res.status !== 429 && res.status < 500) return res;
       const retryAfter = Number(res.headers.get("retry-after"));
       await new Promise((r) =>
@@ -61,11 +72,13 @@ async function wikiFetch(url: string): Promise<Response | null> {
 type Cache = {
   cdnOk: Record<string, boolean>; // nbaPlayerId → HEAD result
   wiki: Record<string, string | null>; // playerSlug → thumbnail URL
+  wikidata: Record<string, string | null>; // playerSlug → thumbnail URL
 };
 
 function loadCache(): Cache {
-  if (existsSync(CACHE_FILE)) return JSON.parse(readFileSync(CACHE_FILE, "utf8"));
-  return { cdnOk: {}, wiki: {} };
+  const empty: Cache = { cdnOk: {}, wiki: {}, wikidata: {} };
+  if (!existsSync(CACHE_FILE)) return empty;
+  return { ...empty, ...JSON.parse(readFileSync(CACHE_FILE, "utf8")) };
 }
 
 async function mapPool<T, R>(
@@ -88,7 +101,7 @@ async function mapPool<T, R>(
 
 async function imageHash(url: string): Promise<string | null> {
   try {
-    const res = await fetch(url);
+    const res = await fetch(url, { signal: AbortSignal.timeout(20_000) });
     if (!res.ok) return null;
     return createHash("sha1")
       .update(Buffer.from(await res.arrayBuffer()))
@@ -167,6 +180,111 @@ async function resolveWiki(name: string): Promise<string | null> {
   return null;
 }
 
+// ---------------------------------------------------------------------------
+// Wikidata bulk stage
+// ---------------------------------------------------------------------------
+
+/** Lowercased, deaccented, punctuation-free key for name matching. */
+function normName(name: string): string {
+  return name
+    .normalize("NFD")
+    .replace(/[̀-ͯ]/g, "")
+    .toLowerCase()
+    .replace(/[.,'’"]/g, "")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
+/** "larry nance sr" → "larry nance" (suffix-tolerant second-chance key). */
+function stripGenSuffix(norm: string): string {
+  return norm.replace(/\s+(jr|sr|ii|iii|iv)$/, "").trim();
+}
+
+interface WdRow {
+  item: string; // QID URL
+  name: string; // English label
+  image: string; // Special:FilePath URL
+}
+
+/** Every basketball player on Wikidata with a Commons image, one query. */
+async function wikidataRows(): Promise<WdRow[]> {
+  if (existsSync(WIKIDATA_CACHE_FILE)) {
+    return JSON.parse(readFileSync(WIKIDATA_CACHE_FILE, "utf8"));
+  }
+  const query = `SELECT ?item ?itemLabel ?image WHERE {
+    ?item wdt:P106 wd:Q3665646; wdt:P18 ?image.
+    ?item rdfs:label ?itemLabel. FILTER(LANG(?itemLabel) = "en")
+  }`;
+  const res = await wikiFetch(
+    `https://query.wikidata.org/sparql?format=json&query=${encodeURIComponent(query)}`,
+    120_000
+  );
+  if (!res?.ok) throw new Error(`wikidata query failed: ${res?.status}`);
+  const data = (await res.json()) as {
+    results: {
+      bindings: Array<{
+        item: { value: string };
+        itemLabel: { value: string };
+        image: { value: string };
+      }>;
+    };
+  };
+  const rows: WdRow[] = data.results.bindings.map((b) => ({
+    item: b.item.value,
+    name: b.itemLabel.value,
+    image: b.image.value,
+  }));
+  writeFileSync(WIKIDATA_CACHE_FILE, JSON.stringify(rows));
+  return rows;
+}
+
+/** name key → image filenames, only when exactly one Wikidata item matches. */
+function buildNameIndex(rows: WdRow[]): Map<string, string[]> {
+  const byKey = new Map<string, Map<string, string[]>>(); // key → item → files
+  const add = (key: string, row: WdRow) => {
+    if (!key) return;
+    const items = byKey.get(key) ?? new Map<string, string[]>();
+    const files = items.get(row.item) ?? [];
+    files.push(decodeURIComponent(row.image.split("/").pop() ?? ""));
+    items.set(row.item, files);
+    byKey.set(key, items);
+  };
+  for (const row of rows) {
+    const norm = normName(row.name);
+    add(norm, row);
+    const stripped = stripGenSuffix(norm);
+    if (stripped !== norm) add(stripped, row);
+  }
+  const out = new Map<string, string[]>();
+  for (const [key, items] of byKey) {
+    if (items.size === 1) out.set(key, [...items.values()][0]);
+  }
+  return out;
+}
+
+/** Deterministic Commons thumb URL (md5 path), raster formats only. Width
+ *  must be a standard bucket (e.g. 250/500) — others get rejected upstream. */
+function commonsThumb(filename: string, width: number): string | null {
+  const fn = filename.replaceAll(" ", "_");
+  if (!/\.(jpe?g|png|gif)$/i.test(fn)) return null;
+  const h = createHash("md5").update(fn).digest("hex");
+  const enc = encodeURIComponent(fn);
+  return `https://upload.wikimedia.org/wikipedia/commons/thumb/${h[0]}/${h.slice(0, 2)}/${enc}/${width}px-${enc}`;
+}
+
+async function urlOk(url: string): Promise<boolean> {
+  try {
+    const res = await fetch(url, {
+      method: "HEAD",
+      headers: { "user-agent": USER_AGENT },
+      signal: AbortSignal.timeout(20_000),
+    });
+    return res.ok;
+  } catch {
+    return false;
+  }
+}
+
 async function main() {
   const snapshot = SnapshotSchema.parse(
     JSON.parse(readFileSync(SNAPSHOT_FILE, "utf8"))
@@ -214,19 +332,52 @@ async function main() {
   });
   writeFileSync(CACHE_FILE, JSON.stringify(cache));
 
-  // 3. Emit the fallback map (only players that actually need + have one)
+  // 3. Wikidata bulk match for players Wikipedia couldn't resolve
+  const wikiMissed = needsFallback.filter(([slug]) => !cache.wiki[slug]);
+  const wdToResolve = wikiMissed.filter(([slug]) => !(slug in cache.wikidata));
+  console.log(
+    `  Wikidata: ${wikiMissed.length} players missed by Wikipedia, ${wdToResolve.length} to resolve`
+  );
+  if (wdToResolve.length > 0) {
+    const nameIndex = buildNameIndex(await wikidataRows());
+    console.log(`    name index: ${nameIndex.size} unambiguous basketball names`);
+    let wdDone = 0;
+    await mapPool(wdToResolve, 6, async ([slug, v]) => {
+      const norm = normName(v.name);
+      const files = nameIndex.get(norm) ?? nameIndex.get(stripGenSuffix(norm)) ?? [];
+      let url: string | null = null;
+      outer: for (const file of files) {
+        // 500px first; originals smaller than that 404, so retry at 250px.
+        for (const width of [500, 250]) {
+          const thumb = commonsThumb(file, width);
+          if (thumb && (await urlOk(thumb))) {
+            url = thumb;
+            break outer;
+          }
+        }
+      }
+      cache.wikidata[slug] = url;
+      if (++wdDone % 50 === 0) {
+        console.log(`    ${wdDone}/${wdToResolve.length}`);
+        writeFileSync(CACHE_FILE, JSON.stringify(cache));
+      }
+    });
+    writeFileSync(CACHE_FILE, JSON.stringify(cache));
+  }
+
+  // 4. Emit the fallback map (only players that actually need + have one)
   const urls: Record<string, string> = {};
   for (const [slug] of needsFallback) {
-    const url = cache.wiki[slug];
+    const url = cache.wiki[slug] ?? cache.wikidata[slug];
     if (url) urls[slug] = url;
   }
   const out = {
     version: "v1",
     generatedAt: new Date().toISOString(),
     attribution:
-      "Fallback player images are Wikipedia page thumbnails served from " +
-      "upload.wikimedia.org; each image's author and license are on its " +
-      "Wikimedia Commons file page.",
+      "Fallback player images are Wikipedia page thumbnails and Wikidata " +
+      "(P18) Commons images served from upload.wikimedia.org; each image's " +
+      "author and license are on its Wikimedia Commons file page.",
     urls,
   };
   writeFileSync(OUT_FILE, JSON.stringify(out));
