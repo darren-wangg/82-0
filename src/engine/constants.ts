@@ -19,22 +19,22 @@ import { NineCat } from "@/lib/contracts";
 /** Z-scores are clamped to ±Z_CLAMP so outliers (Wilt) are elite, not infinite. */
 export const Z_CLAMP = 4.5;
 
-/** Per-category weights for the player composite (sum to 1.0). `tov` is already
- *  sign-flipped in AdjustedStats, so its weight is a positive reward for low
- *  turnovers / penalty for high ones. tpm and tov are deliberately near-zero:
- *  threes barely existed for most eras, and high turnovers are mostly star
- *  usage tax — every star-built team sits at tov z ≈ −1 to −2, so any real
- *  weight here just suppresses the whole win distribution. */
+/** Per-category weights for the player composite (sum to 1.0). `tov` carries
+ *  zero composite weight: high turnovers are mostly star usage tax — every
+ *  star-built team sits at tov z ≈ −1 to −2, so any weight here just
+ *  suppresses the whole win distribution. Turnovers still matter via the tov
+ *  gate, which only a deliberate high-usage stack trips. tpm is near-zero
+ *  because threes barely existed for most eras. */
 export const CAT_WEIGHTS: Record<NineCat, number> = {
   pts: 0.28,
   reb: 0.19,
   ast: 0.18,
   stl: 0.09,
   blk: 0.09,
-  fgPct: 0.095,
-  ftPct: 0.05,
+  fgPct: 0.11,
+  ftPct: 0.04,
   tpm: 0.02,
-  tov: 0.005,
+  tov: 0,
 };
 
 /** Fraction of playerScore that comes from the ortg/drtg blend (the rest is
@@ -49,10 +49,11 @@ export const RATING_BLEND = 0.3;
 export const POSITION_PENALTY = [1.0, 0.92, 0.85, 0.8, 0.75] as const;
 
 /** OVR = clamp(OVR_BASE + OVR_SLOPE * weighted-average playerScore, 0, OVR_MAX).
- *  Base/slope are the original 52/41 calibration rescaled by 100/110 when the
- *  ceiling moved from 110 to 100 — win-curve ratios are unchanged. */
-export const OVR_BASE = 47.3;
-export const OVR_SLOPE = 37.3;
+ *  Slope steepened from the rescaled 47.3/37.3 calibration (base lowered to
+ *  hold the drafted median) so a strong-but-imperfect draft can reach the
+ *  high-90s OVR that an 80-win season requires. */
+export const OVR_BASE = 43.1;
+export const OVR_SLOPE = 42;
 
 /** wins(curve) = round(82 * (ovr / OVR_MAX) ** WIN_CURVE_EXP). 1.15 keeps the
  *  curve near-linear (drafted teams: OVR ~75–88 → ~58–71 wins) while 82 wins
@@ -77,17 +78,20 @@ export const GATE_THRESHOLDS: Record<NineCat, number> = {
   stl: -0.25,
   blk: -0.15,
   fgPct: -0.05,
-  ftPct: -0.85,
+  ftPct: -0.9,
   tpm: -1.0,
-  tov: -2.8,
+  tov: -3.0,
 };
 
-/** Win caps by how far below the cat's threshold the team z falls. */
+/** Win caps by how far below the cat's threshold the team z falls. The 78
+ *  tier keeps a mild hole from erasing the entire 75–81 win band — only a
+ *  deeper hole drops the cap to 74 and below. */
 export const GATE_STEPS: ReadonlyArray<readonly [offset: number, winCap: number]> = [
   [0, 82],
-  [-0.4, 74],
-  [-0.8, 66],
-  [-1.2, 56],
+  [-0.2, 78],
+  [-0.5, 74],
+  [-0.9, 66],
+  [-1.3, 56],
 ];
 /** Win cap when a cat's team z falls below every GATE_STEPS offset. */
 export const GATE_FLOOR_CAP = 46;

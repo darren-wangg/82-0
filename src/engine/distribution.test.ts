@@ -67,10 +67,10 @@ describe("anchor rosters hit their bands", () => {
     expect(s.gatedCategory).toBeNull();
   });
 
-  it("balanced-but-unspectacular roster: 50–72 wins", () => {
+  it("balanced-but-unspectacular roster: 50–74 wins", () => {
     const s = project(BALANCED);
     expect(s.wins).toBeGreaterThanOrEqual(50);
-    expect(s.wins).toBeLessThanOrEqual(72);
+    expect(s.wins).toBeLessThanOrEqual(74);
   });
 
   it("the all-time roster beats nearly every drafted roster", () => {
