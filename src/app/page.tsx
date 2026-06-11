@@ -71,6 +71,20 @@ export default function Home() {
           </div>
           <HowToPlayDialog />
         </div>
+
+        {/* CC BY-SA attribution for the source dataset (required by license). */}
+        <p className="mt-auto pt-6 text-center text-[10px] leading-relaxed text-muted-foreground/70">
+          Stats derived from the{" "}
+          <a
+            href="https://github.com/sumitrodatta/bball-reference-datasets"
+            className="underline underline-offset-2"
+            target="_blank"
+            rel="noreferrer"
+          >
+            NBA Stats (1947–present)
+          </a>{" "}
+          dataset by Sumitro Datta (CC BY-SA 4.0). Not affiliated with the NBA.
+        </p>
       </main>
     </div>
   );

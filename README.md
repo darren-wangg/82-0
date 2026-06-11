@@ -1,36 +1,50 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# 82-0 Plus
 
-## Getting Started
+Mobile-first web game expanding the viral 82-0 NBA draft format: spin for a
+random franchise and era, draft an 8-player all-time roster (5 starters + 3
+bench), and simulate a full 82-game season through an era-adjusted 9-cat
+engine. Share teams, run head-to-head challenges, compete in 24-hour group
+lobbies, and climb the leaderboard — with AI scouting reports along the way.
 
-First, run the development server:
+## Stack
+
+Next.js (App Router) · React · TypeScript · Tailwind v4 + shadcn/ui (Base UI)
+· Framer Motion · Prisma 7 + Postgres (Neon) · Auth.js v5 (anonymous-first)
+· Vercel AI SDK + Claude.
+
+## Commands
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+npm run dev            # dev server
+npm test               # vitest (engine + contract tests)
+npm run build          # production build (runs prisma generate first)
+npx prisma migrate dev # evolve the database (interactive)
+npm run etl            # rebuild public/data/snapshot-v1.json from source data
+npm run etl:headshots  # resolve fallback player images (cached, resumable)
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## Architecture notes
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+- `src/lib/contracts.ts` is the shared surface: all types, zod schemas, the
+  engine API, and route payloads. Change it deliberately — everything
+  depends on these shapes.
+- Game/API code reaches the engine only via `getEngine()`
+  (`src/lib/engine-provider.ts`) and player data only via `src/lib/snapshot.ts`.
+- The server is authoritative: API routes re-run the engine on save;
+  client-computed results are never persisted.
+- The draft is a pure seeded reducer (`src/components/game/draft-state.ts`)
+  persisted to localStorage; the engine (`src/engine/`) is pure TS with
+  golden-master and property tests.
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## Data & attribution
 
-## Learn More
-
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+- Player and team statistics are derived from the
+  [NBA Stats (1947–present)](https://github.com/sumitrodatta/bball-reference-datasets)
+  dataset by Sumitro Datta (also on Kaggle), licensed
+  [CC BY-SA 4.0](https://creativecommons.org/licenses/by-sa/4.0/) and itself
+  compiled from Basketball-Reference.com data.
+- Player headshots come from the NBA's public CDN (unofficial) with fallbacks
+  from Wikipedia/Wikimedia Commons — each image's author and license are on
+  its Commons file page. A silhouette renders when no image exists.
+- Pre-1974 STL/BLK, pre-1978 TOV, pre-1980 3PM, and early-era ORtg/DRtg are
+  estimates, flagged via `estimatedCats` and marked "est." in the UI.

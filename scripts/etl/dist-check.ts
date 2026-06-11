@@ -1,5 +1,5 @@
 /* Wave 2 calibration: engine behavior over realistic DRAFTED rosters on real data. */
-import { POSITIONS, Position, Roster, DECADES, NINE_CATS } from "../../src/lib/contracts";
+import { POSITIONS, Position, Roster, NINE_CATS } from "../../src/lib/contracts";
 import { getSnapshot, getPlayerMap, getBaselines } from "../../src/lib/snapshot";
 import { engine } from "../../src/engine";
 

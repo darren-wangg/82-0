@@ -13,6 +13,9 @@ export function LobbyCountdown({ closesAt }: { closesAt: string }) {
   const [now, setNow] = useState<number | null>(null);
 
   useEffect(() => {
+    // Client-only clock seed: rendering a time delta on the server (or in the
+    // first client render) would mismatch hydration, so start it here.
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setNow(Date.now());
     const t = window.setInterval(() => setNow(Date.now()), 30_000);
     return () => window.clearInterval(t);

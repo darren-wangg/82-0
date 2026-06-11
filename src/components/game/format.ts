@@ -25,18 +25,8 @@ export const CAT_FRIENDLY: Record<NineCat, string> = {
   tov: "Turnovers",
 };
 
-export function formatCatValue(cat: NineCat, value: number): string {
-  if (cat === "fgPct" || cat === "ftPct") return `${(value * 100).toFixed(1)}%`;
-  return value.toFixed(1);
-}
-
 export function isEstimated(player: PlayerStatLine, cat: NineCat): boolean {
   return player.estimatedCats.includes(cat);
-}
-
-/** Last name fallback when a player has no curated nickname. */
-export function displayNickname(player: PlayerStatLine): string {
-  return player.nickname ?? player.name.split(" ").slice(-1)[0];
 }
 
 /** Sortable categories for the pool list dropdown. */
