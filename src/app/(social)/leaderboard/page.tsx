@@ -6,6 +6,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { LeaderboardEntry } from "@/lib/contracts";
+import { getAnonIdFromCookie } from "@/lib/auth";
 import { prisma } from "@/lib/db";
 import { getSnapshot } from "@/lib/snapshot";
 import {
@@ -14,6 +15,7 @@ import {
   WEEKLY_WINDOW_MS,
 } from "@/components/social/leaderboard";
 import { ownerDisplayName, teamInclude } from "@/app/api/_lib/teams";
+import { Badge } from "@/components/ui/badge";
 import { Unavailable } from "@/components/social/unavailable";
 import { cn } from "@/lib/utils";
 
@@ -23,6 +25,8 @@ export const metadata: Metadata = {
 };
 
 async function loadEntries(scope: "global" | "weekly"): Promise<LeaderboardEntry[]> {
+  // Read-only: flags this device's own entries ("You") without creating an identity.
+  const anonId = await getAnonIdFromCookie();
   const teams = await prisma.team.findMany({
     where: {
       snapshotVersion: getSnapshot().version,
@@ -42,6 +46,7 @@ async function loadEntries(scope: "global" | "weekly"): Promise<LeaderboardEntry
       wins: t.wins,
       losses: t.losses,
       ovr: t.ovr,
+      viewer: anonId !== null && t.anonIdentityId === anonId,
     }))
   );
 }
@@ -96,7 +101,12 @@ export default async function LeaderboardPage({
             <li key={e.teamSlug}>
               <Link
                 href={`/t/${e.teamSlug}`}
-                className="flex items-center gap-3 rounded-xl border border-border/80 bg-card/70 px-3 py-2.5 shadow-md shadow-black/25"
+                className={cn(
+                  "flex items-center gap-3 rounded-xl border px-3 py-2.5 shadow-md shadow-black/25",
+                  e.viewer
+                    ? "border-primary/50 bg-primary/10"
+                    : "border-border/80 bg-card/70"
+                )}
               >
                 <span
                   className={cn(
@@ -111,8 +121,15 @@ export default async function LeaderboardPage({
                   {e.rank}
                 </span>
                 <span className="min-w-0 flex-1">
-                  <span className="block truncate text-sm font-bold">
-                    {e.teamName}
+                  <span className="flex items-center gap-1.5">
+                    <span className="truncate text-sm font-bold">
+                      {e.teamName}
+                    </span>
+                    {e.viewer && (
+                      <Badge className="h-4 shrink-0 px-1.5 text-[10px] font-bold">
+                        You
+                      </Badge>
+                    )}
                   </span>
                   <span className="block truncate text-[11px] text-muted-foreground">
                     {e.displayName ?? "anonymous GM"}

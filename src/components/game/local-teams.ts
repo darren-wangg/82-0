@@ -55,3 +55,13 @@ export function saveLocalTeam(team: {
     return false;
   }
 }
+
+export function removeLocalTeam(id: string): boolean {
+  try {
+    const list = loadLocalTeams().filter((t) => t.id !== id);
+    window.localStorage.setItem(LOCAL_TEAMS_KEY, JSON.stringify(list));
+    return true;
+  } catch {
+    return false;
+  }
+}

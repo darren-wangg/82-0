@@ -15,6 +15,8 @@ export interface LeaderboardTeamInput {
   wins: number;
   losses: number;
   ovr: number;
+  /** True when the team belongs to the requesting device ("You"). */
+  viewer?: boolean;
 }
 
 /** Sort by wins desc, then ovr desc; assign 1-based ranks; cap at `limit`. */
@@ -33,5 +35,6 @@ export function rankLeaderboard(
       wins: t.wins,
       losses: t.losses,
       ovr: t.ovr,
+      ...(t.viewer ? { viewer: true } : {}),
     }));
 }

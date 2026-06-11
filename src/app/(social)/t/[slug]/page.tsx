@@ -13,6 +13,7 @@ import { buttonVariants } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { RecordHero } from "@/components/social/record-hero";
 import { RosterGrid } from "@/components/social/roster-grid";
+import { BattleHistory } from "@/components/social/battle-history";
 import { CatBars } from "@/components/social/cat-bars";
 import { CatProfileInfo } from "@/components/social/cat-profile-info";
 import { ExplainStream } from "@/components/social/explain-stream";
@@ -74,6 +75,8 @@ export default async function TeamPage({ params }: PageProps<"/t/[slug]">) {
           <CatBars profile={team.rating.catProfile} />
         </CardContent>
       </Card>
+
+      <BattleHistory slug={team.slug} />
 
       <Card>
         <CardHeader>

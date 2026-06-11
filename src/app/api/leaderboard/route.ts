@@ -5,6 +5,7 @@
  */
 
 import { LeaderboardResponse } from "@/lib/contracts";
+import { getAnonIdFromCookie } from "@/lib/auth";
 import { prisma } from "@/lib/db";
 import { getSnapshot } from "@/lib/snapshot";
 import {
@@ -21,6 +22,8 @@ export async function GET(request: Request) {
   }
   const scope: "global" | "weekly" = scopeParam;
   const snapshotVersion = getSnapshot().version;
+  // Read-only: flags the caller's own entries ("You") without creating an identity.
+  const anonId = await getAnonIdFromCookie();
 
   try {
     const teams = await prisma.team.findMany({
@@ -46,6 +49,7 @@ export async function GET(request: Request) {
           wins: t.wins,
           losses: t.losses,
           ovr: t.ovr,
+          viewer: anonId !== null && t.anonIdentityId === anonId,
         }))
       ),
     };

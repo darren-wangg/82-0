@@ -24,6 +24,8 @@ function PlayerCard({
       <PlayerHeadshot
         srcs={player ? headshotSources(player) : []}
         alt={player?.name ?? "Unknown player"}
+        name={player?.name}
+        decade={player?.decade}
         className="aspect-[13/10] w-full"
       />
       <div className="flex flex-1 flex-col gap-1 p-2">

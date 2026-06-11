@@ -54,7 +54,7 @@ export default function Home() {
               href="/leaderboard"
               className={cn(
                 buttonVariants({ variant: "ghost", size: "lg" }),
-                "h-11 flex-1 text-muted-foreground"
+                "h-11 flex-1 px-2 text-muted-foreground"
               )}
             >
               Leaderboard
@@ -63,10 +63,19 @@ export default function Home() {
               href="/l/new"
               className={cn(
                 buttonVariants({ variant: "ghost", size: "lg" }),
-                "h-11 flex-1 text-muted-foreground"
+                "h-11 flex-1 px-2 text-muted-foreground"
               )}
             >
               Group lobby
+            </Link>
+            <Link
+              href="/teams"
+              className={cn(
+                buttonVariants({ variant: "ghost", size: "lg" }),
+                "h-11 flex-1 px-2 text-muted-foreground"
+              )}
+            >
+              My teams
             </Link>
           </div>
           <HowToPlayDialog />

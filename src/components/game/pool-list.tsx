@@ -2,10 +2,12 @@
 
 import { useMemo, useState } from "react";
 import { motion } from "framer-motion";
+import { Star } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import type { NineCat, PlayerStatLine } from "@/lib/contracts";
 import { cn } from "@/lib/utils";
 import { isEstimated, SORT_OPTIONS } from "./format";
+import { isLegendary } from "./legends";
 import { PlayerHeadshot } from "./player-headshot";
 
 /** The six per-game columns shown for every pool player. */
@@ -68,12 +70,19 @@ export function PoolList({
         {sorted.map((p, i) => {
           const draftable = isDraftable(p.id);
           const selected = selectedId === p.id;
+          const legendary = isLegendary(p.id);
+          const delay = Math.min(i * 0.035, 0.45);
           return (
             <motion.li
               key={p.id}
-              initial={{ opacity: 0, x: -14 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ delay: Math.min(i * 0.035, 0.45), duration: 0.25 }}
+              // Legendary pulls get a delayed, springy "jackpot" reveal.
+              initial={legendary ? { opacity: 0, scale: 0.9 } : { opacity: 0, x: -14 }}
+              animate={legendary ? { opacity: 1, scale: 1 } : { opacity: 1, x: 0 }}
+              transition={
+                legendary
+                  ? { delay: delay + 0.45, type: "spring", stiffness: 320, damping: 17 }
+                  : { delay, duration: 0.25 }
+              }
             >
               <button
                 type="button"
@@ -83,14 +92,29 @@ export function PoolList({
                   "flex w-full items-center gap-2.5 rounded-xl border p-2 text-left transition-colors",
                   selected
                     ? "border-primary bg-primary/15 shadow-lg shadow-primary/25"
-                    : "border-border/80 bg-card/70 shadow-md shadow-black/25",
+                    : legendary
+                      ? "border-amber-400/60 bg-amber-400/10 shadow-lg shadow-amber-500/20 ring-1 ring-amber-400/30"
+                      : "border-border/80 bg-card/70 shadow-md shadow-black/25",
                   draftable ? "active:scale-[0.99]" : "opacity-40 grayscale"
                 )}
               >
                 <PlayerHeadshot player={p} className="size-11 shrink-0" />
                 <div className="min-w-0 flex-1">
                   <div className="flex items-center gap-1.5">
-                    <span className="truncate text-sm font-bold">{p.name}</span>
+                    {legendary && (
+                      <Star
+                        aria-hidden
+                        className="size-3.5 shrink-0 fill-amber-300 text-amber-300"
+                      />
+                    )}
+                    <span
+                      className={cn(
+                        "truncate text-sm font-bold",
+                        legendary && "text-amber-200"
+                      )}
+                    >
+                      {p.name}
+                    </span>
                     <Badge
                       variant="outline"
                       className="h-4 shrink-0 px-1 font-mono text-[9px]"

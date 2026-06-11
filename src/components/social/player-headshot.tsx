@@ -1,12 +1,15 @@
 "use client";
 
 /**
- * Player headshot with silhouette fallback. The NBA CDN is unofficial, so the
- * image is never assumed to load — any error swaps in the silhouette.
+ * Player headshot with retro-card fallback. The NBA CDN is unofficial, so the
+ * image is never assumed to load — any error falls through to the retro
+ * trading-card placeholder (or a neutral silhouette for unknown players).
  */
 
 import { useState } from "react";
 import Image from "next/image";
+import { type Decade } from "@/lib/contracts";
+import { RetroCardPlaceholder } from "@/components/game/retro-card";
 import { cn } from "@/lib/utils";
 
 function Silhouette({ className }: { className?: string }) {
@@ -28,17 +31,28 @@ function Silhouette({ className }: { className?: string }) {
 export function PlayerHeadshot({
   srcs,
   alt,
+  name,
+  decade,
   className,
 }: {
   /** Candidate image URLs, tried in order (see headshotSources). */
   srcs: readonly string[];
   alt: string;
+  /** With `decade`, enables the retro-card placeholder when no image loads. */
+  name?: string;
+  decade?: Decade;
   className?: string;
 }) {
   const [failed, setFailed] = useState<string[]>([]);
   const src = srcs.find((s) => !failed.includes(s));
 
-  if (!src) return <Silhouette className={className} />;
+  if (!src) {
+    return name && decade ? (
+      <RetroCardPlaceholder name={name} decade={decade} className={className} />
+    ) : (
+      <Silhouette className={className} />
+    );
+  }
 
   return (
     // Proxied through the Next image optimizer (remotePatterns in

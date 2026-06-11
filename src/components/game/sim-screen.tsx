@@ -40,6 +40,7 @@ import { getEngine } from "@/lib/engine-provider";
 import { getBaselines } from "@/lib/snapshot";
 import { cn } from "@/lib/utils";
 import { CatProfileInfo } from "@/components/social/cat-profile-info";
+import { analyzeCost } from "./cost-analysis";
 import { toRoster } from "./draft-state";
 import { saveLocalTeam } from "./local-teams";
 import { CAT_FRIENDLY, CAT_LABELS } from "./format";
@@ -273,7 +274,8 @@ export function SimScreen() {
     const engine = getEngine();
     const rating = engine.teamRating(roster, players, getBaselines());
     const season = engine.projectSeason(rating);
-    return { roster, rating, season };
+    const cost = analyzeCost(roster, rating, season, players, getBaselines());
+    return { roster, rating, season, cost };
   }, [state, players]);
 
   const wins = useCountUp(sim?.season.wins ?? 0, COUNT_UP_SECONDS);
@@ -287,7 +289,7 @@ export function SimScreen() {
 
   if (!state || !allowed || !sim) return <SimSkeleton />;
 
-  const { rating, season, roster } = sim;
+  const { rating, season, roster, cost } = sim;
   const perfect = season.wins === SEASON_GAMES;
 
   const saveTeam = async () => {
@@ -613,6 +615,54 @@ export function SimScreen() {
           />
         ))}
       </Card>
+
+      {/* what cost you (absent on a perfect season) */}
+      {cost && (
+        <motion.div
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: COUNT_UP_SECONDS + 0.4 }}
+        >
+          <Card className="mt-3 gap-1.5 border-border/60 bg-card/80 p-4">
+            <p className="text-[11px] font-semibold tracking-wide text-muted-foreground uppercase">
+              What cost you
+            </p>
+            {cost.kind === "gated" ? (
+              <p className="text-sm leading-relaxed">
+                The{" "}
+                <span className="font-semibold">{CAT_FRIENDLY[cost.cat]}</span>{" "}
+                gate{" "}
+                {cost.winsLost > 0 ? (
+                  <>
+                    cost you{" "}
+                    <span className="font-semibold text-red-400">
+                      {cost.winsLost} {cost.winsLost === 1 ? "win" : "wins"}
+                    </span>
+                  </>
+                ) : (
+                  <>caps you at {cost.winCap} wins</>
+                )}
+                . Biggest culprit:{" "}
+                <span className="font-semibold">{cost.culprit.player.name}</span>{" "}
+                <span className="font-mono text-xs text-muted-foreground">
+                  ({cost.culprit.z.toFixed(1)} vs era)
+                </span>
+                .
+              </p>
+            ) : (
+              <p className="text-sm leading-relaxed">
+                Weakest link:{" "}
+                <span className="font-semibold">{cost.player.name}</span> at{" "}
+                {cost.slot}
+                {cost.outOfPosition && (
+                  <span className="text-amber-400"> — playing out of position</span>
+                )}
+                . Upgrade that spot to push past {season.wins} wins.
+              </p>
+            )}
+          </Card>
+        </motion.div>
+      )}
 
       {/* thumb-zone footer */}
       <div className="sticky bottom-0 mt-auto flex flex-col gap-2 bg-gradient-to-t from-background via-background/95 to-transparent pt-4 pb-[max(1rem,env(safe-area-inset-bottom))]">

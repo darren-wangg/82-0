@@ -1,0 +1,109 @@
+"use client";
+
+/**
+ * Locally saved teams list for /teams. Reads localStorage, so it loads after
+ * mount (renders nothing during SSR/hydration).
+ */
+
+import { useEffect, useState } from "react";
+import Link from "next/link";
+import { Trash2 } from "lucide-react";
+import {
+  LocalTeam,
+  loadLocalTeams,
+  removeLocalTeam,
+} from "@/components/game/local-teams";
+import { getSnapshot } from "@/lib/snapshot";
+import { Badge } from "@/components/ui/badge";
+import { cn } from "@/lib/utils";
+
+/** Positive when `a` has the better record: wins, then losses, then OVR. */
+function compareRecords(a: LocalTeam, b: LocalTeam): number {
+  return a.wins - b.wins || b.losses - a.losses || a.ovr - b.ovr;
+}
+
+function formatDate(iso: string): string {
+  return new Date(iso).toLocaleDateString("en-US", {
+    month: "short",
+    day: "numeric",
+    year: "numeric",
+  });
+}
+
+export function MyTeams() {
+  // null until mounted — localStorage is unavailable on the server.
+  const [teams, setTeams] = useState<LocalTeam[] | null>(null);
+
+  useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    setTeams(
+      [...loadLocalTeams()].sort((a, b) => b.savedAt.localeCompare(a.savedAt))
+    );
+  }, []);
+
+  if (!teams) return null;
+
+  if (teams.length === 0) {
+    return (
+      <div className="mt-10 text-center text-sm text-muted-foreground">
+        <p>No saved teams yet — finish a season and hit Save.</p>
+        <Link href="/play" className="mt-2 inline-block font-semibold text-primary">
+          Start a draft →
+        </Link>
+      </div>
+    );
+  }
+
+  const snapshotVersion = getSnapshot().version;
+  const bestId = teams.reduce((a, b) => (compareRecords(b, a) > 0 ? b : a)).id;
+
+  return (
+    <ul className="mt-4 space-y-1.5">
+      {teams.map((t) => (
+        <li
+          key={t.id}
+          className="flex items-center gap-3 rounded-xl border border-border/80 bg-card/70 px-3 py-2.5 shadow-md shadow-black/25"
+        >
+          <span className="min-w-0 flex-1">
+            <span className="flex items-center gap-1.5">
+              <span className="truncate text-sm font-bold">{t.name}</span>
+              {t.id === bestId && (
+                <Badge className="h-4 shrink-0 px-1.5 text-[10px] font-bold">
+                  PB
+                </Badge>
+              )}
+            </span>
+            <span className="block truncate text-[11px] text-muted-foreground">
+              {formatDate(t.savedAt)}
+              {t.snapshotVersion !== snapshotVersion && (
+                <span className="text-amber-400/90"> · older player data</span>
+              )}
+            </span>
+          </span>
+          <span
+            className={cn(
+              "shrink-0 font-mono text-sm font-bold tabular-nums",
+              t.losses === 0 ? "text-emerald-400" : undefined
+            )}
+          >
+            {t.wins}-{t.losses}
+          </span>
+          <span className="w-12 shrink-0 text-right font-mono text-xs text-muted-foreground tabular-nums">
+            {Math.round(t.ovr)} OVR
+          </span>
+          <button
+            type="button"
+            aria-label={`Delete ${t.name}`}
+            onClick={() => {
+              removeLocalTeam(t.id);
+              setTeams((prev) => prev?.filter((x) => x.id !== t.id) ?? null);
+            }}
+            className="shrink-0 rounded-md p-1 text-muted-foreground/60 transition-colors hover:bg-muted hover:text-destructive"
+          >
+            <Trash2 className="size-3.5" />
+          </button>
+        </li>
+      ))}
+    </ul>
+  );
+}

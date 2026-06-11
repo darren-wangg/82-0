@@ -324,6 +324,8 @@ export interface LeaderboardEntry {
   wins: number;
   losses: number;
   ovr: number;
+  /** True when the entry belongs to the requesting device/user ("You"). */
+  viewer?: boolean;
 }
 
 export interface LeaderboardResponse {

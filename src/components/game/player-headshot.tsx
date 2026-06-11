@@ -2,22 +2,22 @@
 
 import { useState } from "react";
 import Image from "next/image";
-import { UserRound } from "lucide-react";
 import { type PlayerStatLine } from "@/lib/contracts";
 import { headshotSources } from "@/lib/headshots";
 import { cn } from "@/lib/utils";
+import { RetroCardPlaceholder } from "./retro-card";
 
 /**
  * Player headshot served through the Next image optimizer (see next.config).
  * Sources are tried in order (NBA CDN, then the Wikipedia fallback resolved
- * at ETL time); when every source fails — or none exists — a silhouette
- * renders instead.
+ * at ETL time); when every source fails — or none exists — a retro
+ * trading-card placeholder renders instead.
  */
 export function PlayerHeadshot({
   player,
   className,
 }: {
-  player: Pick<PlayerStatLine, "nbaPlayerId" | "playerSlug" | "name">;
+  player: Pick<PlayerStatLine, "nbaPlayerId" | "playerSlug" | "name" | "decade">;
   className?: string;
 }) {
   const [failed, setFailed] = useState<string[]>([]);
@@ -46,7 +46,11 @@ export function PlayerHeadshot({
           onError={() => setFailed((f) => [...f, src])}
         />
       ) : (
-        <UserRound aria-hidden className="size-[55%] text-muted-foreground" />
+        <RetroCardPlaceholder
+          name={player.name}
+          decade={player.decade}
+          className="absolute inset-0"
+        />
       )}
     </span>
   );
