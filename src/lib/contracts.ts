@@ -274,9 +274,6 @@ export interface MatchupResponse {
   result: MatchupResult;
 }
 
-/** A lobby accepts entries for this long unless the creator ends it sooner. */
-export const LOBBY_DURATION_HOURS = 24;
-
 export const CreateLobbyRequestSchema = z.object({
   name: z.string().min(1).max(40),
 });
@@ -290,6 +287,8 @@ export type CreateLobbyRequest = z.infer<typeof CreateLobbyRequestSchema>;
 export const EnterLobbyRequestSchema = z.object({
   code: z.string(),
   teamSlug: z.string(),
+  /** Entrant's name, shown beside the team in standings ("whose is whose"). */
+  displayName: z.string().trim().min(1).max(24).optional(),
 });
 export type EnterLobbyRequest = z.infer<typeof EnterLobbyRequestSchema>;
 
@@ -307,9 +306,9 @@ export interface LobbyResponse {
   code: string;
   name: string;
   createdAt: string;
-  /** Entries close at this time even if the creator never ends the lobby. */
-  closesAt: string;
-  /** "closed" once the window lapses or the creator ends it. */
+  /** Set once the creator ends the lobby; entries stay open until then. */
+  closedAt: string | null;
+  /** "closed" once the creator ends the lobby. */
   status: "open" | "closed";
   /** Top of the standings, crowned only once the lobby is closed. */
   winner: LobbyStanding | null;

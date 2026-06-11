@@ -272,6 +272,9 @@ export function SimScreen() {
   const reducedMotion = useReducedMotion();
 
   const [teamName, setTeamName] = useState("");
+  // Lobby entries carry the entrant's name so the standings show whose team
+  // is whose; remembered per device so it's typed once.
+  const [playerName, setPlayerName] = useState("");
   const [save, setSave] = useState<SaveState>({ phase: "idle" });
   const [toast, setToast] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
@@ -294,6 +297,16 @@ export function SimScreen() {
 
   const wins = useCountUp(sim?.season.wins ?? 0, COUNT_UP_SECONDS);
   const losses = useCountUp(sim?.season.losses ?? 0, COUNT_UP_SECONDS);
+
+  useEffect(() => {
+    try {
+      const stored = window.localStorage.getItem("ud:player-name");
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- hydrate the persisted name once on mount
+      if (stored) setPlayerName(stored);
+    } catch {
+      // storage unavailable (private mode) — start blank
+    }
+  }, []);
 
   useEffect(() => {
     if (!toast) return;
@@ -341,6 +354,14 @@ export function SimScreen() {
       const data: SaveTeamResponse = await res.json();
       // Lobby draft: enter the team and jump to the standings.
       if (state.lobbyCode) {
+        const displayName = playerName.trim().slice(0, 24) || undefined;
+        if (displayName) {
+          try {
+            window.localStorage.setItem("ud:player-name", displayName);
+          } catch {
+            // best-effort persistence only
+          }
+        }
         try {
           const l = await fetch("/api/lobbies/enter", {
             method: "POST",
@@ -348,6 +369,7 @@ export function SimScreen() {
             body: JSON.stringify({
               code: state.lobbyCode,
               teamSlug: data.team.slug,
+              displayName,
             }),
           });
           if (l.ok) {
@@ -510,7 +532,7 @@ export function SimScreen() {
               </DialogTitle>
               <DialogDescription>
                 {state.lobbyCode
-                  ? `Name your team — it enters lobby ${state.lobbyCode}.`
+                  ? `Add your name and a team name — your entry shows up in lobby ${state.lobbyCode} instantly.`
                   : state.challengeSlug
                     ? "Name your team — sharing runs the best-of-7 against your rival."
                     : "Name your team to get a share link."}
@@ -543,6 +565,16 @@ export function SimScreen() {
               </div>
             ) : (
               <div className="flex flex-col gap-3">
+                {state.lobbyCode && (
+                  <Input
+                    value={playerName}
+                    maxLength={24}
+                    placeholder="Your name (shown in standings)"
+                    aria-label="Your name"
+                    className="h-11 rounded-xl"
+                    onChange={(e) => setPlayerName(e.target.value)}
+                  />
+                )}
                 <Input
                   value={teamName}
                   maxLength={40}
@@ -553,7 +585,11 @@ export function SimScreen() {
                 />
                 <Button
                   className="h-12 w-full rounded-xl text-base font-bold"
-                  disabled={save.phase === "saving" || teamName.trim().length === 0}
+                  disabled={
+                    save.phase === "saving" ||
+                    teamName.trim().length === 0 ||
+                    (state.lobbyCode !== null && playerName.trim().length === 0)
+                  }
                   onClick={saveTeam}
                 >
                   {save.phase === "saving"

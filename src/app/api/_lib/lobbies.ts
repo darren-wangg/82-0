@@ -1,19 +1,15 @@
 /** Lobby loading + lifecycle shared by /api/lobbies/* and the /l/[code] page. */
 
-import { LOBBY_DURATION_HOURS, LobbyResponse } from "@/lib/contracts";
+import { LobbyResponse } from "@/lib/contracts";
 import { prisma } from "@/lib/db";
 import { getAnonIdFromCookie } from "@/lib/auth";
 import { getEngine } from "@/lib/engine-provider";
 import { computeStandings } from "@/components/social/standings";
 import { ownerDisplayName, ratingFromRow, teamInclude } from "./teams";
 
-export function lobbyClosesAt(createdAt: Date): Date {
-  return new Date(createdAt.getTime() + LOBBY_DURATION_HOURS * 60 * 60 * 1000);
-}
-
-/** Open means entries are still accepted: not ended early, window not lapsed. */
-export function lobbyIsOpen(lobby: { createdAt: Date; closedAt: Date | null }): boolean {
-  return lobby.closedAt === null && Date.now() < lobbyClosesAt(lobby.createdAt).getTime();
+/** Open means entries are still accepted: the creator hasn't ended it. */
+export function lobbyIsOpen(lobby: { closedAt: Date | null }): boolean {
+  return lobby.closedAt === null;
 }
 
 export async function loadLobbyResponse(code: string): Promise<LobbyResponse | null> {
@@ -32,7 +28,8 @@ export async function loadLobbyResponse(code: string): Promise<LobbyResponse | n
     lobby.entries.map((entry) => ({
       teamSlug: entry.team.slug,
       teamName: entry.team.teamName,
-      displayName: ownerDisplayName(entry.team),
+      // The name typed at entry wins; a claimed account name is the fallback.
+      displayName: entry.displayName ?? ownerDisplayName(entry.team),
       rating: ratingFromRow(entry.team),
     })),
     getEngine()
@@ -43,7 +40,7 @@ export async function loadLobbyResponse(code: string): Promise<LobbyResponse | n
     code: lobby.code,
     name: lobby.name,
     createdAt: lobby.createdAt.toISOString(),
-    closesAt: (lobby.closedAt ?? lobbyClosesAt(lobby.createdAt)).toISOString(),
+    closedAt: lobby.closedAt?.toISOString() ?? null,
     status: open ? "open" : "closed",
     winner: !open && standings.length > 0 ? standings[0] : null,
     standings,

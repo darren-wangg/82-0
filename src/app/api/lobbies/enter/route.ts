@@ -2,7 +2,7 @@
  * POST /api/lobbies/enter — enter a lobby with a team drafted for it.
  *
  * Server-enforced rules:
- *  - the lobby must still be open (within 24h and not ended by the creator),
+ *  - the lobby must still be open (the creator hasn't ended it),
  *  - the team must belong to the calling device (no entering someone else's
  *    team) and have been created after the lobby opened (no loading old
  *    saved teams — every entrant drafts fresh),
@@ -27,7 +27,7 @@ export async function POST(request: Request) {
   if (!parsed.success) {
     return jsonError(400, parsed.error.issues[0]?.message ?? "Invalid request");
   }
-  const { code, teamSlug } = parsed.data;
+  const { code, teamSlug, displayName } = parsed.data;
 
   try {
     const anonIdentityId = await getOrCreateAnonId();
@@ -52,7 +52,7 @@ export async function POST(request: Request) {
 
     try {
       await prisma.lobbyEntry.create({
-        data: { lobbyCode: code, teamSlug, anonIdentityId },
+        data: { lobbyCode: code, teamSlug, anonIdentityId, displayName },
       });
     } catch (err) {
       const isUniqueViolation =
@@ -64,6 +64,13 @@ export async function POST(request: Request) {
       });
       if (existing && existing.teamSlug !== teamSlug) {
         return jsonError(409, "This device already entered a team in this lobby");
+      }
+      // Re-entering the same team is idempotent — but let it refresh the name.
+      if (existing && displayName && existing.displayName !== displayName) {
+        await prisma.lobbyEntry.update({
+          where: { id: existing.id },
+          data: { displayName },
+        });
       }
     }
 

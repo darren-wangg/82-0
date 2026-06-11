@@ -1,7 +1,7 @@
 /**
  * /l/new — create an async group lobby: anyone with the link drafts a fresh
- * team (one per device) within 24 hours, standings run round-robin sims as
- * entries arrive, and a winner is crowned when the lobby closes.
+ * team (one per device), standings run round-robin sims live as entries
+ * arrive, and the creator closes the lobby to crown the champion.
  */
 
 import type { Metadata } from "next";
@@ -24,8 +24,8 @@ export default function NewLobbyPage() {
         </h1>
         <p className="mx-auto mt-2 max-w-xs text-sm text-muted-foreground">
           Create a lobby and share the link — everyone drafts a fresh team,
-          one per device, within 24 hours. Every matchup runs head-to-head,
-          and the winner is crowned when the lobby closes.
+          one per device. Every matchup runs head-to-head live, and the lobby
+          stays open until you end it and crown the champion.
         </p>
       </div>
       <CreateLobbyForm />

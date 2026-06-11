@@ -1,22 +1,23 @@
 /**
  * /l/[code] — group lobby: anyone with the link drafts a fresh team while
- * entries are open (24h, or until the creator ends it), one team per device.
- * Standings run every entry head-to-head; the leader is crowned when the
- * lobby closes. Team rows link to full details (roster, 9-cat, OFF/DEF).
+ * the lobby is open (until the creator ends it), one team per device.
+ * Standings run every entry head-to-head and refresh live; the leader is
+ * crowned champion when the creator closes the lobby. Team rows link to
+ * full details (roster, 9-cat, OFF/DEF).
  */
 
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { Trophy } from "lucide-react";
+import { Trophy, UserRoundPlus } from "lucide-react";
 import { LobbyResponse } from "@/lib/contracts";
 import { loadLobbyResponse, loadLobbyViewer } from "@/app/api/_lib/lobbies";
-import { Badge } from "@/components/ui/badge";
 import { buttonVariants } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
 import { CloseLobbyButton } from "@/components/social/close-lobby-button";
-import { LobbyCountdown } from "@/components/social/lobby-countdown";
+import { CopyCode } from "@/components/social/copy-code";
+import { LobbyLive } from "@/components/social/lobby-live";
 import { ShareButton } from "@/components/social/share-button";
 import { StandingsTable } from "@/components/social/standings-table";
 import { Unavailable } from "@/components/social/unavailable";
@@ -52,6 +53,8 @@ export default async function LobbyPage({ params }: PageProps<"/l/[code]">) {
   if (!lobby) notFound();
 
   const open = lobby.status === "open";
+  const entered = viewer.entryTeamSlug !== null;
+  const teamCount = lobby.standings.length;
 
   return (
     <main className="space-y-5">
@@ -59,15 +62,21 @@ export default async function LobbyPage({ params }: PageProps<"/l/[code]">) {
         <h1 className="text-2xl font-black tracking-tight">{lobby.name}</h1>
         <p className="mt-1.5 flex items-center justify-center gap-2 text-xs text-muted-foreground">
           Lobby code
-          <Badge variant="outline" className="font-mono text-xs tracking-widest">
-            {lobby.code}
-          </Badge>
+          <CopyCode code={lobby.code} />
           {open ? (
-            <LobbyCountdown closesAt={lobby.closesAt} />
+            <LobbyLive />
           ) : (
             <span className="font-semibold text-amber-400">Closed</span>
           )}
         </p>
+        {open && (
+          <p className="mt-1 text-[11px] text-muted-foreground">
+            {teamCount === 0
+              ? "Waiting for the first team"
+              : `${teamCount} ${teamCount === 1 ? "team" : "teams"} in`}{" "}
+            · open until the creator ends it
+          </p>
+        )}
       </div>
 
       {lobby.winner && (
@@ -94,7 +103,7 @@ export default async function LobbyPage({ params }: PageProps<"/l/[code]">) {
       )}
 
       {open &&
-        (viewer.entryTeamSlug ? (
+        (entered ? (
           <Card>
             <CardContent className="py-4 text-center text-sm">
               You&apos;re in!{" "}
@@ -103,8 +112,17 @@ export default async function LobbyPage({ params }: PageProps<"/l/[code]">) {
                 className="font-semibold text-primary hover:underline"
               >
                 View your team
-              </Link>{" "}
-              and watch the standings as entries arrive.
+              </Link>
+              {teamCount < 2 ? (
+                <span className="mt-1 block text-xs text-muted-foreground">
+                  Nobody to beat yet — send the invite and watch the standings
+                  fill in live.
+                </span>
+              ) : (
+                <span className="mt-1 block text-xs text-muted-foreground">
+                  Standings update live as entries arrive.
+                </span>
+              )}
             </CardContent>
           </Card>
         ) : (
@@ -134,7 +152,11 @@ export default async function LobbyPage({ params }: PageProps<"/l/[code]">) {
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <StandingsTable standings={lobby.standings} />
+          <StandingsTable
+            standings={lobby.standings}
+            viewerTeamSlug={viewer.entryTeamSlug}
+            open={open}
+          />
         </CardContent>
       </Card>
 
@@ -144,8 +166,19 @@ export default async function LobbyPage({ params }: PageProps<"/l/[code]">) {
             title={`Join my "${lobby.name}" lobby on Ultimate Draft`}
             path={`/l/${lobby.code}`}
             label="Invite friends"
-            className="w-full"
+            className={cn(
+              "w-full",
+              // The whole point of a lobby is opponents — make inviting loud
+              // until there are at least two teams in.
+              teamCount < 2 && "border-primary/60 text-primary"
+            )}
           />
+          {!entered && teamCount > 0 && (
+            <p className="-mt-3 flex items-center justify-center gap-1 text-center text-[11px] text-muted-foreground">
+              <UserRoundPlus className="size-3" /> Friends join with the code or
+              the link
+            </p>
+          )}
           {viewer.isCreator && <CloseLobbyButton code={lobby.code} />}
         </>
       )}

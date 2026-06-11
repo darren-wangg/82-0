@@ -6,7 +6,6 @@ import { prisma } from "@/lib/db";
 import { getOrCreateAnonId } from "@/lib/auth";
 import { makeLobbyCode } from "@/components/social/hashing";
 import { isDbUnavailable, jsonError } from "../_lib/teams";
-import { lobbyClosesAt } from "../_lib/lobbies";
 
 const CODE_ATTEMPTS = 5;
 
@@ -35,7 +34,7 @@ export async function POST(request: Request) {
           code: lobby.code,
           name: lobby.name,
           createdAt: lobby.createdAt.toISOString(),
-          closesAt: lobbyClosesAt(lobby.createdAt).toISOString(),
+          closedAt: null,
           status: "open",
           winner: null,
           standings: [],
