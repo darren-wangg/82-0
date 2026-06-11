@@ -29,6 +29,17 @@ const nextConfig: NextConfig = {
         protocol: "https",
         hostname: "upload.wikimedia.org",
       },
+      // theSportsDB community images: the last fallback stage of the resolver.
+      {
+        protocol: "https",
+        hostname: "r2.thesportsdb.com",
+        pathname: "/images/**",
+      },
+      {
+        protocol: "https",
+        hostname: "www.thesportsdb.com",
+        pathname: "/images/**",
+      },
     ],
   },
 };

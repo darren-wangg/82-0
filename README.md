@@ -51,6 +51,8 @@ npm run etl:headshots  # resolve fallback player images (cached, resumable)
   compiled from Basketball-Reference.com data.
 - Player headshots come from the NBA's public CDN (unofficial) with fallbacks
   from Wikipedia/Wikimedia Commons — each image's author and license are on
-  its Commons file page. A silhouette renders when no image exists.
+  its Commons file page — and, last, community images from
+  [theSportsDB](https://www.thesportsdb.com/). A silhouette renders when no
+  image exists.
 - Pre-1974 STL/BLK, pre-1978 TOV, pre-1980 3PM, and early-era ORtg/DRtg are
   estimates, flagged via `estimatedCats` and marked "est." in the UI.

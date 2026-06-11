@@ -12,11 +12,15 @@
  *      basketball-related, non-disambiguation pages, and
  *   3. for players Wikipedia still misses, matches against a bulk Wikidata
  *      query of every basketball player with a Commons image (P18) —
- *      unambiguous name matches only, each thumb verified with a HEAD.
+ *      unambiguous name matches only, each thumb verified with a HEAD, and
+ *   4. for the remainder, queries theSportsDB's free API by exact name —
+ *      accepted only when the name is unambiguous on BOTH sides (one
+ *      basketball player with imagery there, one player with that name in
+ *      our snapshot), each image verified with a HEAD.
  *
  * Output: public/data/headshot-fallbacks-v1.json — playerSlug → image URL on
- * upload.wikimedia.org. The UI chains NBA CDN → fallback → silhouette and
- * never assumes either image loads.
+ * upload.wikimedia.org / r2.thesportsdb.com. The UI chains NBA CDN →
+ * fallback → placeholder and never assumes either image loads.
  *
  * Run with: npm run etl:headshots   (network results cached in .cache)
  */
@@ -73,10 +77,11 @@ type Cache = {
   cdnOk: Record<string, boolean>; // nbaPlayerId → HEAD result
   wiki: Record<string, string | null>; // playerSlug → thumbnail URL
   wikidata: Record<string, string | null>; // playerSlug → thumbnail URL
+  tsdb: Record<string, string | null>; // playerSlug → theSportsDB image URL
 };
 
 function loadCache(): Cache {
-  const empty: Cache = { cdnOk: {}, wiki: {}, wikidata: {} };
+  const empty: Cache = { cdnOk: {}, wiki: {}, wikidata: {}, tsdb: {} };
   if (!existsSync(CACHE_FILE)) return empty;
   return { ...empty, ...JSON.parse(readFileSync(CACHE_FILE, "utf8")) };
 }
@@ -272,6 +277,52 @@ function commonsThumb(filename: string, width: number): string | null {
   return `https://upload.wikimedia.org/wikipedia/commons/thumb/${h[0]}/${h.slice(0, 2)}/${enc}/${width}px-${enc}`;
 }
 
+// ---------------------------------------------------------------------------
+// theSportsDB stage (free community API; "123" is the public dev key)
+// ---------------------------------------------------------------------------
+
+const TSDB_SEARCH = "https://www.thesportsdb.com/api/v1/json/123/searchplayers.php?p=";
+
+interface TsdbPlayer {
+  strPlayer?: string;
+  strSport?: string;
+  strThumb?: string | null;
+  strCutout?: string | null;
+}
+
+/**
+ * Image URL for `name` iff exactly one basketball player with that exact name
+ * has imagery there — common names (Eddie Johnson…) are skipped rather than
+ * risk the wrong face. Gentle pacing + 429 retries: the free key is shared.
+ */
+async function resolveTsdb(name: string): Promise<string | null> {
+  for (let attempt = 0; attempt < 4; attempt++) {
+    try {
+      const res = await fetch(TSDB_SEARCH + encodeURIComponent(name), {
+        headers: { "user-agent": USER_AGENT },
+        signal: AbortSignal.timeout(20_000),
+      });
+      if (res.status === 429 || res.status >= 500) {
+        await new Promise((r) => setTimeout(r, 15_000 * (attempt + 1)));
+        continue;
+      }
+      if (!res.ok) return null;
+      const data = (await res.json()) as { player?: TsdbPlayer[] | null };
+      const withImage = (data.player ?? []).filter(
+        (p) =>
+          p.strSport === "Basketball" &&
+          normName(p.strPlayer ?? "") === normName(name) &&
+          (p.strThumb || p.strCutout)
+      );
+      if (withImage.length !== 1) return null;
+      return withImage[0].strThumb ?? withImage[0].strCutout ?? null;
+    } catch {
+      await new Promise((r) => setTimeout(r, 3_000 * (attempt + 1)));
+    }
+  }
+  return null;
+}
+
 async function urlOk(url: string): Promise<boolean> {
   try {
     const res = await fetch(url, {
@@ -365,10 +416,40 @@ async function main() {
     writeFileSync(CACHE_FILE, JSON.stringify(cache));
   }
 
-  // 4. Emit the fallback map (only players that actually need + have one)
+  // 4. theSportsDB for players both Wikipedia and Wikidata missed
+  const stillMissed = needsFallback.filter(
+    ([slug]) => !cache.wiki[slug] && !cache.wikidata[slug]
+  );
+  // Our-side ambiguity guard: two distinct snapshot players sharing a display
+  // name can't be told apart by a name search — skip them.
+  const slugsByName = new Map<string, number>();
+  for (const [, v] of bySlug) {
+    const key = normName(v.name);
+    slugsByName.set(key, (slugsByName.get(key) ?? 0) + 1);
+  }
+  const tsdbToResolve = stillMissed.filter(
+    ([slug, v]) => !(slug in cache.tsdb) && slugsByName.get(normName(v.name)) === 1
+  );
+  console.log(
+    `  theSportsDB: ${stillMissed.length} players still missed, ${tsdbToResolve.length} to resolve`
+  );
+  let tsdbDone = 0;
+  // Sequential on purpose: shared free API key, be polite.
+  for (const [slug, v] of tsdbToResolve) {
+    const url = await resolveTsdb(v.name);
+    cache.tsdb[slug] = url && (await urlOk(url)) ? url : null;
+    if (++tsdbDone % 25 === 0) {
+      console.log(`    ${tsdbDone}/${tsdbToResolve.length}`);
+      writeFileSync(CACHE_FILE, JSON.stringify(cache));
+    }
+    await new Promise((r) => setTimeout(r, 700));
+  }
+  writeFileSync(CACHE_FILE, JSON.stringify(cache));
+
+  // 5. Emit the fallback map (only players that actually need + have one)
   const urls: Record<string, string> = {};
   for (const [slug] of needsFallback) {
-    const url = cache.wiki[slug] ?? cache.wikidata[slug];
+    const url = cache.wiki[slug] ?? cache.wikidata[slug] ?? cache.tsdb[slug];
     if (url) urls[slug] = url;
   }
   const out = {
@@ -376,8 +457,9 @@ async function main() {
     generatedAt: new Date().toISOString(),
     attribution:
       "Fallback player images are Wikipedia page thumbnails and Wikidata " +
-      "(P18) Commons images served from upload.wikimedia.org; each image's " +
-      "author and license are on its Wikimedia Commons file page.",
+      "(P18) Commons images served from upload.wikimedia.org (author and " +
+      "license on each image's Commons file page), plus community images " +
+      "from theSportsDB.com.",
     urls,
   };
   writeFileSync(OUT_FILE, JSON.stringify(out));
