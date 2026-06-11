@@ -19,10 +19,26 @@ const anton = Anton({
   subsets: ["latin"],
 });
 
+const SITE_TITLE = "82-0 — Draft the Perfect Season";
+const SITE_DESCRIPTION =
+  "Spin for a random NBA franchise and era, draft an 8-man all-time roster, and see if your team can go 82-0.";
+
+// The og/twitter images come from the opengraph-image.jpg file convention.
 export const metadata: Metadata = {
-  title: "82-0 — Draft the Perfect Season",
-  description:
-    "Spin for a random NBA franchise and era, draft an 8-man all-time roster, and see if your team can go 82-0.",
+  title: SITE_TITLE,
+  description: SITE_DESCRIPTION,
+  openGraph: {
+    title: SITE_TITLE,
+    description: SITE_DESCRIPTION,
+    siteName: "82-0",
+    type: "website",
+    locale: "en_US",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: SITE_TITLE,
+    description: SITE_DESCRIPTION,
+  },
 };
 
 export default function RootLayout({

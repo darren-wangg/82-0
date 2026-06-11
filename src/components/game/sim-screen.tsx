@@ -7,6 +7,7 @@ import {
   Check,
   Copy,
   RotateCcw,
+  Save as SaveIcon,
   Share2,
   Swords,
   TriangleAlert,
@@ -38,7 +39,9 @@ import {
 import { getEngine } from "@/lib/engine-provider";
 import { getBaselines } from "@/lib/snapshot";
 import { cn } from "@/lib/utils";
+import { CatProfileInfo } from "@/components/social/cat-profile-info";
 import { toRoster } from "./draft-state";
+import { saveLocalTeam } from "./local-teams";
 import { CAT_FRIENDLY, CAT_LABELS } from "./format";
 import { freshSeed, useGame } from "./game-provider";
 import { PlayerHeadshot } from "./player-headshot";
@@ -258,6 +261,10 @@ export function SimScreen() {
   const [toast, setToast] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
   const [shareOpen, setShareOpen] = useState(false);
+  // Save-to-device dialog (separate from sharing; nothing leaves the browser).
+  const [localOpen, setLocalOpen] = useState(false);
+  const [localName, setLocalName] = useState("");
+  const [localSaved, setLocalSaved] = useState(false);
 
   const sim = useMemo(() => {
     if (!state || state.status !== "locked") return null;
@@ -364,6 +371,26 @@ export function SimScreen() {
     }
   };
 
+  const saveToDevice = () => {
+    const name = localName.trim();
+    if (name.length === 0 || name.length > 40) {
+      setToast("Give your team a name (1–40 characters) first.");
+      return;
+    }
+    const ok = saveLocalTeam({
+      name,
+      roster,
+      snapshotVersion: state.snapshotVersion,
+      rating,
+      season,
+    });
+    if (!ok) {
+      setToast("Couldn't save on this device — storage is unavailable.");
+      return;
+    }
+    setLocalSaved(true);
+  };
+
   const runItBack = () => {
     dispatch({ type: "NEW_GAME", seed: freshSeed() });
     router.push("/play");
@@ -371,15 +398,69 @@ export function SimScreen() {
 
   return (
     <div className="flex flex-1 flex-col px-4 pt-[max(0.75rem,env(safe-area-inset-top))]">
-      {/* save/share icon, top right */}
-      <div className="flex justify-end">
+      {/* save (device) + share icons, top right */}
+      <div className="flex justify-end gap-2">
+        <Dialog
+          open={localOpen}
+          onOpenChange={(open) => {
+            setLocalOpen(open);
+            if (!open) setLocalSaved(false);
+          }}
+        >
+          <DialogTrigger
+            render={
+              <Button
+                variant="outline"
+                size="icon"
+                aria-label="Save this team to this device"
+                className="rounded-full"
+              />
+            }
+          >
+            <SaveIcon className="size-4" />
+          </DialogTrigger>
+          <DialogContent className="dark border-border bg-background text-foreground">
+            <DialogHeader>
+              <DialogTitle>Save to this device</DialogTitle>
+              <DialogDescription>
+                Name your team — it&apos;s stored only in this browser, no link,
+                nothing shared.
+              </DialogDescription>
+            </DialogHeader>
+            {localSaved ? (
+              <p className="flex items-center gap-2 text-sm font-semibold">
+                <Check className="size-4 text-emerald-400" /> Saved to this
+                device.
+              </p>
+            ) : (
+              <div className="flex flex-col gap-3">
+                <Input
+                  value={localName}
+                  maxLength={40}
+                  placeholder="Name your team"
+                  aria-label="Team name"
+                  className="h-11 rounded-xl"
+                  onChange={(e) => setLocalName(e.target.value)}
+                />
+                <Button
+                  className="h-12 w-full rounded-xl text-base font-bold"
+                  disabled={localName.trim().length === 0}
+                  onClick={saveToDevice}
+                >
+                  <SaveIcon className="size-4" /> Save
+                </Button>
+              </div>
+            )}
+          </DialogContent>
+        </Dialog>
+
         <Dialog open={shareOpen} onOpenChange={setShareOpen}>
           <DialogTrigger
             render={
               <Button
                 variant="outline"
                 size="icon"
-                aria-label="Save and share this team"
+                aria-label="Share this team"
                 className="rounded-full"
               />
             }
@@ -390,22 +471,22 @@ export function SimScreen() {
             <DialogHeader>
               <DialogTitle>
                 {state.lobbyCode
-                  ? "Save & enter lobby"
+                  ? "Enter the lobby"
                   : state.challengeSlug
-                    ? "Save & battle"
-                    : "Save & share"}
+                    ? "Battle your rival"
+                    : "Share your team"}
               </DialogTitle>
               <DialogDescription>
                 {state.lobbyCode
-                  ? `Name your team — saving enters it into lobby ${state.lobbyCode}.`
+                  ? `Name your team — it enters lobby ${state.lobbyCode}.`
                   : state.challengeSlug
-                    ? "Name your team — saving runs the best-of-7 against your rival."
+                    ? "Name your team — sharing runs the best-of-7 against your rival."
                     : "Name your team to get a share link."}
               </DialogDescription>
             </DialogHeader>
             {save.phase === "saved" ? (
               <div className="flex flex-col gap-2">
-                <p className="text-sm font-semibold">Team saved!</p>
+                <p className="text-sm font-semibold">Share link ready!</p>
                 <div className="flex items-center gap-2">
                   <code className="min-w-0 flex-1 truncate rounded-lg bg-muted px-2.5 py-2 font-mono text-xs">
                     {save.url}
@@ -436,12 +517,12 @@ export function SimScreen() {
                   onClick={saveTeam}
                 >
                   {save.phase === "saving"
-                    ? "Saving…"
+                    ? "Sharing…"
                     : state.lobbyCode
-                      ? "Save & Enter Lobby"
+                      ? "Enter Lobby"
                       : state.challengeSlug
-                        ? "Save & Battle"
-                        : "Save & Share"}
+                        ? "Battle"
+                        : "Share"}
                 </Button>
               </div>
             )}
@@ -520,8 +601,8 @@ export function SimScreen() {
 
       {/* 9-cat profile */}
       <Card className="mt-3 gap-2.5 border-border/60 bg-card/80 p-4">
-        <p className="text-[11px] font-semibold tracking-wide text-muted-foreground uppercase">
-          9-cat profile
+        <p className="flex items-center gap-1 text-[11px] font-semibold tracking-wide text-muted-foreground uppercase">
+          9-cat profile <CatProfileInfo />
         </p>
         {NINE_CATS.map((cat, i) => (
           <CatBar

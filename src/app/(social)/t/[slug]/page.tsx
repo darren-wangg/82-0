@@ -14,6 +14,7 @@ import { cn } from "@/lib/utils";
 import { RecordHero } from "@/components/social/record-hero";
 import { RosterGrid } from "@/components/social/roster-grid";
 import { CatBars } from "@/components/social/cat-bars";
+import { CatProfileInfo } from "@/components/social/cat-profile-info";
 import { ExplainStream } from "@/components/social/explain-stream";
 import { ShareButton } from "@/components/social/share-button";
 import { Unavailable } from "@/components/social/unavailable";
@@ -65,7 +66,9 @@ export default async function TeamPage({ params }: PageProps<"/t/[slug]">) {
 
       <Card>
         <CardHeader>
-          <CardTitle className="text-sm">Category profile</CardTitle>
+          <CardTitle className="flex items-center gap-1.5 text-sm">
+            Category profile <CatProfileInfo />
+          </CardTitle>
         </CardHeader>
         <CardContent>
           <CatBars profile={team.rating.catProfile} />

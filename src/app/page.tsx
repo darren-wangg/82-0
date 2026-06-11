@@ -15,9 +15,6 @@ export default function Home() {
     <div className="dark flex min-h-dvh flex-1 flex-col bg-background text-foreground">
       <main className="mx-auto flex w-full max-w-md flex-1 flex-col items-center justify-center gap-8 px-6 pt-16 pb-10">
         <div className="flex flex-col items-center gap-4 text-center">
-          <p className="text-xs font-semibold tracking-[0.35em] text-primary uppercase">
-            The draft game
-          </p>
           <h1 className="bg-gradient-to-br from-primary via-orange-300 to-violet-400 bg-clip-text font-display text-[6.5rem] leading-none tracking-tight text-transparent tabular-nums">
             82-0
           </h1>
