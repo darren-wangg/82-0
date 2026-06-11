@@ -15,7 +15,8 @@ import {
 } from "@/lib/contracts";
 
 export const PROMPT_VERSION = "v2";
-export const EXPLAIN_MODEL = "claude-sonnet-4-6";
+/** Cheapest tier — explanations are short, structured-input blurbs. */
+export const EXPLAIN_MODEL = "claude-haiku-4-5-20251001";
 
 export const CAT_LABELS: Record<NineCat, string> = {
   pts: "points",

@@ -1,9 +1,9 @@
 /**
  * /l/[code] — group lobby: anyone with the link drafts a fresh team while
  * the lobby is open (until the creator ends it), one team per device.
- * Standings run every entry head-to-head and refresh live; the leader is
- * crowned champion when the creator closes the lobby. Team rows link to
- * full details (roster, 9-cat, OFF/DEF).
+ * Standings run every entry head-to-head (manual refresh via the status
+ * chip); the leader is crowned champion when the creator closes the lobby.
+ * Team rows link to full details (roster, 9-cat, OFF/DEF).
  */
 
 import type { Metadata } from "next";
@@ -17,7 +17,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
 import { CloseLobbyButton } from "@/components/social/close-lobby-button";
 import { CopyCode } from "@/components/social/copy-code";
-import { LobbyLive } from "@/components/social/lobby-live";
+import { LobbyRefresh } from "@/components/social/lobby-refresh";
 import { ShareButton } from "@/components/social/share-button";
 import { StandingsTable } from "@/components/social/standings-table";
 import { Unavailable } from "@/components/social/unavailable";
@@ -64,7 +64,7 @@ export default async function LobbyPage({ params }: PageProps<"/l/[code]">) {
           Lobby code
           <CopyCode code={lobby.code} />
           {open ? (
-            <LobbyLive />
+            <LobbyRefresh />
           ) : (
             <span className="font-semibold text-amber-400">Closed</span>
           )}
@@ -115,12 +115,12 @@ export default async function LobbyPage({ params }: PageProps<"/l/[code]">) {
               </Link>
               {teamCount < 2 ? (
                 <span className="mt-1 block text-xs text-muted-foreground">
-                  Nobody to beat yet — send the invite and watch the standings
-                  fill in live.
+                  Nobody to beat yet — send the invite, then tap the refresh
+                  icon up top to check for new entries.
                 </span>
               ) : (
                 <span className="mt-1 block text-xs text-muted-foreground">
-                  Standings update live as entries arrive.
+                  Tap the refresh icon up top to check for new entries.
                 </span>
               )}
             </CardContent>
