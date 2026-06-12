@@ -2,6 +2,7 @@
 
 import { useMemo, useState } from "react";
 import { motion } from "framer-motion";
+import { BarChart3 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import type { NineCat, PlayerStatLine } from "@/lib/contracts";
 import { cn } from "@/lib/utils";
@@ -46,6 +47,7 @@ export function PoolList({
 }) {
   const [sortCat, setSortCat] = useState<NineCat>("pts");
   const [query, setQuery] = useState("");
+  const [showStats, setShowStats] = useState(true);
 
   const sorted = useMemo(() => {
     // Diacritic-insensitive ("jokic" finds Jokić) prefix-anywhere match.
@@ -70,8 +72,20 @@ export function PoolList({
           onChange={(e) => setQuery(e.target.value)}
           placeholder="Search"
           aria-label="Search players by name"
-          className="h-8 min-w-0 flex-1 rounded-lg border border-border bg-card px-2.5 text-xs text-foreground placeholder:text-muted-foreground/70 focus:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+          className="h-8 w-32 rounded-lg border border-border bg-card px-2.5 text-xs text-foreground placeholder:text-muted-foreground/70 focus:outline-none focus-visible:ring-1 focus-visible:ring-ring"
         />
+        <button
+          type="button"
+          aria-label={showStats ? "Hide player stats" : "Show player stats"}
+          aria-pressed={showStats}
+          onClick={() => setShowStats((s) => !s)}
+          className={cn(
+            "ml-auto flex h-8 items-center justify-center rounded-lg border border-border bg-card px-2 transition-colors",
+            showStats ? "text-primary" : "text-muted-foreground/60"
+          )}
+        >
+          <BarChart3 className="size-4" />
+        </button>
         <select
           value={sortCat}
           onChange={(e) => setSortCat(e.target.value as NineCat)}
@@ -144,6 +158,7 @@ export function PoolList({
                       {p.altPositions.length > 2 && "+"}
                     </Badge>
                   </div>
+                  {showStats && (
                   <div className="mt-1 grid grid-cols-6 gap-1">
                     {ROW_CATS.map(({ cat, label }) => (
                       <div key={cat} className="flex flex-col items-start">
@@ -164,6 +179,7 @@ export function PoolList({
                       </div>
                     ))}
                   </div>
+                  )}
                 </div>
               </button>
             </motion.li>
