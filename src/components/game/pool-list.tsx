@@ -10,6 +10,18 @@ import { isEstimated, SORT_OPTIONS } from "./format";
 import { isLegendary } from "./legends";
 import { PlayerHeadshot } from "./player-headshot";
 
+/** The stats toggle outlives the pool (which remounts every spin): kept in
+ *  sessionStorage so the choice sticks for the whole tab session. */
+const STATS_TOGGLE_KEY = "ud:pool-stats-visible";
+
+function loadStatsVisible(): boolean {
+  try {
+    return window.sessionStorage.getItem(STATS_TOGGLE_KEY) !== "off";
+  } catch {
+    return true;
+  }
+}
+
 /** Lowercase + strip diacritics so search ignores both. */
 function normalize(s: string): string {
   return s
@@ -47,7 +59,18 @@ export function PoolList({
 }) {
   const [sortCat, setSortCat] = useState<NineCat>("pts");
   const [query, setQuery] = useState("");
-  const [showStats, setShowStats] = useState(true);
+  const [showStats, setShowStats] = useState(loadStatsVisible);
+
+  const toggleStats = () => {
+    setShowStats((s) => {
+      try {
+        window.sessionStorage.setItem(STATS_TOGGLE_KEY, s ? "off" : "on");
+      } catch {
+        // storage unavailable — the toggle still works for this pool
+      }
+      return !s;
+    });
+  };
 
   const sorted = useMemo(() => {
     // Diacritic-insensitive ("jokic" finds Jokić) prefix-anywhere match.
@@ -72,13 +95,13 @@ export function PoolList({
           onChange={(e) => setQuery(e.target.value)}
           placeholder="Search"
           aria-label="Search players by name"
-          className="h-8 w-32 rounded-lg border border-border bg-card px-2.5 text-xs text-foreground placeholder:text-muted-foreground/70 focus:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+          className="h-8 w-40 rounded-lg border border-border bg-card px-2.5 text-xs text-foreground placeholder:text-muted-foreground/70 focus:outline-none focus-visible:ring-1 focus-visible:ring-ring"
         />
         <button
           type="button"
           aria-label={showStats ? "Hide player stats" : "Show player stats"}
           aria-pressed={showStats}
-          onClick={() => setShowStats((s) => !s)}
+          onClick={toggleStats}
           className={cn(
             "ml-auto flex h-8 items-center justify-center rounded-lg border border-border bg-card px-2 transition-colors",
             showStats ? "text-primary" : "text-muted-foreground/60"
