@@ -275,7 +275,7 @@ export function PlayScreen() {
               exit={{ opacity: 0 }}
               className="flex flex-1 items-center justify-center gap-1.5"
             >
-              {"ROLLING…".split("").map((ch, i) => (
+              {"SPINNING…".split("").map((ch, i) => (
                 <motion.span
                   key={i}
                   animate={{ y: [0, -6, 0], opacity: [0.5, 1, 0.5] }}

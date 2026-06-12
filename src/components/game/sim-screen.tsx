@@ -658,7 +658,7 @@ export function SimScreen() {
                 <DownloadCardButton
                   cardUrl={`${save.url}/card`}
                   fileName="ultimate-draft-team-card.png"
-                  label="Save the retro team card"
+                  label="Save team"
                   className="mx-auto text-xs font-semibold text-primary underline-offset-2 hover:underline"
                 />
               </div>
@@ -873,7 +873,7 @@ export function SimScreen() {
         <DownloadCardButton
           cardUrl={cardUrl}
           fileName="ultimate-draft-team-card.png"
-          label="Save the retro team card"
+          label="Save team"
           className="mx-auto text-xs font-semibold text-primary underline-offset-2 hover:underline"
         />
         {state.lobbyCode && save.phase !== "saved" && (
