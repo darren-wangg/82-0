@@ -10,11 +10,12 @@
 import {
   MatchupResult,
   NineCat,
+  SEASON_GAMES,
   SeasonResult,
   TeamRating,
 } from "@/lib/contracts";
 
-export const PROMPT_VERSION = "v5";
+export const PROMPT_VERSION = "v6";
 /** Cheapest tier — explanations are short, structured-input blurbs. */
 export const EXPLAIN_MODEL = "claude-haiku-4-5-20251001";
 
@@ -69,13 +70,21 @@ export function buildTeamPrompt(payload: TeamExplainPayload): string {
     .map(([cat, v]) => `${CAT_LABELS[cat]}: ${v.toFixed(2)}`)
     .join(", ");
 
+  const perfect = season.wins === SEASON_GAMES;
   return [
-    `Give your take on this roster in AT MOST 2 sentences:`,
-    `why they're nice, what's holding them back${
-      season.gatedCategory
-        ? ` (the binding weakness is ${CAT_LABELS[season.gatedCategory]} — it capped them at ${season.winCap} wins, call it out)`
-        : " (no category gate applied — nothing capped them)"
-    }, and the one fix you'd make.`,
+    ...(perfect
+      ? [
+          `This roster just went a PERFECT ${SEASON_GAMES}-0 — the rarest thing in the game.`,
+          `Give them their flowers in AT MOST 2 sentences: pure hype, crown them, shout out what makes the machine unbeatable. Zero criticism, no fixes, no "but".`,
+        ]
+      : [
+          `Give your take on this roster in AT MOST 2 sentences:`,
+          `why they're nice, what's holding them back${
+            season.gatedCategory
+              ? ` (the binding weakness is ${CAT_LABELS[season.gatedCategory]} — it capped them at ${season.winCap} wins, call it out)`
+              : " (no category gate applied — nothing capped them)"
+          }, and the one fix you'd make.`,
+        ]),
     ``,
     `Team: "${teamName}"`,
     `Projected record: ${season.wins}-${season.losses}`,

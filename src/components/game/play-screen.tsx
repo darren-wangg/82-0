@@ -150,15 +150,18 @@ export function PlayScreen() {
                 {Math.min(state.picks.length + 1, DRAFT_ROUNDS)} of {DRAFT_ROUNDS}
               </motion.span>
             </p>
-            <Button
-              variant="ghost"
-              size="icon-sm"
-              aria-label="New draft"
-              className="text-muted-foreground"
-              onClick={newGame}
-            >
-              <RotateCcw />
-            </Button>
+            {/* Lobby drafts are one-shot — no restarting into a fresh pool. */}
+            {!state.lobbyCode && (
+              <Button
+                variant="ghost"
+                size="icon-sm"
+                aria-label="New draft"
+                className="text-muted-foreground"
+                onClick={newGame}
+              >
+                <RotateCcw />
+              </Button>
+            )}
           </div>
           <Progress
             value={(state.picks.length / DRAFT_ROUNDS) * 100}
@@ -196,10 +199,15 @@ export function PlayScreen() {
           className="mt-2 flex items-center gap-2 rounded-lg border border-sky-400/40 bg-sky-400/10 px-2.5 py-1.5 text-xs"
         >
           <Users className="size-3.5 shrink-0 text-sky-300" />
-          <span className="min-w-0 truncate">
-            Lobby draft —
-            <span className="font-mono font-bold tracking-widest text-sky-300">
-              {state.lobbyCode}
+          <span className="min-w-0">
+            <span className="block truncate">
+              Lobby draft —{" "}
+              <span className="font-mono font-bold tracking-widest text-sky-300">
+                {state.lobbyCode}
+              </span>
+            </span>
+            <span className="block text-[11px] text-sky-200/70">
+              One draft only — lock in your 8 and submit to enter.
             </span>
           </span>
         </motion.div>

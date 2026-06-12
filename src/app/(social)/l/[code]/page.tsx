@@ -17,6 +17,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
 import { CloseLobbyButton } from "@/components/social/close-lobby-button";
 import { CopyCode } from "@/components/social/copy-code";
+import { DownloadCardButton } from "@/components/social/download-card";
 import { LobbyRefresh } from "@/components/social/lobby-refresh";
 import { ShareButton } from "@/components/social/share-button";
 import { StandingsTable } from "@/components/social/standings-table";
@@ -128,7 +129,9 @@ export default async function LobbyPage({ params }: PageProps<"/l/[code]">) {
               Draft your team
             </Link>
             <p className="text-center text-[11px] text-muted-foreground">
-              Every entry is drafted fresh for this lobby — one team per device.
+              <span className="font-semibold text-amber-400">One shot:</span>{" "}
+              you draft a single fresh team for this lobby — no re-dos. Lock in
+              your 8 and submit it to enter.
             </p>
           </div>
         ))}
@@ -147,6 +150,18 @@ export default async function LobbyPage({ params }: PageProps<"/l/[code]">) {
           />
         </CardContent>
       </Card>
+
+      {!open && teamCount > 0 && (
+        <DownloadCardButton
+          cardUrl={`/l/${lobby.code}/card`}
+          fileName={`ultimate-draft-lobby-${lobby.code}.png`}
+          label="Save the game summary"
+          className={cn(
+            buttonVariants({ variant: "outline", size: "lg" }),
+            "w-full"
+          )}
+        />
+      )}
 
       {open && (
         <>

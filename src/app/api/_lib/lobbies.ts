@@ -1,6 +1,6 @@
 /** Lobby loading + lifecycle shared by /api/lobbies/* and the /l/[code] page. */
 
-import { LobbyResponse } from "@/lib/contracts";
+import { LobbyResponse, Roster, RosterSchema } from "@/lib/contracts";
 import { prisma } from "@/lib/db";
 import { getAnonIdFromCookie } from "@/lib/auth";
 import { getEngine } from "@/lib/engine-provider";
@@ -45,6 +45,20 @@ export async function loadLobbyResponse(code: string): Promise<LobbyResponse | n
     winner: !open && standings.length > 0 ? standings[0] : null,
     standings,
   };
+}
+
+/** teamSlug → roster for every entry (the summary card lists players). */
+export async function loadLobbyRosters(code: string): Promise<Map<string, Roster>> {
+  const entries = await prisma.lobbyEntry.findMany({
+    where: { lobbyCode: code },
+    include: { team: { select: { slug: true, roster: true } } },
+  });
+  const rosters = new Map<string, Roster>();
+  for (const entry of entries) {
+    const parsed = RosterSchema.safeParse(entry.team.roster);
+    if (parsed.success) rosters.set(entry.team.slug, parsed.data);
+  }
+  return rosters;
 }
 
 /** What the current device is to this lobby (page-render only, reads the

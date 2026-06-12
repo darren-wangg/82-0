@@ -80,6 +80,83 @@ function useCountUp(target: number, duration: number, delay = 0): number {
   return value;
 }
 
+/** Re-mounts on every count-up tick so each number change pops. */
+function PopNumber({ value }: { value: number }) {
+  const reducedMotion = useReducedMotion();
+  if (reducedMotion) return <>{value}</>;
+  return (
+    <motion.span
+      key={value}
+      initial={{ scale: 1.3 }}
+      animate={{ scale: 1 }}
+      transition={{ duration: 0.16, ease: "easeOut" }}
+      className="inline-block"
+    >
+      {value}
+    </motion.span>
+  );
+}
+
+/** Three staggered basketballs "dribbling" while the season simulates. */
+function DribbleLoader() {
+  return (
+    <div aria-hidden className="flex items-end gap-2.5">
+      {[0, 1, 2].map((i) => (
+        <motion.span
+          key={i}
+          animate={{ y: [0, -10, 0] }}
+          transition={{
+            repeat: Infinity,
+            duration: 0.55,
+            delay: i * 0.16,
+            ease: "easeInOut",
+          }}
+          className="text-lg leading-none"
+        >
+          🏀
+        </motion.span>
+      ))}
+    </div>
+  );
+}
+
+/** One-shot radial basketball burst fired when the record lands. */
+const BURST_BALLS = [
+  { x: -130, y: -70, rotate: -220 },
+  { x: 130, y: -80, rotate: 220 },
+  { x: -160, y: 6, rotate: -160 },
+  { x: 160, y: -4, rotate: 160 },
+  { x: -70, y: -125, rotate: -120 },
+  { x: 76, y: -135, rotate: 140 },
+];
+
+function BallBurst() {
+  return (
+    <div
+      aria-hidden
+      className="pointer-events-none absolute inset-0 flex items-center justify-center"
+    >
+      {BURST_BALLS.map((b, i) => (
+        <motion.span
+          key={i}
+          className="absolute text-2xl leading-none"
+          initial={{ x: 0, y: 0, scale: 0.4, opacity: 0 }}
+          animate={{
+            x: b.x,
+            y: b.y,
+            rotate: b.rotate,
+            scale: [0.4, 1.15, 1],
+            opacity: [0, 1, 0],
+          }}
+          transition={{ duration: 0.9, ease: "easeOut" }}
+        >
+          🏀
+        </motion.span>
+      ))}
+    </div>
+  );
+}
+
 function OvrDial({ ovr }: { ovr: number }) {
   const shown = useCountUp(ovr, 1.6, COUNT_UP_SECONDS * 0.5);
   const r = 44;
@@ -315,6 +392,22 @@ export function SimScreen() {
     return () => window.clearTimeout(t);
   }, [toast]);
 
+  // True once the count-up settles — gates the landing pop / ball burst.
+  const [landed, setLanded] = useState(false);
+  useEffect(() => {
+    if (!sim) return;
+    if (reducedMotion) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- no count-up to wait for
+      setLanded(true);
+      return;
+    }
+    const t = window.setTimeout(
+      () => setLanded(true),
+      COUNT_UP_SECONDS * 1000
+    );
+    return () => window.clearTimeout(t);
+  }, [sim, reducedMotion]);
+
   // Buzz when the 82-0 lands (Android; iOS has no vibration API — no-op).
   useEffect(() => {
     if (sim?.season.wins !== SEASON_GAMES) return;
@@ -447,6 +540,13 @@ export function SimScreen() {
     dispatch({ type: "NEW_GAME", seed: freshSeed() });
     router.push("/play");
   };
+
+  // Saved teams get the canonical (named) card; unsaved drafts render one
+  // on the fly server-side from the roster itself.
+  const cardUrl =
+    save.phase === "saved"
+      ? `${save.url}/card`
+      : `/api/draft-card?r=${encodeURIComponent(JSON.stringify(roster))}`;
 
   return (
     <div className="flex flex-1 flex-col px-4 pt-[max(0.75rem,env(safe-area-inset-top))]">
@@ -606,12 +706,17 @@ export function SimScreen() {
       </div>
 
       {/* final record */}
-      <div className="flex flex-col items-center text-center">
-        {/* outer: entrance spring; inner: endless pulse for a perfect season */}
+      <div className="relative flex flex-col items-center text-center">
+        {/* outer: entrance spring; middle: pop when the count lands;
+            inner: endless pulse for a perfect season */}
         <motion.div
           initial={{ scale: 0.7, opacity: 0 }}
           animate={{ scale: 1, opacity: 1 }}
           transition={{ type: "spring", stiffness: 220, damping: 18 }}
+        >
+        <motion.div
+          animate={landed && !reducedMotion ? { scale: [1, 1.18, 1] } : undefined}
+          transition={{ duration: 0.55, ease: "easeOut" }}
         >
         <motion.p
           animate={perfect ? { scale: [1, 1.06, 1] } : undefined}
@@ -628,9 +733,15 @@ export function SimScreen() {
           )}
           aria-label={`Final record ${season.wins} and ${season.losses}`}
         >
-          {wins}-{losses}
+          <PopNumber value={wins} />-<PopNumber value={losses} />
         </motion.p>
         </motion.div>
+        </motion.div>
+        {landed && !reducedMotion && <BallBurst />}
+        {/* fixed-height slot so the loader leaving doesn't shift the layout */}
+        <div className="flex h-7 items-center">
+          {!landed && !reducedMotion && <DribbleLoader />}
+        </div>
       </div>
 
       {/* the team */}
@@ -759,6 +870,12 @@ export function SimScreen() {
 
       {/* thumb-zone footer */}
       <div className="sticky bottom-0 mt-auto flex flex-col gap-2 bg-gradient-to-t from-background via-background/95 to-transparent pt-4 pb-[max(1rem,env(safe-area-inset-bottom))]">
+        <DownloadCardButton
+          cardUrl={cardUrl}
+          fileName="ultimate-draft-team-card.png"
+          label="Save the retro team card"
+          className="mx-auto text-xs font-semibold text-primary underline-offset-2 hover:underline"
+        />
         {state.lobbyCode && save.phase !== "saved" && (
           <Button
             className="h-14 w-full rounded-2xl font-display text-xl tracking-wide shadow-lg shadow-primary/30"
@@ -775,13 +892,17 @@ export function SimScreen() {
             <Swords className="size-5" /> Battle your rival
           </Button>
         )}
-        <Button
-          variant="outline"
-          className="h-14 w-full rounded-2xl text-lg font-bold"
-          onClick={runItBack}
-        >
-          <RotateCcw className="size-5" /> Run it back
-        </Button>
+        {/* Lobby drafts are one-shot: this team enters the lobby or nothing
+            does — no re-rolling into a fresh draft. */}
+        {!state.lobbyCode && (
+          <Button
+            variant="outline"
+            className="h-14 w-full rounded-2xl text-lg font-bold"
+            onClick={runItBack}
+          >
+            <RotateCcw className="size-5" /> Run it back
+          </Button>
+        )}
       </div>
 
       {/* toast */}

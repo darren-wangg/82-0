@@ -14,5 +14,9 @@ export function headshotSourcesFrom(
 ): string[] {
   const cdn = headshotUrl(p);
   const fallback = fallbackUrls[p.playerSlug];
-  return [...(cdn ? [cdn] : []), ...(fallback ? [fallback] : [])];
+  // The ETL only emits a fallback when the CDN serves its generic placeholder
+  // (which loads with HTTP 200, so consumers can't error past it) — a mapped
+  // fallback therefore always outranks the CDN. The CDN stays as a last
+  // resort in case the fallback host dies.
+  return [...(fallback ? [fallback] : []), ...(cdn ? [cdn] : [])];
 }
