@@ -1,11 +1,13 @@
 /**
  * GET /t/[slug]/card — downloadable team card PNG (see
  * src/components/social/retro-card.tsx for the shared arcade renderer).
- * Teams are immutable once saved, so the response is cached forever at the
- * CDN.
+ * Owner-only: the anon device cookie must match the team's owner — visitors
+ * share the link/OG image instead of downloading the card.
  */
 
 import { ImageResponse } from "next/og";
+import { getAnonIdFromCookie } from "@/lib/auth";
+import { prisma } from "@/lib/db";
 import { getPlayerMap } from "@/lib/snapshot";
 import { loadSavedTeam } from "@/app/api/_lib/teams";
 import { RATE_LIMITS, rateLimitGate } from "@/app/api/_lib/rate-limit";
@@ -30,12 +32,25 @@ export async function GET(
   const { slug } = await params;
 
   let team;
+  let ownerAnonId: string | null;
   try {
-    team = await loadSavedTeam(slug);
+    [team, ownerAnonId] = await Promise.all([
+      loadSavedTeam(slug),
+      prisma.team
+        .findUnique({ where: { slug }, select: { anonIdentityId: true } })
+        .then((row) => row?.anonIdentityId ?? null),
+    ]);
   } catch {
     return new Response("Team data is unavailable right now.", { status: 503 });
   }
   if (!team) return new Response("Team not found.", { status: 404 });
+
+  const anonId = await getAnonIdFromCookie();
+  if (ownerAnonId === null || anonId === null || anonId !== ownerAnonId) {
+    return new Response("Only the team's owner can save its card.", {
+      status: 403,
+    });
+  }
 
   const slots = rosterSlots(team.roster, getPlayerMap());
   const [fonts, headshots] = await Promise.all([
@@ -58,8 +73,9 @@ export async function GET(
       height: CARD_HEIGHT,
       fonts,
       headers: {
-        // Saved teams never change; let the CDN keep the render forever.
-        "Cache-Control": "public, max-age=31536000, immutable",
+        // Owner-gated, so the CDN must NOT share it — the owner's browser
+        // may cache it forever (saved teams never change).
+        "Cache-Control": "private, max-age=31536000, immutable",
         "Content-Disposition": `inline; filename="ultimate-draft-${slug}.png"`,
       },
     }

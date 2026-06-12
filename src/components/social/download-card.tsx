@@ -38,12 +38,19 @@ export function DownloadCardButton({
   const blobRef = useRef<Blob | null>(null);
   const fetchingRef = useRef<string | null>(null);
   const [busy, setBusy] = useState(false);
+  // Owner-gated cards 403 for visitors — the button removes itself rather
+  // than offering a download that can't succeed.
+  const [forbidden, setForbidden] = useState(false);
 
   const prefetch = () => {
     if (blobRef.current || fetchingRef.current === cardUrl) return;
     fetchingRef.current = cardUrl;
     fetch(cardUrl)
       .then(async (res) => {
+        if (res.status === 403) {
+          setForbidden(true);
+          return;
+        }
         if (!res.ok) return;
         const blob = await res.blob();
         if (fetchingRef.current === cardUrl) blobRef.current = blob;
@@ -59,6 +66,8 @@ export function DownloadCardButton({
   useEffect(() => {
     blobRef.current = null;
     fetchingRef.current = null;
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- reset for the new card URL
+    setForbidden(false);
     const t = window.setTimeout(prefetch, PREFETCH_DELAY_MS);
     return () => window.clearTimeout(t);
     // eslint-disable-next-line react-hooks/exhaustive-deps -- prefetch is stable per cardUrl
@@ -68,7 +77,16 @@ export function DownloadCardButton({
     if (busy) return;
     setBusy(true);
     try {
-      const blob = blobRef.current ?? (await (await fetch(cardUrl)).blob());
+      let blob = blobRef.current;
+      if (!blob) {
+        const res = await fetch(cardUrl);
+        if (res.status === 403) {
+          setForbidden(true);
+          return;
+        }
+        if (!res.ok) throw new Error(`card fetch failed: ${res.status}`);
+        blob = await res.blob();
+      }
       blobRef.current = blob;
       const file = new File([blob], fileName, {
         type: blob.type || "image/png",
@@ -96,6 +114,8 @@ export function DownloadCardButton({
       setBusy(false);
     }
   }
+
+  if (forbidden) return null;
 
   return (
     <button
