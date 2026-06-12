@@ -16,11 +16,17 @@
  *   4. for the remainder, queries theSportsDB's free API by exact name —
  *      accepted only when the name is unambiguous on BOTH sides (one
  *      basketball player with imagery there, one player with that name in
- *      our snapshot), each image verified with a HEAD.
+ *      our snapshot), each image verified with a HEAD, and
+ *   5. last, consults the BasketballGM community photo map (alexnoob/
+ *      BasketBall-GM-Rosters player-photos.json), which is keyed by the same
+ *      Basketball-Reference slugs as our playerSlug. URLs hosted on
+ *      basketball-reference.com are skipped (barred — see AGENTS.md); the
+ *      rest are verified with a GET that must return an image.
  *
- * Output: public/data/headshot-fallbacks-v1.json — playerSlug → image URL on
- * upload.wikimedia.org / r2.thesportsdb.com. The UI chains NBA CDN →
- * fallback → placeholder and never assumes either image loads.
+ * Output: public/data/headshot-fallbacks-v1.json — playerSlug → image URL.
+ * The UI chains NBA CDN → fallback → placeholder and never assumes either
+ * image loads; every fallback host must be allowlisted in next.config.ts
+ * images.remotePatterns.
  *
  * Run with: npm run etl:headshots   (network results cached in .cache)
  */
@@ -44,6 +50,11 @@ const WIKIDATA_CACHE_FILE = path.join(
   path.dirname(fileURLToPath(import.meta.url)),
   ".cache",
   "wikidata-basketball.json"
+);
+const BGM_CACHE_FILE = path.join(
+  path.dirname(fileURLToPath(import.meta.url)),
+  ".cache",
+  "bgm-photos.json"
 );
 
 const USER_AGENT =
@@ -78,10 +89,11 @@ type Cache = {
   wiki: Record<string, string | null>; // playerSlug → thumbnail URL
   wikidata: Record<string, string | null>; // playerSlug → thumbnail URL
   tsdb: Record<string, string | null>; // playerSlug → theSportsDB image URL
+  bgm: Record<string, string | null>; // playerSlug → BasketballGM map URL
 };
 
 function loadCache(): Cache {
-  const empty: Cache = { cdnOk: {}, wiki: {}, wikidata: {}, tsdb: {} };
+  const empty: Cache = { cdnOk: {}, wiki: {}, wikidata: {}, tsdb: {}, bgm: {} };
   if (!existsSync(CACHE_FILE)) return empty;
   return { ...empty, ...JSON.parse(readFileSync(CACHE_FILE, "utf8")) };
 }
@@ -343,6 +355,49 @@ async function resolveTsdb(name: string): Promise<string | null> {
   return null;
 }
 
+// ---------------------------------------------------------------------------
+// BasketballGM community photo map stage
+// ---------------------------------------------------------------------------
+
+/** Crowd-maintained playerSlug → photo URL map from the BasketballGM "real
+ *  players" project. Mostly 1950s–90s players the other stages can't reach. */
+const BGM_URL =
+  "https://raw.githubusercontent.com/alexnoob/BasketBall-GM-Rosters/master/player-photos.json";
+
+/** Hosts we refuse to hotlink even when the map points there. */
+const BGM_BLOCKED_HOSTS = ["basketball-reference.com"];
+
+async function bgmPhotoMap(): Promise<Record<string, string>> {
+  if (existsSync(BGM_CACHE_FILE)) {
+    return JSON.parse(readFileSync(BGM_CACHE_FILE, "utf8"));
+  }
+  const res = await fetch(BGM_URL, { signal: AbortSignal.timeout(60_000) });
+  if (!res.ok) throw new Error(`BGM photo map fetch failed: ${res.status}`);
+  const map = (await res.json()) as Record<string, string>;
+  writeFileSync(BGM_CACHE_FILE, JSON.stringify(map));
+  return map;
+}
+
+/** Browsers will be the ones loading these long-tail hosts (via the image
+ *  optimizer), so verify with a browser-like UA: a GET that lands on an
+ *  image. Imgur serves its "removed" tombstone as a 200 image — reject it. */
+async function bgmUrlOk(url: string): Promise<boolean> {
+  try {
+    const res = await fetch(url, {
+      headers: {
+        "user-agent":
+          "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36",
+      },
+      signal: AbortSignal.timeout(20_000),
+    });
+    if (!res.ok) return false;
+    if (res.url.includes("removed")) return false;
+    return (res.headers.get("content-type") ?? "").startsWith("image");
+  } catch {
+    return false;
+  }
+}
+
 async function urlOk(url: string): Promise<boolean> {
   try {
     const res = await fetch(url, {
@@ -466,20 +521,54 @@ async function main() {
   }
   writeFileSync(CACHE_FILE, JSON.stringify(cache));
 
-  // 5. Emit the fallback map (only players that actually need + have one)
+  // 5. BasketballGM community map for everything still unresolved
+  const allMissed = needsFallback.filter(
+    ([slug]) => !cache.wiki[slug] && !cache.wikidata[slug] && !cache.tsdb[slug]
+  );
+  const bgmToResolve = allMissed.filter(([slug]) => !(slug in cache.bgm));
+  console.log(
+    `  BasketballGM map: ${allMissed.length} players still missed, ${bgmToResolve.length} to resolve`
+  );
+  if (bgmToResolve.length > 0) {
+    const bgmMap = await bgmPhotoMap();
+    let bgmDone = 0;
+    await mapPool(bgmToResolve, 6, async ([slug]) => {
+      const url = bgmMap[slug];
+      const blocked =
+        !url ||
+        BGM_BLOCKED_HOSTS.some((h) => new URL(url).hostname.endsWith(h));
+      cache.bgm[slug] = !blocked && (await bgmUrlOk(url)) ? url : null;
+      if (++bgmDone % 50 === 0) {
+        console.log(`    ${bgmDone}/${bgmToResolve.length}`);
+        writeFileSync(CACHE_FILE, JSON.stringify(cache));
+      }
+    });
+    writeFileSync(CACHE_FILE, JSON.stringify(cache));
+  }
+
+  // 6. Emit the fallback map (only players that actually need + have one)
   const urls: Record<string, string> = {};
   for (const [slug] of needsFallback) {
-    const url = cache.wiki[slug] ?? cache.wikidata[slug] ?? cache.tsdb[slug];
+    const url =
+      cache.wiki[slug] ??
+      cache.wikidata[slug] ??
+      cache.tsdb[slug] ??
+      cache.bgm[slug];
     if (url) urls[slug] = url;
   }
+  const hosts = [...new Set(Object.values(urls).map((u) => new URL(u).hostname))];
+  console.log(`  fallback hosts (must be in next.config remotePatterns):`);
+  for (const h of hosts.sort()) console.log(`    ${h}`);
   const out = {
     version: "v1",
     generatedAt: new Date().toISOString(),
     attribution:
       "Fallback player images are Wikipedia page thumbnails and Wikidata " +
       "(P18) Commons images served from upload.wikimedia.org (author and " +
-      "license on each image's Commons file page), plus community images " +
-      "from theSportsDB.com.",
+      "license on each image's Commons file page), community images from " +
+      "theSportsDB.com, and historic-player photo links curated by the " +
+      "BasketballGM community (github.com/alexnoob/BasketBall-GM-Rosters), " +
+      "hotlinked from their original hosts.",
     urls,
   };
   writeFileSync(OUT_FILE, JSON.stringify(out));

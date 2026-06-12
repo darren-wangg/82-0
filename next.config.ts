@@ -29,7 +29,7 @@ const nextConfig: NextConfig = {
         protocol: "https",
         hostname: "upload.wikimedia.org",
       },
-      // theSportsDB community images: the last fallback stage of the resolver.
+      // theSportsDB community images: a late fallback stage of the resolver.
       {
         protocol: "https",
         hostname: "r2.thesportsdb.com",
@@ -40,6 +40,22 @@ const nextConfig: NextConfig = {
         hostname: "www.thesportsdb.com",
         pathname: "/images/**",
       },
+      // Long-tail hosts from the BasketballGM community photo map (final
+      // resolver stage, mostly 1950s–90s players). This list must cover every
+      // hostname the ETL prints under "fallback hosts" — re-check after each
+      // `npm run etl:headshots`.
+      { protocol: "https", hostname: "thedraftreview.com" },
+      { protocol: "https", hostname: "www.thedraftreview.com" },
+      { protocol: "https", hostname: "i.imgur.com" },
+      { protocol: "https", hostname: "i.ibb.co" },
+      { protocol: "https", hostname: "*.bp.blogspot.com" },
+      { protocol: "https", hostname: "*.findagrave.com" },
+      { protocol: "https", hostname: "alchetron.com" },
+      { protocol: "https", hostname: "totallyradicalsportz.files.wordpress.com" },
+      { protocol: "https", hostname: "www.cavshistory.com" },
+      { protocol: "https", hostname: "www.latimes.com" },
+      { protocol: "https", hostname: "www.legendsofbasketball.com" },
+      { protocol: "https", hostname: "www.nasljerseys.com" },
     ],
   },
 };

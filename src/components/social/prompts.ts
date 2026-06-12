@@ -14,7 +14,7 @@ import {
   TeamRating,
 } from "@/lib/contracts";
 
-export const PROMPT_VERSION = "v4";
+export const PROMPT_VERSION = "v5";
 /** Cheapest tier — explanations are short, structured-input blurbs. */
 export const EXPLAIN_MODEL = "claude-haiku-4-5-20251001";
 
@@ -54,7 +54,7 @@ const SYSTEM_PROMPT =
   "Ground every take in the numbers you're given: category values are " +
   "era-adjusted z-scores (higher is always better; turnovers are " +
   "sign-flipped). Never invent stats. Plain text only, no markdown, no " +
-  "headings, no bullet points. Hard limit: 3 sentences, no exceptions — " +
+  "headings, no bullet points. Hard limit: 2 sentences, no exceptions — " +
   "treat it like the shot clock.";
 
 export function buildTeamSystemPrompt(): string {
@@ -70,7 +70,7 @@ export function buildTeamPrompt(payload: TeamExplainPayload): string {
     .join(", ");
 
   return [
-    `Give your take on this roster in AT MOST 3 sentences:`,
+    `Give your take on this roster in AT MOST 2 sentences:`,
     `why they're nice, what's holding them back${
       season.gatedCategory
         ? ` (the binding weakness is ${CAT_LABELS[season.gatedCategory]} — it capped them at ${season.winCap} wins, call it out)`
@@ -102,7 +102,7 @@ export function buildMatchupPrompt(payload: MatchupExplainPayload): string {
     .join("\n");
 
   return [
-    `Recap this simulated best-of-7 in AT MOST 3 sentences.`,
+    `Recap this simulated best-of-7 in AT MOST 2 sentences.`,
     `Lead with who got cooked (or how close it was), then point at the category edges that decided it.`,
     ``,
     `Matchup: "${teamA.teamName}" (OVR ${teamA.rating.ovr.toFixed(1)}) vs "${teamB.teamName}" (OVR ${teamB.rating.ovr.toFixed(1)})`,
