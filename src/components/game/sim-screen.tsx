@@ -11,7 +11,6 @@ import {
 import {
   Check,
   Copy,
-  ImageDown,
   RotateCcw,
   Save as SaveIcon,
   Share2,
@@ -46,6 +45,7 @@ import { getEngine } from "@/lib/engine-provider";
 import { getBaselines } from "@/lib/snapshot-client";
 import { cn } from "@/lib/utils";
 import { CatProfileInfo } from "@/components/social/cat-profile-info";
+import { DownloadCardButton } from "@/components/social/download-card";
 import { ExplainStream } from "@/components/social/explain-stream";
 import { analyzeCost } from "./cost-analysis";
 import { Confetti } from "./confetti";
@@ -555,14 +555,12 @@ export function SimScreen() {
                     {copied ? "Copied" : "Copy"}
                   </Button>
                 </div>
-                <a
-                  href={`${save.url}/card`}
-                  download
-                  className="text-center text-xs font-semibold text-primary underline-offset-2 hover:underline"
-                >
-                  <ImageDown className="mr-1 inline size-3.5" />
-                  Download the retro team card
-                </a>
+                <DownloadCardButton
+                  cardUrl={`${save.url}/card`}
+                  fileName="ultimate-draft-team-card.png"
+                  label="Save the retro team card"
+                  className="mx-auto text-xs font-semibold text-primary underline-offset-2 hover:underline"
+                />
               </div>
             ) : (
               <div className="flex flex-col gap-3">

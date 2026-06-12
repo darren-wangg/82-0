@@ -168,7 +168,18 @@ async function wikiSearchTitles(name: string): Promise<string[]> {
   }
 }
 
-async function resolveWiki(name: string): Promise<string | null> {
+/** ASCII fold for lookups: strips accents and maps the stray Cyrillic е/ё
+ *  the source data sometimes carries (e.g. "Egor Dёmin" → "Egor Demin"). */
+function asciiFold(name: string): string {
+  return name
+    .normalize("NFD")
+    .replace(/[̀-ͯ]/g, "")
+    .replace(/е/g, "e")
+    .replace(/Е/g, "E")
+    .normalize("NFC");
+}
+
+async function resolveWikiName(name: string): Promise<string | null> {
   const direct = [name, `${name} (basketball)`];
   for (const title of direct) {
     const thumb = acceptableThumb(await wikiSummary(title));
@@ -180,6 +191,15 @@ async function resolveWiki(name: string): Promise<string | null> {
     // must contain the player's name (modulo parentheticals).
     if (!title.toLowerCase().startsWith(name.toLowerCase())) continue;
     const thumb = acceptableThumb(await wikiSummary(title));
+    if (thumb) return thumb;
+  }
+  return null;
+}
+
+async function resolveWiki(name: string): Promise<string | null> {
+  const variants = [...new Set([name, asciiFold(name)])];
+  for (const variant of variants) {
+    const thumb = await resolveWikiName(variant);
     if (thumb) return thumb;
   }
   return null;
@@ -394,7 +414,7 @@ async function main() {
     console.log(`    name index: ${nameIndex.size} unambiguous basketball names`);
     let wdDone = 0;
     await mapPool(wdToResolve, 6, async ([slug, v]) => {
-      const norm = normName(v.name);
+      const norm = normName(asciiFold(v.name));
       const files = nameIndex.get(norm) ?? nameIndex.get(stripGenSuffix(norm)) ?? [];
       let url: string | null = null;
       outer: for (const file of files) {
@@ -436,7 +456,7 @@ async function main() {
   let tsdbDone = 0;
   // Sequential on purpose: shared free API key, be polite.
   for (const [slug, v] of tsdbToResolve) {
-    const url = await resolveTsdb(v.name);
+    const url = await resolveTsdb(asciiFold(v.name));
     cache.tsdb[slug] = url && (await urlOk(url)) ? url : null;
     if (++tsdbDone % 25 === 0) {
       console.log(`    ${tsdbDone}/${tsdbToResolve.length}`);

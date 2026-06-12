@@ -5,7 +5,6 @@
 
 import type { Metadata } from "next";
 import Link from "next/link";
-import { ImageDown } from "lucide-react";
 import { notFound } from "next/navigation";
 import { Suspense } from "react";
 import { SavedTeam } from "@/lib/contracts";
@@ -13,6 +12,7 @@ import { loadSavedTeam } from "@/app/api/_lib/teams";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { buttonVariants } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import { DownloadCardButton } from "@/components/social/download-card";
 import { RecordHero } from "@/components/social/record-hero";
 import { RosterGrid } from "@/components/social/roster-grid";
 import { BattleHistory } from "@/components/social/battle-history";
@@ -121,16 +121,15 @@ export default async function TeamPage({ params }: PageProps<"/t/[slug]">) {
           label="Share this team"
           className="w-full"
         />
-        <a
-          href={`/t/${team.slug}/card`}
-          download={`ultimate-draft-${team.slug}.png`}
+        <DownloadCardButton
+          cardUrl={`/t/${team.slug}/card`}
+          fileName={`ultimate-draft-${team.slug}.png`}
+          label="Save team card"
           className={cn(
             buttonVariants({ variant: "outline", size: "lg" }),
             "w-full"
           )}
-        >
-          <ImageDown className="size-4" /> Download team card
-        </a>
+        />
       </div>
     </main>
   );
