@@ -25,11 +25,14 @@ export function DownloadCardButton({
   cardUrl,
   fileName,
   label,
+  ariaLabel,
   className,
 }: {
   cardUrl: string;
   fileName: string;
+  /** Empty string renders an icon-only button — pass ariaLabel with it. */
   label: string;
+  ariaLabel?: string;
   className?: string;
 }) {
   const blobRef = useRef<Blob | null>(null);
@@ -100,6 +103,7 @@ export function DownloadCardButton({
       onClick={save}
       onPointerDown={prefetch}
       onFocus={prefetch}
+      aria-label={ariaLabel}
       className={cn("inline-flex items-center justify-center gap-1.5", className)}
     >
       {busy ? (

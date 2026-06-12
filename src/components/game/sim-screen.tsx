@@ -19,7 +19,7 @@ import {
   TriangleAlert,
   Users,
 } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { Button, buttonVariants } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import {
   Dialog,
@@ -80,23 +80,6 @@ function useCountUp(target: number, duration: number, delay = 0): number {
     return () => controls.stop();
   }, [target, duration, delay, reducedMotion]);
   return value;
-}
-
-/** Re-mounts on every count-up tick so each number change pops. */
-function PopNumber({ value }: { value: number }) {
-  const reducedMotion = useReducedMotion();
-  if (reducedMotion) return <>{value}</>;
-  return (
-    <motion.span
-      key={value}
-      initial={{ scale: 1.3 }}
-      animate={{ scale: 1 }}
-      transition={{ duration: 0.16, ease: "easeOut" }}
-      className="inline-block"
-    >
-      {value}
-    </motion.span>
-  );
 }
 
 /** Three staggered basketballs "dribbling" while the season simulates. */
@@ -211,21 +194,14 @@ function RecordReveal({ season }: { season: SeasonResult }) {
             )}
             aria-label={`Final record ${season.wins} and ${season.losses}`}
           >
-            <PopNumber value={wins} />-<PopNumber value={losses} />
+            {wins}-{losses}
           </motion.p>
         </motion.div>
       </motion.div>
       {landed && !reducedMotion && <BallBurst />}
       {/* fixed-height slot so the loader leaving doesn't shift the layout */}
-      <div className="flex h-7 items-center gap-2.5">
-        {!landed && !reducedMotion && (
-          <>
-            <DribbleLoader />
-            <span className="font-mono text-[10px] font-semibold tracking-widest text-muted-foreground tabular-nums uppercase">
-              Game {Math.max(1, gamesPlayed)} of {SEASON_GAMES}
-            </span>
-          </>
-        )}
+      <div className="flex h-7 items-center">
+        {!landed && !reducedMotion && <DribbleLoader />}
       </div>
     </div>
   );
@@ -608,8 +584,18 @@ export function SimScreen() {
       {/* perfect-season celebration, timed to the record landing */}
       {perfect && !reducedMotion && <Confetti delay={COUNT_UP_SECONDS} />}
 
-      {/* save (device) + share icons, top right */}
+      {/* download image + save (device) + share icons, top right */}
       <div className="flex justify-end gap-2">
+        <DownloadCardButton
+          cardUrl={cardUrl}
+          fileName="ultimate-draft-team-card.png"
+          label=""
+          ariaLabel="Download the team card image"
+          className={cn(
+            buttonVariants({ variant: "outline", size: "icon" }),
+            "rounded-full"
+          )}
+        />
         <Dialog
           open={localOpen}
           onOpenChange={(open) => {
@@ -889,12 +875,6 @@ export function SimScreen() {
 
       {/* thumb-zone footer */}
       <div className="sticky bottom-0 mt-auto flex flex-col gap-2 bg-gradient-to-t from-background via-background/95 to-transparent pt-4 pb-[max(1rem,env(safe-area-inset-bottom))]">
-        <DownloadCardButton
-          cardUrl={cardUrl}
-          fileName="ultimate-draft-team-card.png"
-          label="Save your team"
-          className="mx-auto text-xs font-semibold text-primary underline-offset-2 hover:underline"
-        />
         {state.lobbyCode && save.phase !== "saved" && (
           <>
             <Button

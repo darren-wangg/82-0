@@ -15,7 +15,7 @@ import {
   TeamRating,
 } from "@/lib/contracts";
 
-export const PROMPT_VERSION = "v6";
+export const PROMPT_VERSION = "v7";
 /** Cheapest tier — explanations are short, structured-input blurbs. */
 export const EXPLAIN_MODEL = "claude-haiku-4-5-20251001";
 
@@ -56,7 +56,8 @@ const SYSTEM_PROMPT =
   "era-adjusted z-scores (higher is always better; turnovers are " +
   "sign-flipped). Never invent stats. Plain text only, no markdown, no " +
   "headings, no bullet points. Hard limit: 2 sentences, no exceptions — " +
-  "treat it like the shot clock.";
+  "and keep them SHORT and punchy, like bars: no filler words, no warm-up, " +
+  "no stacked clauses. Get in, land the take, get out.";
 
 export function buildTeamSystemPrompt(): string {
   return SYSTEM_PROMPT;
@@ -78,12 +79,12 @@ export function buildTeamPrompt(payload: TeamExplainPayload): string {
           `Give them their flowers in AT MOST 2 sentences: pure hype, crown them, shout out what makes the machine unbeatable. Zero criticism, no fixes, no "but".`,
         ]
       : [
-          `Give your take on this roster in AT MOST 2 sentences:`,
-          `why they're nice, what's holding them back${
+          `Give your take on this roster in AT MOST 2 short sentences:`,
+          `what makes them dangerous, and what's holding them back${
             season.gatedCategory
               ? ` (the binding weakness is ${CAT_LABELS[season.gatedCategory]} — it capped them at ${season.winCap} wins, call it out)`
               : " (no category gate applied — nothing capped them)"
-          }, and the one fix you'd make.`,
+          }. One take per sentence, no lists.`,
         ]),
     ``,
     `Team: "${teamName}"`,
@@ -111,8 +112,8 @@ export function buildMatchupPrompt(payload: MatchupExplainPayload): string {
     .join("\n");
 
   return [
-    `Recap this simulated best-of-7 in AT MOST 2 sentences.`,
-    `Lead with who got cooked (or how close it was), then point at the category edges that decided it.`,
+    `Recap this simulated best-of-7 in AT MOST 2 short sentences.`,
+    `Who got cooked (or how close it was), and the edge that decided it — nothing else.`,
     ``,
     `Matchup: "${teamA.teamName}" (OVR ${teamA.rating.ovr.toFixed(1)}) vs "${teamB.teamName}" (OVR ${teamB.rating.ovr.toFixed(1)})`,
     `Winner: "${winner}" over "${loser}", series ${result.seriesScore[0]}-${result.seriesScore[1]} (score is teamA-teamB)`,
