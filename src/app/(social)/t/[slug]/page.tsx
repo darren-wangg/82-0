@@ -8,6 +8,8 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Suspense } from "react";
 import { SavedTeam } from "@/lib/contracts";
+import { headshotSources } from "@/lib/headshots";
+import { getPlayerMap } from "@/lib/snapshot";
 import { loadSavedTeam } from "@/app/api/_lib/teams";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { buttonVariants } from "@/components/ui/button";
@@ -75,7 +77,11 @@ export default async function TeamPage({ params }: PageProps<"/t/[slug]">) {
 
       <RecordHero season={team.season} rating={team.rating} />
 
-      <RosterGrid roster={team.roster} />
+      <RosterGrid
+        roster={team.roster}
+        players={getPlayerMap()}
+        headshotSrcs={headshotSources}
+      />
 
       <Card>
         <CardHeader>

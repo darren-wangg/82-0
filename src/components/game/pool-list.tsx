@@ -9,6 +9,14 @@ import { isEstimated, SORT_OPTIONS } from "./format";
 import { isLegendary } from "./legends";
 import { PlayerHeadshot } from "./player-headshot";
 
+/** Lowercase + strip diacritics so search ignores both. */
+function normalize(s: string): string {
+  return s
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/\p{Diacritic}/gu, "");
+}
+
 /** The six per-game columns shown for every pool player. */
 const ROW_CATS: { cat: NineCat; label: string }[] = [
   { cat: "pts", label: "PPG" },
@@ -37,11 +45,16 @@ export function PoolList({
   onSelect: (id: string | null) => void;
 }) {
   const [sortCat, setSortCat] = useState<NineCat>("pts");
+  const [query, setQuery] = useState("");
 
-  const sorted = useMemo(
-    () => [...pool].sort((a, b) => b.stats[sortCat] - a.stats[sortCat]),
-    [pool, sortCat]
-  );
+  const sorted = useMemo(() => {
+    // Diacritic-insensitive ("jokic" finds Jokić) prefix-anywhere match.
+    const q = normalize(query.trim());
+    const matches = q
+      ? pool.filter((p) => normalize(p.name).includes(q))
+      : pool;
+    return [...matches].sort((a, b) => b.stats[sortCat] - a.stats[sortCat]);
+  }, [pool, sortCat, query]);
 
   return (
     <motion.div
@@ -50,7 +63,15 @@ export function PoolList({
       transition={{ duration: 0.35, ease: "easeOut" }}
       className="flex min-h-0 flex-1 flex-col"
     >
-      <div className="flex justify-end pb-1.5">
+      <div className="flex items-center gap-1.5 pb-1.5">
+        <input
+          type="search"
+          value={query}
+          onChange={(e) => setQuery(e.target.value)}
+          placeholder="Search"
+          aria-label="Search players by name"
+          className="h-8 min-w-0 flex-1 rounded-lg border border-border bg-card px-2.5 text-xs text-foreground placeholder:text-muted-foreground/70 focus:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+        />
         <select
           value={sortCat}
           onChange={(e) => setSortCat(e.target.value as NineCat)}
@@ -65,6 +86,11 @@ export function PoolList({
         </select>
       </div>
 
+      {sorted.length === 0 && (
+        <p className="py-6 text-center text-xs text-muted-foreground">
+          No players match &ldquo;{query.trim()}&rdquo;
+        </p>
+      )}
       <ul className="min-h-0 flex-1 space-y-1.5 overflow-y-auto overscroll-contain pb-2">
         {sorted.map((p, i) => {
           const draftable = isDraftable(p.id);

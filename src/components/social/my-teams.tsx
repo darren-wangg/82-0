@@ -69,10 +69,17 @@ export function MyTeams({ snapshotVersion }: { snapshotVersion: string }) {
   return (
     <ul className="mt-4 space-y-1.5">
       {teams.map((t) => (
+        // Stretched-link row: the <Link> overlays the card, the delete button
+        // sits above it on its own z-layer (no button-inside-anchor).
         <li
           key={t.id}
-          className="flex items-center gap-3 rounded-xl border border-border/80 bg-card/70 px-3 py-2.5 shadow-md shadow-black/25"
+          className="relative flex items-center gap-3 rounded-xl border border-border/80 bg-card/70 px-3 py-2.5 shadow-md shadow-black/25 transition-colors hover:bg-card"
         >
+          <Link
+            href={`/teams/${t.id}`}
+            aria-label={`View ${t.name}`}
+            className="absolute inset-0 rounded-xl"
+          />
           <span className="min-w-0 flex-1">
             <span className="flex items-center gap-1.5">
               <span className="truncate text-sm font-bold">{t.name}</span>
@@ -107,7 +114,7 @@ export function MyTeams({ snapshotVersion }: { snapshotVersion: string }) {
               removeLocalTeam(t.id);
               setTeams((prev) => prev?.filter((x) => x.id !== t.id) ?? null);
             }}
-            className="shrink-0 rounded-md p-1 text-muted-foreground/60 transition-colors hover:bg-muted hover:text-destructive"
+            className="relative z-10 shrink-0 rounded-md p-1 text-muted-foreground/60 transition-colors hover:bg-muted hover:text-destructive"
           >
             <Trash2 className="size-3.5" />
           </button>
