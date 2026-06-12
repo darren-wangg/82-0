@@ -40,6 +40,7 @@ export const RATE_LIMITS = {
   /** Satori card renders are CPU-heavy; unique payloads bypass CDN cache. */
   cardRender: { scope: "card", limit: 30, windowSeconds: 300 },
   teamSave: { scope: "teams-post", limit: 20, windowSeconds: 600 },
+  teamClaim: { scope: "team-claim", limit: 10, windowSeconds: 600 },
   matchupRun: { scope: "matchups-post", limit: 20, windowSeconds: 600 },
   lobbyCreate: { scope: "lobby-create", limit: 10, windowSeconds: 3600 },
   lobbyEnter: { scope: "lobby-enter", limit: 20, windowSeconds: 600 },

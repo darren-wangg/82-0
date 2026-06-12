@@ -34,6 +34,7 @@ export interface TeamWithOwner {
   losses: number;
   gatedCategory: string | null;
   createdAt: Date;
+  ownerName: string | null;
   user: { displayName: string | null; name: string | null } | null;
 }
 
@@ -42,7 +43,7 @@ export const teamInclude = {
 } as const;
 
 export function ownerDisplayName(team: TeamWithOwner): string | null {
-  return team.user?.displayName ?? team.user?.name ?? null;
+  return team.ownerName ?? team.user?.displayName ?? team.user?.name ?? null;
 }
 
 /**

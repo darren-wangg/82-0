@@ -78,6 +78,15 @@ export async function POST(request: Request) {
       }
     }
 
+    // Carry the entrant's name onto the team itself so its leaderboard /
+    // team-page entries are named, not generic.
+    if (displayName) {
+      await prisma.team.update({
+        where: { slug: teamSlug },
+        data: { ownerName: displayName },
+      });
+    }
+
     const response = await loadLobbyResponse(code);
     if (!response) return jsonError(404, "Lobby not found");
     return Response.json(response);

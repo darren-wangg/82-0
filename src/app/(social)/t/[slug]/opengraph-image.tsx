@@ -107,9 +107,11 @@ export default async function Image({
             >
               {team.teamName}
             </div>
-            <div style={{ display: "flex", fontSize: 26, color: muted, marginTop: 8 }}>
-              {`by ${team.ownerDisplayName ?? "an anonymous GM"}`}
-            </div>
+            {team.ownerDisplayName && (
+              <div style={{ display: "flex", fontSize: 26, color: muted, marginTop: 8 }}>
+                {`by ${team.ownerDisplayName}`}
+              </div>
+            )}
           </div>
           <div style={{ display: "flex", flexDirection: "column" }}>
             {starters.map((s) => (

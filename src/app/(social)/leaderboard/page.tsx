@@ -8,6 +8,7 @@ import Link from "next/link";
 import { LeaderboardEntry } from "@/lib/contracts";
 import { loadLeaderboardEntries } from "@/app/api/_lib/leaderboard";
 import { Badge } from "@/components/ui/badge";
+import { ClaimTeamButton } from "@/components/social/claim-team";
 import { Unavailable } from "@/components/social/unavailable";
 import { cn } from "@/lib/utils";
 
@@ -63,55 +64,71 @@ export default async function LeaderboardPage({
       ) : (
         <ol className="mt-4 space-y-1.5">
           {entries.map((e) => (
-            <li key={e.teamSlug}>
+            // Stretched-link row: the <Link> overlays the whole card, and the
+            // claim button (when shown) sits above it on its own z-layer — a
+            // button nested inside an anchor would be invalid HTML.
+            <li
+              key={e.teamSlug}
+              className={cn(
+                "relative flex items-center gap-3 rounded-xl border px-3 py-2.5 shadow-md shadow-black/25",
+                e.viewer
+                  ? "border-primary/50 bg-primary/10"
+                  : "border-border/80 bg-card/70"
+              )}
+            >
               <Link
                 href={`/t/${e.teamSlug}`}
+                aria-label={`${e.teamName}, ${e.wins}-${e.losses}`}
+                className="absolute inset-0 rounded-xl"
+              />
+              <span
                 className={cn(
-                  "flex items-center gap-3 rounded-xl border px-3 py-2.5 shadow-md shadow-black/25",
-                  e.viewer
-                    ? "border-primary/50 bg-primary/10"
-                    : "border-border/80 bg-card/70"
+                  "w-7 shrink-0 text-center font-display text-base",
+                  e.rank === 1
+                    ? "text-amber-300"
+                    : e.rank <= 3
+                      ? "text-primary"
+                      : "text-muted-foreground"
                 )}
               >
-                <span
-                  className={cn(
-                    "w-7 shrink-0 text-center font-display text-base",
-                    e.rank === 1
-                      ? "text-amber-300"
-                      : e.rank <= 3
-                        ? "text-primary"
-                        : "text-muted-foreground"
-                  )}
-                >
-                  {e.rank}
-                </span>
-                <span className="min-w-0 flex-1">
-                  <span className="flex items-center gap-1.5">
-                    <span className="truncate text-sm font-bold">
-                      {e.teamName}
-                    </span>
-                    {e.viewer && (
-                      <Badge className="h-4 shrink-0 px-1.5 text-[10px] font-bold">
-                        You
-                      </Badge>
-                    )}
+                {e.rank}
+              </span>
+              <span className="min-w-0 flex-1">
+                <span className="flex items-center gap-1.5">
+                  <span className="truncate text-sm font-bold">
+                    {e.teamName}
                   </span>
+                  {e.viewer && (
+                    <Badge className="h-4 shrink-0 px-1.5 text-[10px] font-bold">
+                      You
+                    </Badge>
+                  )}
+                </span>
+                {/* GM line only when a name was supplied; the viewer's own
+                    unnamed entries offer the claim flow instead. */}
+                {e.displayName ? (
                   <span className="block truncate text-[11px] text-muted-foreground">
-                    {e.displayName ?? "anonymous GM"}
+                    {e.displayName}
                   </span>
-                </span>
-                <span
-                  className={cn(
-                    "shrink-0 font-mono text-sm font-bold tabular-nums",
-                    e.losses === 0 ? "text-emerald-400" : undefined
-                  )}
-                >
-                  {e.wins}-{e.losses}
-                </span>
-                <span className="w-12 shrink-0 text-right font-mono text-xs text-muted-foreground tabular-nums">
-                  {Math.round(e.ovr)} OVR
-                </span>
-              </Link>
+                ) : e.viewer ? (
+                  <ClaimTeamButton
+                    slug={e.teamSlug}
+                    teamName={e.teamName}
+                    className="relative z-10"
+                  />
+                ) : null}
+              </span>
+              <span
+                className={cn(
+                  "shrink-0 font-mono text-sm font-bold tabular-nums",
+                  e.losses === 0 ? "text-emerald-400" : undefined
+                )}
+              >
+                {e.wins}-{e.losses}
+              </span>
+              <span className="w-12 shrink-0 text-right font-mono text-xs text-muted-foreground tabular-nums">
+                {Math.round(e.ovr)} OVR
+              </span>
             </li>
           ))}
         </ol>

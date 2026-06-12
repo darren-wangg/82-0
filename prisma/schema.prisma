@@ -116,6 +116,10 @@ model AnonIdentity {
 model Team {
   slug            String   @id // short shareable slug
   teamName        String
+  // GM name shown on public surfaces (leaderboard, team page). Set when the
+  // team enters a lobby with a display name, or when the owning device
+  // claims the team from the leaderboard. NULL = generic entry.
+  ownerName       String?
   roster          Json // Roster (contracts.ts), validated on write
   snapshotVersion String
   // Server-computed (authoritative) engine outputs, denormalized for reads

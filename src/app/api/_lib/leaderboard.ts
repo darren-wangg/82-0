@@ -52,7 +52,8 @@ const loadRows = unstable_cache(
     }));
   },
   ["leaderboard-rows"],
-  { revalidate: 60 }
+  // Tagged so claiming a team can bust the cache immediately.
+  { revalidate: 60, tags: ["leaderboard-rows"] }
 );
 
 export async function loadLeaderboardEntries(

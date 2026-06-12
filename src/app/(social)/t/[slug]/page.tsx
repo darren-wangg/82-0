@@ -64,7 +64,7 @@ export default async function TeamPage({ params }: PageProps<"/t/[slug]">) {
       <div className="text-center">
         <h1 className="text-2xl font-black tracking-tight">{team.teamName}</h1>
         <p className="mt-0.5 text-xs text-muted-foreground">
-          by {team.ownerDisplayName ?? "an anonymous GM"} ·{" "}
+          {team.ownerDisplayName ? `by ${team.ownerDisplayName} · ` : ""}
           {new Date(team.createdAt).toLocaleDateString("en-US", {
             month: "short",
             day: "numeric",
