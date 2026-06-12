@@ -25,6 +25,7 @@ import {
   toSavedTeam,
   TeamWithOwner,
 } from "../_lib/teams";
+import { RATE_LIMITS, rateLimitGate } from "../_lib/rate-limit";
 
 function ratingFor(team: TeamWithOwner) {
   // Prefer a fresh engine run from the roster (server authoritative); fall
@@ -39,6 +40,9 @@ function ratingFor(team: TeamWithOwner) {
 }
 
 export async function POST(request: Request) {
+  const limited = await rateLimitGate(request, RATE_LIMITS.matchupRun);
+  if (limited) return limited;
+
   let body: unknown;
   try {
     body = await request.json();

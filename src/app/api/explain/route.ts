@@ -38,6 +38,7 @@ import {
   ratingFromRow,
   TeamWithOwner,
 } from "../_lib/teams";
+import { checkRateLimit, RATE_LIMITS, rateLimitGate } from "../_lib/rate-limit";
 
 const TEXT_STREAM_HEADERS = {
   "content-type": "text/plain; charset=utf-8",
@@ -78,6 +79,9 @@ function buildTeamPayload(team: TeamWithOwner): TeamExplainPayload {
 }
 
 export async function POST(request: Request) {
+  const limited = await rateLimitGate(request, RATE_LIMITS.explain);
+  if (limited) return limited;
+
   let body: unknown;
   try {
     body = await request.json();
@@ -170,6 +174,14 @@ export async function POST(request: Request) {
       503,
       "AI explanations are not configured (ANTHROPIC_API_KEY is not set)"
     );
+  }
+
+  // App-level spend ceiling: only uncached generations reach this point, and
+  // a global daily budget bounds worst-case model spend no matter how many
+  // unique rosters a script invents.
+  const budget = await checkRateLimit(RATE_LIMITS.explainGenerationDaily, "global");
+  if (!budget.ok) {
+    return jsonError(503, "The scouting desk is slammed today — check back tomorrow");
   }
 
   const result = streamText({

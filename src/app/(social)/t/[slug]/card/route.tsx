@@ -8,6 +8,7 @@
 import { ImageResponse } from "next/og";
 import { getPlayerMap } from "@/lib/snapshot";
 import { loadSavedTeam } from "@/app/api/_lib/teams";
+import { RATE_LIMITS, rateLimitGate } from "@/app/api/_lib/rate-limit";
 import {
   CARD_HEIGHT,
   CARD_WIDTH,
@@ -20,9 +21,12 @@ import {
 export const dynamic = "force-dynamic";
 
 export async function GET(
-  _req: Request,
+  req: Request,
   { params }: { params: Promise<{ slug: string }> }
 ) {
+  const limited = await rateLimitGate(req, RATE_LIMITS.cardRender);
+  if (limited) return limited;
+
   const { slug } = await params;
 
   let team;

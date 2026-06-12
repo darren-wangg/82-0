@@ -22,10 +22,14 @@ import {
   toJsonInput,
   toSavedTeam,
 } from "../_lib/teams";
+import { RATE_LIMITS, rateLimitGate } from "../_lib/rate-limit";
 
 const SLUG_ATTEMPTS = 5;
 
 export async function POST(request: Request) {
+  const limited = await rateLimitGate(request, RATE_LIMITS.teamSave);
+  if (limited) return limited;
+
   let body: unknown;
   try {
     body = await request.json();

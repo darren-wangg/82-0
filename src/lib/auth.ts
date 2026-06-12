@@ -19,12 +19,17 @@ export const ANON_COOKIE_NAME = "anon_id";
 const ANON_COOKIE_MAX_AGE = 60 * 60 * 24 * 365; // 1 year
 
 function anonSecret(): string {
-  return (
-    process.env.ANON_COOKIE_SECRET ??
-    process.env.AUTH_SECRET ??
-    // Dev-only fallback so the game works before secrets are provisioned.
-    "82-0-dev-insecure-anon-secret"
-  );
+  const secret = process.env.ANON_COOKIE_SECRET ?? process.env.AUTH_SECRET;
+  if (secret) return secret;
+  // A known signing secret would let anyone forge anon identities (and claim
+  // other devices' teams) — never fall back silently in production.
+  if (process.env.NODE_ENV === "production") {
+    throw new Error(
+      "AUTH_SECRET (or ANON_COOKIE_SECRET) must be set in production"
+    );
+  }
+  // Dev-only fallback so the game works before secrets are provisioned.
+  return "82-0-dev-insecure-anon-secret";
 }
 
 export const { handlers, auth, signIn, signOut } = NextAuth({

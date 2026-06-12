@@ -9,6 +9,7 @@ import { ImageResponse } from "next/og";
 import type { LobbyStanding, Roster } from "@/lib/contracts";
 import { getPlayerMap } from "@/lib/snapshot";
 import { loadLobbyResponse, loadLobbyRosters } from "@/app/api/_lib/lobbies";
+import { RATE_LIMITS, rateLimitGate } from "@/app/api/_lib/rate-limit";
 import {
   BG,
   CARD_HEIGHT,
@@ -155,9 +156,12 @@ function PodiumColumn({
 }
 
 export async function GET(
-  _req: Request,
+  req: Request,
   { params }: { params: Promise<{ code: string }> }
 ) {
+  const limited = await rateLimitGate(req, RATE_LIMITS.cardRender);
+  if (limited) return limited;
+
   const { code } = await params;
 
   let lobby;

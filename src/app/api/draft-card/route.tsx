@@ -9,6 +9,7 @@ import { ImageResponse } from "next/og";
 import { RosterSchema } from "@/lib/contracts";
 import { getPlayerMap } from "@/lib/snapshot";
 import { RosterError, computeTeamOutputs } from "@/app/api/_lib/teams";
+import { RATE_LIMITS, rateLimitGate } from "@/app/api/_lib/rate-limit";
 import {
   CARD_HEIGHT,
   CARD_WIDTH,
@@ -23,6 +24,10 @@ export const dynamic = "force-dynamic";
 const DEFAULT_NAME = "My Ultimate 8";
 
 export async function GET(req: Request) {
+  // Every unique roster payload is a fresh satori render — cap per IP.
+  const limited = await rateLimitGate(req, RATE_LIMITS.cardRender);
+  if (limited) return limited;
+
   const url = new URL(req.url);
   const teamName = (url.searchParams.get("name") ?? "").trim().slice(0, 40) || DEFAULT_NAME;
 

@@ -179,6 +179,18 @@ model LobbyEntry {
   @@unique([lobbyCode, anonIdentityId])
 }
 
+// Fixed-window rate-limit counters (see src/app/api/_lib/rate-limit.ts).
+// key = "{scope}:{caller}", one row per window; stale rows are pruned
+// opportunistically from the hot path.
+model RateLimitBucket {
+  key         String
+  windowStart DateTime
+  count       Int      @default(1)
+
+  @@id([key, windowStart])
+  @@index([windowStart]) // pruning
+}
+
 // AI explanation cache: one explanation per unique content hash
 model Explanation {
   contentHash String   @id // hash of (kind, engine output payload, prompt version)

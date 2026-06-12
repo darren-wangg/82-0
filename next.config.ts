@@ -4,6 +4,26 @@ const nextConfig: NextConfig = {
   async headers() {
     return [
       {
+        // Baseline security headers, all routes. CSP is limited to
+        // frame-ancestors: a full script-src policy would need Next's inline
+        // bootstrap scripts allowed and isn't worth the breakage risk here.
+        source: "/:path*",
+        headers: [
+          { key: "X-Content-Type-Options", value: "nosniff" },
+          { key: "X-Frame-Options", value: "DENY" },
+          { key: "Content-Security-Policy", value: "frame-ancestors 'none'" },
+          { key: "Referrer-Policy", value: "strict-origin-when-cross-origin" },
+          {
+            key: "Permissions-Policy",
+            value: "camera=(), microphone=(), geolocation=()",
+          },
+          {
+            key: "Strict-Transport-Security",
+            value: "max-age=63072000; includeSubDomains",
+          },
+        ],
+      },
+      {
         // Snapshot + headshot fallback map are fetched at runtime (not
         // bundled); filenames are versioned, so cache them forever.
         source: "/data/:path*",

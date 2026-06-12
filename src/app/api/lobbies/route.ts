@@ -6,10 +6,14 @@ import { prisma } from "@/lib/db";
 import { getOrCreateAnonId } from "@/lib/auth";
 import { makeLobbyCode } from "@/components/social/hashing";
 import { isDbUnavailable, jsonError } from "../_lib/teams";
+import { RATE_LIMITS, rateLimitGate } from "../_lib/rate-limit";
 
 const CODE_ATTEMPTS = 5;
 
 export async function POST(request: Request) {
+  const limited = await rateLimitGate(request, RATE_LIMITS.lobbyCreate);
+  if (limited) return limited;
+
   let body: unknown;
   try {
     body = await request.json();
