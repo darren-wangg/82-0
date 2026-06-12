@@ -23,9 +23,8 @@ export default function NewLobbyPage() {
           Settle it as a group
         </h1>
         <p className="mx-auto mt-2 max-w-xs text-sm text-muted-foreground">
-          Create a lobby and share the link — everyone drafts a fresh team,
-          one per device. Every matchup runs head-to-head, and the lobby
-          stays open until you end it and crown the champion.
+          Create a lobby and share the link. Everyone drafts a team. Every matchup runs head-to-head, and the lobby
+          stays open until you end it and crown the champ.
         </p>
       </div>
       <CreateLobbyForm />

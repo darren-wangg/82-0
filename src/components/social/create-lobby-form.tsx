@@ -43,7 +43,7 @@ export function CreateLobbyForm() {
       <Input
         value={name}
         maxLength={40}
-        placeholder="Lobby name (e.g. The Group Chat)"
+        placeholder="The Group Chat"
         aria-label="Lobby name"
         className="h-11 rounded-xl"
         onChange={(e) => setName(e.target.value)}
