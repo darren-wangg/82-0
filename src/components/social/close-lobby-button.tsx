@@ -42,7 +42,7 @@ export function CloseLobbyButton({ code }: { code: string }) {
         disabled={pending}
         onClick={close}
       >
-        {pending ? "Closing..." : "Close lobby + Crown winner"}
+        {pending ? "Closing..." : "Close lobby + crown champ"}
       </Button>
       {error && <p className="text-center text-xs text-destructive">{error}</p>}
     </div>

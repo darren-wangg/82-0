@@ -129,9 +129,7 @@ export default async function LobbyPage({ params }: PageProps<"/l/[code]">) {
               Draft your team
             </Link>
             <p className="text-center text-[11px] text-muted-foreground">
-              <span className="font-semibold text-amber-400">One shot:</span>{" "}
-              you draft a single fresh team for this lobby — no re-dos. Lock in
-              your 8 and submit it to enter.
+              Draft a single team for this lobby — no re-dos.
             </p>
           </div>
         ))}

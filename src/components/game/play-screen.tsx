@@ -206,9 +206,6 @@ export function PlayScreen() {
                 {state.lobbyCode}
               </span>
             </span>
-            <span className="block text-[11px] text-sky-200/70">
-              One draft only — lock in your 8 and submit to enter.
-            </span>
           </span>
           <button
             type="button"
