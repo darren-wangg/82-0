@@ -199,7 +199,7 @@ export function PlayScreen() {
           className="mt-2 flex items-center gap-2 rounded-lg border border-sky-400/40 bg-sky-400/10 px-2.5 py-1.5 text-xs"
         >
           <Users className="size-3.5 shrink-0 text-sky-300" />
-          <span className="min-w-0">
+          <span className="min-w-0 flex-1">
             <span className="block truncate">
               Lobby draft —{" "}
               <span className="font-mono font-bold tracking-widest text-sky-300">
@@ -210,6 +210,21 @@ export function PlayScreen() {
               One draft only — lock in your 8 and submit to enter.
             </span>
           </span>
+          <button
+            type="button"
+            className="shrink-0 rounded-md px-2 py-1 text-[11px] font-semibold text-sky-300 underline-offset-2 hover:underline"
+            onClick={() => {
+              if (
+                window.confirm(
+                  `Leave lobby ${state.lobbyCode}? This draft continues as free play; to enter the lobby later you'll need its link and a fresh draft.`
+                )
+              ) {
+                dispatch({ type: "LEAVE_LOBBY" });
+              }
+            }}
+          >
+            Leave
+          </button>
         </motion.div>
       )}
 

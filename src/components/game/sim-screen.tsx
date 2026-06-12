@@ -11,6 +11,7 @@ import {
 import {
   Check,
   Copy,
+  LogOut,
   RotateCcw,
   Save as SaveIcon,
   Share2,
@@ -373,8 +374,14 @@ export function SimScreen() {
     return { roster, rating, season, cost };
   }, [state, players]);
 
-  const wins = useCountUp(sim?.season.wins ?? 0, COUNT_UP_SECONDS);
-  const losses = useCountUp(sim?.season.losses ?? 0, COUNT_UP_SECONDS);
+  // The record counts up like the season is actually being played: a single
+  // 0→82 games counter with the losses sprinkled in proportionally, so
+  // W + L always equals games played and both land on the final record.
+  const gamesPlayed = useCountUp(sim ? SEASON_GAMES : 0, COUNT_UP_SECONDS);
+  const losses = sim
+    ? Math.round((sim.season.losses * gamesPlayed) / SEASON_GAMES)
+    : 0;
+  const wins = gamesPlayed - losses;
 
   useEffect(() => {
     try {
@@ -739,8 +746,15 @@ export function SimScreen() {
         </motion.div>
         {landed && !reducedMotion && <BallBurst />}
         {/* fixed-height slot so the loader leaving doesn't shift the layout */}
-        <div className="flex h-7 items-center">
-          {!landed && !reducedMotion && <DribbleLoader />}
+        <div className="flex h-7 items-center gap-2.5">
+          {!landed && !reducedMotion && (
+            <>
+              <DribbleLoader />
+              <span className="font-mono text-[10px] font-semibold tracking-widest text-muted-foreground tabular-nums uppercase">
+                Game {Math.max(1, gamesPlayed)} of {SEASON_GAMES}
+              </span>
+            </>
+          )}
         </div>
       </div>
 
@@ -877,12 +891,31 @@ export function SimScreen() {
           className="mx-auto text-xs font-semibold text-primary underline-offset-2 hover:underline"
         />
         {state.lobbyCode && save.phase !== "saved" && (
-          <Button
-            className="h-14 w-full rounded-2xl font-display text-xl tracking-wide shadow-lg shadow-primary/30"
-            onClick={() => setShareOpen(true)}
-          >
-            <Users className="size-5" /> Enter the lobby
-          </Button>
+          <>
+            <Button
+              className="h-14 w-full rounded-2xl font-display text-xl tracking-wide shadow-lg shadow-primary/30"
+              onClick={() => setShareOpen(true)}
+            >
+              <Users className="size-5" /> Enter the lobby
+            </Button>
+            {/* Escape hatch: a stale lobby draft (lobbyCode persists on the
+                device) shouldn't trap the team — detach and play free. */}
+            <Button
+              variant="outline"
+              className="h-12 w-full rounded-2xl text-sm font-bold"
+              onClick={() => {
+                if (
+                  window.confirm(
+                    `Exit lobby ${state.lobbyCode}? This team continues in free play; to enter the lobby later you'll need its link and a fresh draft.`
+                  )
+                ) {
+                  dispatch({ type: "LEAVE_LOBBY" });
+                }
+              }}
+            >
+              <LogOut className="size-4" /> Exit lobby — keep team in free play
+            </Button>
+          </>
         )}
         {state.challengeSlug && !state.lobbyCode && save.phase !== "saved" && (
           <Button

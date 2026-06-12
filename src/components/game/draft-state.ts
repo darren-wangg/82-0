@@ -171,7 +171,10 @@ export type GameAction =
   | { type: "SKIP_ERA" }
   | { type: "SELECT_PLAYER"; playerId: string | null }
   | { type: "PLACE"; slot: Slot }
-  | { type: "MOVE"; from: Slot; to: Slot };
+  | { type: "MOVE"; from: Slot; to: Slot }
+  /** Detach the draft from its lobby — it continues as a free-play draft.
+   *  Re-entering the lobby later requires its link and a fresh draft. */
+  | { type: "LEAVE_LOBBY" };
 
 export const comboKey = (c: SpinResult) => `${c.franchiseId}|${c.decade}`;
 
@@ -371,6 +374,9 @@ export function gameReducer(
         action.challengeSlug ?? null,
         action.lobbyCode ?? null
       );
+
+    case "LEAVE_LOBBY":
+      return state.lobbyCode === null ? state : { ...state, lobbyCode: null };
 
     case "SPIN": {
       if (state.status !== "draft" || state.spin !== null) return state;

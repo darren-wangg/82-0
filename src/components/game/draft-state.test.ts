@@ -132,6 +132,20 @@ describe("newGame", () => {
   });
 });
 
+describe("LEAVE_LOBBY", () => {
+  it("detaches the lobby and keeps the draft otherwise untouched", () => {
+    const s = newGame(7, realCtx, null, "ABC123");
+    const left = dispatch(s, realCtx, { type: "LEAVE_LOBBY" });
+    expect(left.lobbyCode).toBeNull();
+    expect({ ...left, lobbyCode: s.lobbyCode }).toEqual(s);
+  });
+
+  it("is a no-op outside a lobby draft", () => {
+    const s = newGame(7, realCtx);
+    expect(dispatch(s, realCtx, { type: "LEAVE_LOBBY" })).toBe(s);
+  });
+});
+
 describe("SPIN", () => {
   it("never lands on an excluded decade, an empty pool, or a pool with no draftable player", () => {
     for (let seed = 0; seed < 40; seed++) {
