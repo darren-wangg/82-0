@@ -11,7 +11,7 @@ import {
 } from "@/lib/contracts";
 import { getSnapshot } from "@/lib/snapshot";
 import { prisma } from "@/lib/db";
-import { auth, getOrCreateAnonId } from "@/lib/auth";
+import { getOrCreateAnonId } from "@/lib/auth";
 import { makeTeamSlug } from "@/components/social/hashing";
 import {
   computeTeamOutputs,
@@ -61,8 +61,6 @@ export async function POST(request: Request) {
   const { rating, season } = outputs;
 
   try {
-    const session = await auth().catch(() => null);
-    const userId = session?.user?.id ?? null;
     const anonIdentityId = await getOrCreateAnonId();
 
     // Retry on the (unlikely) slug collision.
@@ -83,7 +81,6 @@ export async function POST(request: Request) {
             losses: season.losses,
             gatedCategory: season.gatedCategory,
             anonIdentityId,
-            userId,
           },
           include: teamInclude,
         });

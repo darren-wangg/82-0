@@ -46,7 +46,10 @@ model PlayerSeason {
 }
 
 // ---------------------------------------------------------------------------
-// Identity — Auth.js v5 standard tables + anonymous device identity
+// Identity — anonymous device identity (the live system) + Auth.js standard
+// tables. Sign-in was removed from the runtime; User/Account/Session and the
+// userId columns are retained so re-adding accounts later is additive, but
+// nothing writes them today.
 // ---------------------------------------------------------------------------
 
 model User {

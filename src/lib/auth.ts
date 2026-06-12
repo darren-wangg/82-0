@@ -1,16 +1,12 @@
 /**
- * Auth.js v5 (next-auth@beta) configuration: Google sign-in backed by the
- * Prisma adapter, plus an anonymous-first identity model.
+ * Anonymous-first identity: a signed httpOnly cookie maps the device to an
+ * AnonIdentity row. Teams, lobby creation, and lobby entries all key off it.
  *
- * Anonymous identity: a signed httpOnly cookie maps the device to an
- * AnonIdentity row. Teams are always created with the anon identity; when the
- * user signs in with Google, the signIn event links AnonIdentity.userId and
- * claims the anonymous teams for the user.
+ * Sign-in (Google via Auth.js) was removed from the runtime — the User/
+ * Account/Session tables and Team.userId remain in the schema so re-adding
+ * accounts later is additive, but nothing writes them today.
  */
 
-import NextAuth from "next-auth";
-import Google from "next-auth/providers/google";
-import { PrismaAdapter } from "@auth/prisma-adapter";
 import { cookies } from "next/headers";
 import { prisma } from "./db";
 import { signAnonId, verifyAnonToken } from "@/components/social/anon-token";
@@ -31,26 +27,6 @@ function anonSecret(): string {
   // Dev-only fallback so the game works before secrets are provisioned.
   return "82-0-dev-insecure-anon-secret";
 }
-
-export const { handlers, auth, signIn, signOut } = NextAuth({
-  // The generated client lives in src/generated/prisma (Prisma 7 custom
-  // output); the adapter's parameter type is written against the default
-  // "@prisma/client" location, so a cast is required. Shapes are identical.
-  adapter: PrismaAdapter(prisma as unknown as Parameters<typeof PrismaAdapter>[0]),
-  providers: [Google],
-  session: { strategy: "database" },
-  trustHost: true,
-  events: {
-    async signIn({ user }) {
-      // Claim the device's anonymous identity (and its teams) for this user.
-      try {
-        if (user?.id) await linkAnonIdentityToUser(user.id);
-      } catch {
-        // Never block sign-in on the linking step (e.g. DB hiccup).
-      }
-    },
-  },
-});
 
 /**
  * Reads the signed anon cookie without touching the database.
@@ -85,24 +61,4 @@ export async function getOrCreateAnonId(): Promise<string> {
     maxAge: ANON_COOKIE_MAX_AGE,
   });
   return created.id;
-}
-
-/**
- * Links the current device's anonymous identity to a user and claims any
- * teams created anonymously. Safe to call repeatedly.
- */
-export async function linkAnonIdentityToUser(userId: string): Promise<void> {
-  const anonId = await getAnonIdFromCookie();
-  if (!anonId) return;
-
-  const anon = await prisma.anonIdentity.findUnique({ where: { id: anonId } });
-  if (!anon || (anon.userId && anon.userId !== userId)) return;
-
-  await prisma.$transaction([
-    prisma.anonIdentity.update({ where: { id: anonId }, data: { userId } }),
-    prisma.team.updateMany({
-      where: { anonIdentityId: anonId, userId: null },
-      data: { userId },
-    }),
-  ]);
 }
