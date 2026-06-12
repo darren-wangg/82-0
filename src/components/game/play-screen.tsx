@@ -197,11 +197,10 @@ export function PlayScreen() {
         >
           <Users className="size-3.5 shrink-0 text-sky-300" />
           <span className="min-w-0 truncate">
-            Lobby draft — your team enters{" "}
+            Lobby draft —
             <span className="font-mono font-bold tracking-widest text-sky-300">
               {state.lobbyCode}
-            </span>{" "}
-            when you save
+            </span>
           </span>
         </motion.div>
       )}
