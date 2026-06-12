@@ -14,7 +14,7 @@ import {
   TeamRating,
 } from "@/lib/contracts";
 
-export const PROMPT_VERSION = "v3";
+export const PROMPT_VERSION = "v4";
 /** Cheapest tier — explanations are short, structured-input blurbs. */
 export const EXPLAIN_MODEL = "claude-haiku-4-5-20251001";
 
@@ -44,15 +44,18 @@ export interface MatchupExplainPayload {
 }
 
 const SYSTEM_PROMPT =
-  "You are a sharp veteran NBA scout filing quick evaluations for a fantasy " +
-  "game where people draft 8-player all-time rosters that get simulated. " +
-  "Write like a great color commentator: dry, confident, specific — wit " +
-  "comes from basketball insight, never from forced slang, catchphrases, or " +
-  "hype. Keep it conversational and direct; one cutting observation beats " +
-  "three jokes. Ground every claim in the numbers you're given: category " +
-  "values are era-adjusted z-scores (higher is always better; turnovers are " +
-  "sign-flipped). Never invent stats. Plain text only — no markdown, " +
-  "headings, or bullet points. Hard limit: 3 sentences, no exceptions.";
+  "You are Coach Buckets — a washed ex-journeyman turned loudmouth podcast " +
+  "analyst covering a fantasy game where people draft 8-player all-time NBA " +
+  "rosters that get simulated. Your takes are SHORT, funny, and ruthless. " +
+  "Talk like the barbershop: slang (cooked, washed, bricks, no cap, him), " +
+  "trash talk, and mild profanity (damn, hell, ass) are all fair game — " +
+  "never slurs, never mean about real people's looks or lives. The wit has " +
+  "to come from the basketball, not from stacking catchphrases. " +
+  "Ground every take in the numbers you're given: category values are " +
+  "era-adjusted z-scores (higher is always better; turnovers are " +
+  "sign-flipped). Never invent stats. Plain text only, no markdown, no " +
+  "headings, no bullet points. Hard limit: 3 sentences, no exceptions — " +
+  "treat it like the shot clock.";
 
 export function buildTeamSystemPrompt(): string {
   return SYSTEM_PROMPT;
@@ -67,8 +70,8 @@ export function buildTeamPrompt(payload: TeamExplainPayload): string {
     .join(", ");
 
   return [
-    `Give your read on this roster in AT MOST 3 sentences:`,
-    `what makes it work, what's holding it back${
+    `Give your take on this roster in AT MOST 3 sentences:`,
+    `why they're nice, what's holding them back${
       season.gatedCategory
         ? ` (the binding weakness is ${CAT_LABELS[season.gatedCategory]} — it capped them at ${season.winCap} wins, call it out)`
         : " (no category gate applied — nothing capped them)"
@@ -100,7 +103,7 @@ export function buildMatchupPrompt(payload: MatchupExplainPayload): string {
 
   return [
     `Recap this simulated best-of-7 in AT MOST 3 sentences.`,
-    `Lead with how decisive (or close) it was, then point at the category edges that decided it.`,
+    `Lead with who got cooked (or how close it was), then point at the category edges that decided it.`,
     ``,
     `Matchup: "${teamA.teamName}" (OVR ${teamA.rating.ovr.toFixed(1)}) vs "${teamB.teamName}" (OVR ${teamB.rating.ovr.toFixed(1)})`,
     `Winner: "${winner}" over "${loser}", series ${result.seriesScore[0]}-${result.seriesScore[1]} (score is teamA-teamB)`,
