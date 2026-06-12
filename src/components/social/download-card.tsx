@@ -7,14 +7,19 @@
  * "Save Image" lands it in Photos; elsewhere we fall back to a normal
  * download.
  *
- * The PNG is prefetched on mount: satori takes a few seconds to render the
- * card, and navigator.share() must run inside the tap's user-activation
- * window — sharing a blob we already hold keeps the tap handler fast enough.
+ * The PNG is prefetched so navigator.share() can run inside the tap's
+ * user-activation window (satori takes a few seconds to render the card) —
+ * but lazily: a few seconds after mount so the render doesn't compete with
+ * the reveal animations, and eagerly on pointerdown/focus as a head start
+ * before the click lands.
  */
 
 import { useEffect, useRef, useState } from "react";
 import { ImageDown, LoaderCircle } from "lucide-react";
 import { cn } from "@/lib/utils";
+
+/** Delay before the idle prefetch — past the sim screen's reveal sequence. */
+const PREFETCH_DELAY_MS = 3500;
 
 export function DownloadCardButton({
   cardUrl,
@@ -28,22 +33,32 @@ export function DownloadCardButton({
   className?: string;
 }) {
   const blobRef = useRef<Blob | null>(null);
+  const fetchingRef = useRef<string | null>(null);
   const [busy, setBusy] = useState(false);
 
-  useEffect(() => {
-    let cancelled = false;
+  const prefetch = () => {
+    if (blobRef.current || fetchingRef.current === cardUrl) return;
+    fetchingRef.current = cardUrl;
     fetch(cardUrl)
       .then(async (res) => {
         if (!res.ok) return;
         const blob = await res.blob();
-        if (!cancelled) blobRef.current = blob;
+        if (fetchingRef.current === cardUrl) blobRef.current = blob;
       })
       .catch(() => {
         // prefetch is best-effort; the tap handler refetches
+      })
+      .finally(() => {
+        if (fetchingRef.current === cardUrl) fetchingRef.current = null;
       });
-    return () => {
-      cancelled = true;
-    };
+  };
+
+  useEffect(() => {
+    blobRef.current = null;
+    fetchingRef.current = null;
+    const t = window.setTimeout(prefetch, PREFETCH_DELAY_MS);
+    return () => window.clearTimeout(t);
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- prefetch is stable per cardUrl
   }, [cardUrl]);
 
   async function save() {
@@ -83,6 +98,8 @@ export function DownloadCardButton({
     <button
       type="button"
       onClick={save}
+      onPointerDown={prefetch}
+      onFocus={prefetch}
       className={cn("inline-flex items-center justify-center gap-1.5", className)}
     >
       {busy ? (

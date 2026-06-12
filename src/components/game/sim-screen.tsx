@@ -41,6 +41,7 @@ import {
   type Roster,
   type SaveTeamRequest,
   type SaveTeamResponse,
+  type SeasonResult,
 } from "@/lib/contracts";
 import { getEngine } from "@/lib/engine-provider";
 import { getBaselines } from "@/lib/snapshot-client";
@@ -154,6 +155,78 @@ function BallBurst() {
           🏀
         </motion.span>
       ))}
+    </div>
+  );
+}
+
+/** The animated record reveal, isolated so its 60 fps count-up re-renders
+ *  only this subtree — not the whole sim screen. */
+function RecordReveal({ season }: { season: SeasonResult }) {
+  const reducedMotion = useReducedMotion();
+  const perfect = season.wins === SEASON_GAMES;
+  // The record counts up like the season is actually being played: a single
+  // 0→82 games counter with the losses sprinkled in proportionally, so
+  // W + L always equals games played and both land on the final record.
+  const gamesPlayed = useCountUp(SEASON_GAMES, COUNT_UP_SECONDS);
+  const losses = Math.round((season.losses * gamesPlayed) / SEASON_GAMES);
+  const wins = gamesPlayed - losses;
+
+  // True once the count-up settles — gates the landing pop / ball burst.
+  const [landed, setLanded] = useState(false);
+  useEffect(() => {
+    if (reducedMotion) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- no count-up to wait for
+      setLanded(true);
+      return;
+    }
+    const t = window.setTimeout(() => setLanded(true), COUNT_UP_SECONDS * 1000);
+    return () => window.clearTimeout(t);
+  }, [reducedMotion]);
+
+  return (
+    <div className="relative flex flex-col items-center text-center">
+      {/* outer: entrance spring; middle: pop when the count lands;
+          inner: endless pulse for a perfect season */}
+      <motion.div
+        initial={{ scale: 0.7, opacity: 0 }}
+        animate={{ scale: 1, opacity: 1 }}
+        transition={{ type: "spring", stiffness: 220, damping: 18 }}
+      >
+        <motion.div
+          animate={landed && !reducedMotion ? { scale: [1, 1.18, 1] } : undefined}
+          transition={{ duration: 0.55, ease: "easeOut" }}
+        >
+          <motion.p
+            animate={perfect ? { scale: [1, 1.06, 1] } : undefined}
+            transition={
+              perfect
+                ? { delay: COUNT_UP_SECONDS, repeat: Infinity, duration: 1.8 }
+                : undefined
+            }
+            className={cn(
+              "animate-gradient-x bg-[length:200%_auto] bg-clip-text font-display text-8xl tracking-tight text-transparent tabular-nums",
+              perfect
+                ? "bg-gradient-to-r from-emerald-300 via-emerald-500 to-emerald-300"
+                : "bg-gradient-to-r from-primary via-violet-400 to-primary"
+            )}
+            aria-label={`Final record ${season.wins} and ${season.losses}`}
+          >
+            <PopNumber value={wins} />-<PopNumber value={losses} />
+          </motion.p>
+        </motion.div>
+      </motion.div>
+      {landed && !reducedMotion && <BallBurst />}
+      {/* fixed-height slot so the loader leaving doesn't shift the layout */}
+      <div className="flex h-7 items-center gap-2.5">
+        {!landed && !reducedMotion && (
+          <>
+            <DribbleLoader />
+            <span className="font-mono text-[10px] font-semibold tracking-widest text-muted-foreground tabular-nums uppercase">
+              Game {Math.max(1, gamesPlayed)} of {SEASON_GAMES}
+            </span>
+          </>
+        )}
+      </div>
     </div>
   );
 }
@@ -374,15 +447,6 @@ export function SimScreen() {
     return { roster, rating, season, cost };
   }, [state, players]);
 
-  // The record counts up like the season is actually being played: a single
-  // 0→82 games counter with the losses sprinkled in proportionally, so
-  // W + L always equals games played and both land on the final record.
-  const gamesPlayed = useCountUp(sim ? SEASON_GAMES : 0, COUNT_UP_SECONDS);
-  const losses = sim
-    ? Math.round((sim.season.losses * gamesPlayed) / SEASON_GAMES)
-    : 0;
-  const wins = gamesPlayed - losses;
-
   useEffect(() => {
     try {
       const stored = window.localStorage.getItem("ud:player-name");
@@ -398,22 +462,6 @@ export function SimScreen() {
     const t = window.setTimeout(() => setToast(null), 3500);
     return () => window.clearTimeout(t);
   }, [toast]);
-
-  // True once the count-up settles — gates the landing pop / ball burst.
-  const [landed, setLanded] = useState(false);
-  useEffect(() => {
-    if (!sim) return;
-    if (reducedMotion) {
-      // eslint-disable-next-line react-hooks/set-state-in-effect -- no count-up to wait for
-      setLanded(true);
-      return;
-    }
-    const t = window.setTimeout(
-      () => setLanded(true),
-      COUNT_UP_SECONDS * 1000
-    );
-    return () => window.clearTimeout(t);
-  }, [sim, reducedMotion]);
 
   // Buzz when the 82-0 lands (Android; iOS has no vibration API — no-op).
   useEffect(() => {
@@ -633,7 +681,7 @@ export function SimScreen() {
             <DialogHeader>
               <DialogTitle>
                 {state.lobbyCode
-                  ? "Enter the lobby"
+                  ? "Submit your team"
                   : state.challengeSlug
                     ? "Battle your rival"
                     : "Share your team"}
@@ -665,7 +713,7 @@ export function SimScreen() {
                 <DownloadCardButton
                   cardUrl={`${save.url}/card`}
                   fileName="ultimate-draft-team-card.png"
-                  label="Save team"
+                  label="Save your team"
                   className="mx-auto text-xs font-semibold text-primary underline-offset-2 hover:underline"
                 />
               </div>
@@ -713,50 +761,7 @@ export function SimScreen() {
       </div>
 
       {/* final record */}
-      <div className="relative flex flex-col items-center text-center">
-        {/* outer: entrance spring; middle: pop when the count lands;
-            inner: endless pulse for a perfect season */}
-        <motion.div
-          initial={{ scale: 0.7, opacity: 0 }}
-          animate={{ scale: 1, opacity: 1 }}
-          transition={{ type: "spring", stiffness: 220, damping: 18 }}
-        >
-        <motion.div
-          animate={landed && !reducedMotion ? { scale: [1, 1.18, 1] } : undefined}
-          transition={{ duration: 0.55, ease: "easeOut" }}
-        >
-        <motion.p
-          animate={perfect ? { scale: [1, 1.06, 1] } : undefined}
-          transition={
-            perfect
-              ? { delay: COUNT_UP_SECONDS, repeat: Infinity, duration: 1.8 }
-              : undefined
-          }
-          className={cn(
-            "animate-gradient-x bg-[length:200%_auto] bg-clip-text font-display text-8xl tracking-tight text-transparent tabular-nums",
-            perfect
-              ? "bg-gradient-to-r from-emerald-300 via-emerald-500 to-emerald-300"
-              : "bg-gradient-to-r from-primary via-violet-400 to-primary"
-          )}
-          aria-label={`Final record ${season.wins} and ${season.losses}`}
-        >
-          <PopNumber value={wins} />-<PopNumber value={losses} />
-        </motion.p>
-        </motion.div>
-        </motion.div>
-        {landed && !reducedMotion && <BallBurst />}
-        {/* fixed-height slot so the loader leaving doesn't shift the layout */}
-        <div className="flex h-7 items-center gap-2.5">
-          {!landed && !reducedMotion && (
-            <>
-              <DribbleLoader />
-              <span className="font-mono text-[10px] font-semibold tracking-widest text-muted-foreground tabular-nums uppercase">
-                Game {Math.max(1, gamesPlayed)} of {SEASON_GAMES}
-              </span>
-            </>
-          )}
-        </div>
-      </div>
+      <RecordReveal season={season} />
 
       {/* the team */}
       <TeamView roster={roster} players={players} />
@@ -887,7 +892,7 @@ export function SimScreen() {
         <DownloadCardButton
           cardUrl={cardUrl}
           fileName="ultimate-draft-team-card.png"
-          label="Save team"
+          label="Save your team"
           className="mx-auto text-xs font-semibold text-primary underline-offset-2 hover:underline"
         />
         {state.lobbyCode && save.phase !== "saved" && (
@@ -896,7 +901,7 @@ export function SimScreen() {
               className="h-14 w-full rounded-2xl font-display text-xl tracking-wide shadow-lg shadow-primary/30"
               onClick={() => setShareOpen(true)}
             >
-              <Users className="size-5" /> Enter the lobby
+              <Users className="size-5" /> Submit your team
             </Button>
             {/* Escape hatch: a stale lobby draft (lobbyCode persists on the
                 device) shouldn't trap the team — detach and play free. */}
@@ -913,7 +918,7 @@ export function SimScreen() {
                 }
               }}
             >
-              <LogOut className="size-4" /> Exit lobby — keep team in free play
+              <LogOut className="size-4" /> Exit lobby
             </Button>
           </>
         )}

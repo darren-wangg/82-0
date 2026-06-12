@@ -14,6 +14,14 @@ import { Card, CardContent } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
 import { Unavailable } from "@/components/social/unavailable";
 
+/** Teams are immutable once saved; runtime ISR keeps challenge links off
+ *  Postgres per view (same pattern as /t/[slug]). */
+export const revalidate = 3600;
+
+export function generateStaticParams(): { slug: string }[] {
+  return [];
+}
+
 export async function generateMetadata({
   params,
 }: PageProps<"/t/[slug]/challenge">): Promise<Metadata> {

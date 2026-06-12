@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { preload } from "react-dom";
 import { Shirt, Trophy, UsersRound } from "lucide-react";
 import { buttonVariants } from "@/components/ui/button";
 import { HowToPlayDialog } from "@/components/game/how-to-play";
@@ -35,6 +36,11 @@ const NAV_TILES = [
 ] as const;
 
 export default function Home() {
+  // Warm the draft's data (~1.6 MB snapshot + fallback map, both cached
+  // immutably) while the user reads the home screen — tapping Start Draft
+  // then loads from the browser cache instead of fetching on /play mount.
+  preload("/data/snapshot-v1.json", { as: "fetch" });
+  preload("/data/headshot-fallbacks-v1.json", { as: "fetch" });
   return (
     <div className="dark relative flex min-h-dvh flex-1 flex-col overflow-hidden bg-background text-foreground">
       {/* ambient court glow — pure CSS, decorative only */}

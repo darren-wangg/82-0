@@ -42,17 +42,19 @@ export function catchphrase(wins: number): string {
   return "REJECTED!";
 }
 
-export async function cardFonts(): Promise<
-  { name: string; data: Buffer; style: "normal"; weight: 400 }[]
-> {
-  const [anton, pressStart] = await Promise.all([
+type CardFont = { name: string; data: Buffer; style: "normal"; weight: 400 };
+let fontsPromise: Promise<CardFont[]> | null = null;
+
+export function cardFonts(): Promise<CardFont[]> {
+  // Font files never change at runtime — read them once per process.
+  fontsPromise ??= Promise.all([
     readFile(join(process.cwd(), "src/assets/fonts/Anton-Regular.ttf")),
     readFile(join(process.cwd(), "src/assets/fonts/PressStart2P-Regular.ttf")),
-  ]);
-  return [
+  ]).then(([anton, pressStart]) => [
     { name: "Anton", data: anton, style: "normal", weight: 400 },
     { name: "Press Start 2P", data: pressStart, style: "normal", weight: 400 },
-  ];
+  ]);
+  return fontsPromise;
 }
 
 /** Per-process cache of url → data URI. Card renders mostly repeat the same

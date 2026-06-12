@@ -16,6 +16,14 @@ import { ExplainStream } from "@/components/social/explain-stream";
 import { ShareButton } from "@/components/social/share-button";
 import { Unavailable } from "@/components/social/unavailable";
 
+/** Matchups are immutable once simulated; runtime ISR keeps share links off
+ *  Postgres per view (same pattern as /t/[slug]). */
+export const revalidate = 3600;
+
+export function generateStaticParams(): { id: string }[] {
+  return [];
+}
+
 export async function generateMetadata({
   params,
 }: PageProps<"/m/[id]">): Promise<Metadata> {
