@@ -117,11 +117,6 @@ export function PoolList({
                       {[p.position, ...p.altPositions].slice(0, 3).join("/")}
                       {p.altPositions.length > 2 && "+"}
                     </Badge>
-                    {legendary && (
-                      <span className="shrink-0 font-arcade text-[7px] text-amber-300">
-                        🔥 GOAT
-                      </span>
-                    )}
                   </div>
                   <div className="mt-1 grid grid-cols-6 gap-1">
                     {ROW_CATS.map(({ cat, label }) => (

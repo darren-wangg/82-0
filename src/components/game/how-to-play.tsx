@@ -18,15 +18,15 @@ import {
 const STEPS: { title: string; body: string }[] = [
   {
     title: "Spin",
-    body: `Each of the ${DRAFT_ROUNDS} rounds spins a random team and era. The same team-and-era combo never comes up twice in one game.`,
+    body: `Each of the ${DRAFT_ROUNDS} rounds spins a random team and era. The same team-era combo never comes up twice.`,
   },
   {
     title: "Re-spins",
-    body: `You get ${TEAM_SKIPS_PER_GAME} team re-spin and ${ERA_SKIPS_PER_GAME} era re-spin per game. A re-spin rolls only that axis — spend them wisely.`,
+    body: `${TEAM_SKIPS_PER_GAME} team re-spin and ${ERA_SKIPS_PER_GAME} era re-spin per game. A re-spin rolls only that axis — spend them wisely.`,
   },
   {
-    title: "Pick & place",
-    body: "Tap a player, then tap one of their roster slots. Starters need a true PG, SG, SF, PF, and C; the bench takes a guard, a forward, and a center. You can't draft the same player twice, even from a different era.",
+    title: "Pick",
+    body: "Tap a player, then one of their positions. Starters need a PG, SG, SF, PF, and C; the bench needs a G, a F, and a C.",
   },
   {
     title: "Optimize",
@@ -34,7 +34,7 @@ const STEPS: { title: string; body: string }[] = [
   },
   {
     title: "Simulate",
-    body: `Your squad is era-adjusted and runs a full ${SEASON_GAMES}-game season. One glaring weakness can cap your wins. Chase ${SEASON_GAMES}-0.`,
+    body: `Your squad is era-adjusted and runs a full ${SEASON_GAMES}-game season. One glaring weakness can cap your wins.`,
   },
 ];
 

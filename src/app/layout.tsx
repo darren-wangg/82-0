@@ -1,11 +1,13 @@
 import type { Metadata } from "next";
-import { Anton, Geist, Geist_Mono, Press_Start_2P } from "next/font/google";
+import { Anton, Geist_Mono, Press_Start_2P, Space_Grotesk } from "next/font/google";
 import { AppMotion } from "@/components/app-motion";
 import "./globals.css";
 import { Analytics } from "@vercel/analytics/next";
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
+/** Body face — named --font-sans so the Tailwind font-sans utility (mapped
+ *  to var(--font-sans) in globals.css) picks it up. */
+const spaceGrotesk = Space_Grotesk({
+  variable: "--font-sans",
   subsets: ["latin"],
 });
 
@@ -59,7 +61,7 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      className={`${geistSans.variable} ${geistMono.variable} ${anton.variable} ${pressStart.variable} h-full antialiased`}
+      className={`${spaceGrotesk.variable} ${geistMono.variable} ${anton.variable} ${pressStart.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col">
         <AppMotion>{children}</AppMotion>

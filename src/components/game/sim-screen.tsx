@@ -260,7 +260,7 @@ function OvrDial({ ovr }: { ovr: number }) {
         <span className="font-mono text-3xl font-black tabular-nums">
           {shown}
         </span>
-        <span className="font-arcade text-[8px] text-muted-foreground">
+        <span className="text-[10px] font-semibold tracking-widest text-muted-foreground">
           OVR / {OVR_MAX}
         </span>
       </div>
@@ -692,7 +692,7 @@ export function SimScreen() {
                   ? `Add your name and a team name — your entry shows up in lobby ${state.lobbyCode} instantly.`
                   : state.challengeSlug
                     ? "Name your team — sharing runs the best-of-7 against your rival."
-                    : "Name your team to get a share link."}
+                    : "Name your team to get a share link — anyone who opens it sees your squad and record, and can draft their own team to battle yours head-to-head."}
               </DialogDescription>
             </DialogHeader>
             {save.phase === "saved" ? (

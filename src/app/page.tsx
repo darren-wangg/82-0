@@ -62,7 +62,7 @@ export default function Home() {
           </h1>
           <p className="max-w-xs text-base text-balance text-muted-foreground">
             Spin for a franchise and an era, draft 8 legends, and chase the
-            perfect <span className="font-arcade text-xs text-primary">82-0</span>{" "}
+            perfect <span className="font-semibold text-foreground">82-0</span>{" "}
             season.
           </p>
         </div>

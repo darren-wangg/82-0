@@ -1,5 +1,5 @@
 /**
- * Legendary "jackpot" pulls — a curated top-10-of-all-time list, keyed by the
+ * Legendary "jackpot" pulls — a curated top-15-of-all-time list, keyed by the
  * full stat-line id (player-franchise-decade) so only each legend's PEAK form
  * lights up: LAL-2000s Shaq is a jackpot, Cavs Shaq is just a guy. One line
  * per legend, picked by engine playerScore over snapshot-v1 and sanity-checked
@@ -19,6 +19,11 @@ export const LEGEND_IDS: ReadonlySet<string> = new Set([
   "duncati01-SAS-2000s", // Tim Duncan — back-to-back MVPs
   "bryanko01-LAL-2000s", // Kobe Bryant — 81 and the MVP year
   "onealsh01-LAL-2000s", // Shaquille O'Neal — three-peat dominance
+  "olajuha01-HOU-1990s", // Hakeem Olajuwon — MVP + 2 titles
+  "curryst01-GSW-2010s", // Stephen Curry — unanimous MVP
+  "duranke01-OKC-2010s", // Kevin Durant — scoring-title MVP form
+  "antetgi01-MIL-2010s", // Giannis Antetokounmpo — MVP leap
+  "jokicni01-DEN-2020s", // Nikola Jokić — MVP triptych
 ]);
 
 /** Is this exact pool line a legend's peak form (the "jackpot" pull)? */
