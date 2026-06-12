@@ -243,17 +243,6 @@ export async function GET(
           >
             {lobby.name.toUpperCase()}
           </div>
-          <div
-            style={{
-              display: "flex",
-              marginTop: 12,
-              fontFamily: "Press Start 2P",
-              fontSize: 12,
-              color: "rgba(255,255,255,0.55)",
-            }}
-          >
-            {lobby.standings.length} TEAMS · ROUND ROBIN · LOBBY {lobby.code}
-          </div>
         </div>
 
         {/* podium */}

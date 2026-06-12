@@ -906,7 +906,7 @@ export function SimScreen() {
               onClick={() => {
                 if (
                   window.confirm(
-                    `Exit lobby ${state.lobbyCode}? This team continues in free play; to enter the lobby later you'll need its link and a fresh draft.`
+                    `Exit lobby ${state.lobbyCode}? To enter the lobby later you'll need its link and have to re-draft.`
                   )
                 ) {
                   dispatch({ type: "LEAVE_LOBBY" });
