@@ -188,9 +188,10 @@ function RecordReveal({ season }: { season: SeasonResult }) {
             }
             className={cn(
               "animate-gradient-x bg-[length:200%_auto] bg-clip-text font-display text-8xl tracking-tight text-transparent tabular-nums",
+              // NBA Jam fire sweeps: white-hot for the perfect season.
               perfect
-                ? "bg-gradient-to-r from-emerald-300 via-emerald-500 to-emerald-300"
-                : "bg-gradient-to-r from-primary via-violet-400 to-primary"
+                ? "bg-gradient-to-r from-yellow-200 via-amber-400 to-red-500"
+                : "bg-gradient-to-r from-amber-300 via-primary to-red-500"
             )}
             aria-label={`Final record ${season.wins} and ${season.losses}`}
           >
@@ -201,7 +202,21 @@ function RecordReveal({ season }: { season: SeasonResult }) {
       {landed && !reducedMotion && <BallBurst />}
       {/* fixed-height slot so the loader leaving doesn't shift the layout */}
       <div className="flex h-7 items-center">
-        {!landed && !reducedMotion && <DribbleLoader />}
+        {!landed && !reducedMotion ? (
+          <DribbleLoader />
+        ) : (
+          landed &&
+          perfect && (
+            <motion.p
+              initial={reducedMotion ? false : { scale: 0, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              transition={{ type: "spring", stiffness: 300, damping: 14 }}
+              className="font-arcade text-xs text-amber-300"
+            >
+              🔥 HE&apos;S ON FIRE! 🔥
+            </motion.p>
+          )
+        )}
       </div>
     </div>
   );
@@ -245,7 +260,7 @@ function OvrDial({ ovr }: { ovr: number }) {
         <span className="font-mono text-3xl font-black tabular-nums">
           {shown}
         </span>
-        <span className="text-[10px] font-semibold tracking-widest text-muted-foreground">
+        <span className="font-arcade text-[8px] text-muted-foreground">
           OVR / {OVR_MAX}
         </span>
       </div>
@@ -792,7 +807,7 @@ export function SimScreen() {
 
       {/* 9-cat profile */}
       <Card className="mt-3 gap-2.5 border-border/60 bg-card/80 p-4">
-        <p className="flex items-center gap-1 text-[11px] font-semibold tracking-wide text-muted-foreground uppercase">
+        <p className="flex items-center gap-1 font-arcade text-[9px] text-muted-foreground uppercase">
           9-cat profile <CatProfileInfo />
         </p>
         {NINE_CATS.map((cat, i) => (
@@ -813,7 +828,7 @@ export function SimScreen() {
           transition={{ delay: COUNT_UP_SECONDS + 0.4 }}
         >
           <Card className="mt-3 gap-1.5 border-border/60 bg-card/80 p-4">
-            <p className="text-[11px] font-semibold tracking-wide text-muted-foreground uppercase">
+            <p className="font-arcade text-[9px] text-muted-foreground uppercase">
               What cost you
             </p>
             {cost.kind === "gated" ? (
@@ -860,7 +875,7 @@ export function SimScreen() {
         transition={{ delay: COUNT_UP_SECONDS + 0.6 }}
       >
         <Card className="mt-3 gap-1.5 border-border/60 bg-card/80 p-4">
-          <p className="text-[11px] font-semibold tracking-wide text-muted-foreground uppercase">
+          <p className="font-arcade text-[9px] text-muted-foreground uppercase">
             Scouting report
           </p>
           <ExplainStream
@@ -918,7 +933,7 @@ export function SimScreen() {
             className="h-14 w-full rounded-2xl text-lg font-bold"
             onClick={runItBack}
           >
-            <RotateCcw className="size-5" /> Run it back
+            Run it back <RotateCcw className="size-5" />
           </Button>
         )}
       </div>

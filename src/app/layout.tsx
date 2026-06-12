@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Anton, Geist, Geist_Mono } from "next/font/google";
+import { Anton, Geist, Geist_Mono, Press_Start_2P } from "next/font/google";
 import { AppMotion } from "@/components/app-motion";
 import "./globals.css";
 import { Analytics } from "@vercel/analytics/next";
@@ -17,6 +17,14 @@ const geistMono = Geist_Mono({
 /** Big sporty display face for records, reels, and headers. */
 const anton = Anton({
   variable: "--font-display",
+  weight: "400",
+  subsets: ["latin"],
+});
+
+/** NBA Jam arcade pixel face — accent labels, section headers, callouts.
+ *  Same face the share cards render with (satori loads its own copy). */
+const pressStart = Press_Start_2P({
+  variable: "--font-arcade",
   weight: "400",
   subsets: ["latin"],
 });
@@ -51,7 +59,7 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      className={`${geistSans.variable} ${geistMono.variable} ${anton.variable} h-full antialiased`}
+      className={`${geistSans.variable} ${geistMono.variable} ${anton.variable} ${pressStart.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col">
         <AppMotion>{children}</AppMotion>

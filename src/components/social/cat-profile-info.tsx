@@ -22,16 +22,13 @@ export function CatProfileInfo() {
           <Popover.Popup className="dark w-72 rounded-xl border border-border bg-popover p-3.5 text-xs leading-relaxed text-popover-foreground shadow-xl shadow-black/40 outline-none">
             <p className="font-semibold">How the 9-cat profile works</p>
             <p className="mt-1.5 text-muted-foreground">
-              Every player&apos;s stats are first era-adjusted — normalized
-              against their own decade, so a 1960s rebound isn&apos;t worth a
-              2020s rebound. Each bar then shows your team&apos;s edge in that
-              category versus the average drafted roster: 0 is average, and
-              the bars max out at ±3. Starters count more than bench.
+              Stats are era-adjusted, then each bar shows your edge vs the
+              average drafted team — 0 is average, capped at ±3. Starters
+              count more than bench.
             </p>
             <p className="mt-1.5 text-muted-foreground">
-              TO is flipped — positive means fewer turnovers. And one deep-red
-              category can gate your season, capping your wins no matter how
-              strong everything else is.
+              TO is flipped (positive = fewer). One deep-red category can gate
+              your season and cap your wins.
             </p>
           </Popover.Popup>
         </Popover.Positioner>

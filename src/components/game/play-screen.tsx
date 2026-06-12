@@ -177,7 +177,7 @@ export function PlayScreen() {
             disabled={!skipTeamOk}
             onClick={() => dispatch({ type: "SKIP_TEAM" })}
           >
-            <RefreshCcw className="size-3.5" /> Team
+            Team <RefreshCcw className="size-3.5" />
           </Button>
           <Button
             variant="outline"
@@ -186,7 +186,7 @@ export function PlayScreen() {
             disabled={!skipEraOk}
             onClick={() => dispatch({ type: "SKIP_ERA" })}
           >
-            <RefreshCcw className="size-3.5" /> Era
+            Era <RefreshCcw className="size-3.5" />
           </Button>
         </div>
       </div>
@@ -295,7 +295,7 @@ export function PlayScreen() {
                   key={i}
                   animate={{ y: [0, -6, 0], opacity: [0.5, 1, 0.5] }}
                   transition={{ repeat: Infinity, duration: 0.9, delay: i * 0.08 }}
-                  className="font-display text-lg tracking-widest text-primary/80"
+                  className="font-arcade text-sm text-primary/80"
                 >
                   {ch}
                 </motion.span>

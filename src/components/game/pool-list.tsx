@@ -1,11 +1,10 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { motion, useReducedMotion } from "framer-motion";
+import { motion } from "framer-motion";
 import { Badge } from "@/components/ui/badge";
 import type { NineCat, PlayerStatLine } from "@/lib/contracts";
 import { cn } from "@/lib/utils";
-import { Confetti } from "./confetti";
 import { isEstimated, SORT_OPTIONS } from "./format";
 import { isLegendary } from "./legends";
 import { PlayerHeadshot } from "./player-headshot";
@@ -38,14 +37,11 @@ export function PoolList({
   onSelect: (id: string | null) => void;
 }) {
   const [sortCat, setSortCat] = useState<NineCat>("pts");
-  const reducedMotion = useReducedMotion();
 
   const sorted = useMemo(
     () => [...pool].sort((a, b) => b.stats[sortCat] - a.stats[sortCat]),
     [pool, sortCat]
   );
-
-  const hasLegendary = useMemo(() => pool.some(isLegendary), [pool]);
 
   return (
     <motion.div
@@ -54,10 +50,6 @@ export function PoolList({
       transition={{ duration: 0.35, ease: "easeOut" }}
       className="flex min-h-0 flex-1 flex-col"
     >
-      {/* minimal jackpot celebration; keyed per pool so a new spin re-fires */}
-      {hasLegendary && !reducedMotion && (
-        <Confetti key={pool[0]?.id} pieces={16} delay={0.5} />
-      )}
       <div className="flex justify-end pb-1.5">
         <select
           value={sortCat}
@@ -125,6 +117,11 @@ export function PoolList({
                       {[p.position, ...p.altPositions].slice(0, 3).join("/")}
                       {p.altPositions.length > 2 && "+"}
                     </Badge>
+                    {legendary && (
+                      <span className="shrink-0 font-arcade text-[7px] text-amber-300">
+                        🔥 GOAT
+                      </span>
+                    )}
                   </div>
                   <div className="mt-1 grid grid-cols-6 gap-1">
                     {ROW_CATS.map(({ cat, label }) => (

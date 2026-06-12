@@ -7,7 +7,7 @@ function StatChip({ label, value }: { label: string; value: number }) {
   return (
     <div className="flex flex-1 flex-col items-center rounded-xl border border-border bg-card px-2 py-2">
       <span className="text-lg font-bold tabular-nums">{Math.round(value)}</span>
-      <span className="text-[10px] tracking-widest text-muted-foreground uppercase">
+      <span className="font-arcade text-[8px] text-muted-foreground uppercase">
         {label}
       </span>
     </div>
@@ -29,7 +29,7 @@ export function RecordHero({
           <span className="text-muted-foreground">–</span>
           {season.losses}
         </p>
-        <p className="mt-1 text-xs tracking-widest text-muted-foreground uppercase">
+        <p className="mt-1.5 font-arcade text-[9px] text-muted-foreground uppercase">
           Projected record
         </p>
         {season.gatedCategory && (

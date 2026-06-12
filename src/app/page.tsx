@@ -54,14 +54,15 @@ export default function Home() {
       />
       <main className="relative mx-auto flex w-full max-w-md flex-1 flex-col items-center justify-center gap-8 px-6 pt-16 pb-10">
         <div className="flex animate-in flex-col items-center gap-4 text-center duration-700 fade-in slide-in-from-bottom-4">
-          <h1 className="animate-gradient-x bg-gradient-to-r from-primary via-violet-400 to-primary bg-[length:200%_auto] bg-clip-text text-center font-display text-6xl leading-[0.95] tracking-tight text-transparent uppercase">
+          {/* NBA Jam fire: yellow → orange → red sweep */}
+          <h1 className="animate-gradient-x bg-gradient-to-r from-amber-300 via-primary to-red-500 bg-[length:200%_auto] bg-clip-text text-center font-display text-6xl leading-[0.95] tracking-tight text-transparent uppercase">
             Ultimate
             <br />
             Draft
           </h1>
           <p className="max-w-xs text-base text-balance text-muted-foreground">
             Spin for a franchise and an era, draft 8 legends, and chase the
-            perfect <span className="font-semibold text-foreground">82-0</span>{" "}
+            perfect <span className="font-arcade text-xs text-primary">82-0</span>{" "}
             season.
           </p>
         </div>
