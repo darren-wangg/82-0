@@ -37,6 +37,7 @@ import {
   trueShooting,
 } from "./estimate";
 import { buildNbaIdIndex, normalizeName } from "./nba-ids";
+import { EXCLUDED_POOLS } from "./excluded-pools";
 
 const ROOT = path.join(path.dirname(fileURLToPath(import.meta.url)), "..", "..");
 const OUT_FILE = path.join(ROOT, "public", "data", "snapshot-v1.json");
@@ -480,6 +481,32 @@ async function main() {
     }
     return { decade, mean, sd };
   });
+
+  // 7b. Drop the weakest franchise×decade combos so the slot machine can't
+  //     land on them (see excluded-pools.ts). Done AFTER baselines so the era
+  //     means/SDs — and therefore every other player's rating — are unchanged.
+  let prunedPlayers = 0;
+  for (const key of EXCLUDED_POOLS) {
+    const [fid, decade] = key.split("|") as [string, Decade];
+    const removed = pools[fid]?.[decade]?.length ?? 0;
+    if (pools[fid]) {
+      delete pools[fid][decade];
+      if (Object.keys(pools[fid]).length === 0) delete pools[fid];
+    }
+    prunedPlayers += removed;
+  }
+  for (let i = players.length - 1; i >= 0; i--) {
+    if (EXCLUDED_POOLS.has(`${players[i].franchiseId}|${players[i].decade}`)) {
+      players.splice(i, 1);
+    }
+  }
+  // activeDecades was derived from the pre-prune pools — recompute it.
+  for (const f of franchises) {
+    f.activeDecades = DECADES.filter((d) => (pools[f.id]?.[d]?.length ?? 0) > 0);
+  }
+  console.log(
+    `  excluded ${EXCLUDED_POOLS.size} pools (${prunedPlayers} player lines) from drafting`
+  );
 
   const snapshot: Snapshot = {
     version: "v1",
