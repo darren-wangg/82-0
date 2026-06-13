@@ -18,10 +18,18 @@ import { cn } from "@/lib/utils";
 import { CloseLobbyButton } from "@/components/social/close-lobby-button";
 import { CopyCode } from "@/components/social/copy-code";
 import { DownloadCardButton } from "@/components/social/download-card";
+import { LobbyCloseNotifier } from "@/components/social/lobby-close-notifier";
+import { LobbyLimitEditor } from "@/components/social/lobby-limit-editor";
 import { LobbyRefresh } from "@/components/social/lobby-refresh";
 import { ShareButton } from "@/components/social/share-button";
 import { StandingsTable } from "@/components/social/standings-table";
 import { Unavailable } from "@/components/social/unavailable";
+
+function ordinal(n: number): string {
+  const mod100 = n % 100;
+  if (mod100 >= 11 && mod100 <= 13) return `${n}th`;
+  return `${n}${["th", "st", "nd", "rd"][n % 10] ?? "th"}`;
+}
 
 export async function generateMetadata({
   params,
@@ -56,6 +64,12 @@ export default async function LobbyPage({ params }: PageProps<"/l/[code]">) {
   const open = lobby.status === "open";
   const entered = viewer.entryTeamSlug !== null;
   const teamCount = lobby.standings.length;
+  const limit = viewer.teamLimit;
+  const full = limit !== null && teamCount >= limit;
+  const placementIdx = entered
+    ? lobby.standings.findIndex((s) => s.teamSlug === viewer.entryTeamSlug)
+    : -1;
+  const placement = placementIdx >= 0 ? placementIdx + 1 : null;
 
   return (
     <main className="space-y-5">
@@ -67,6 +81,14 @@ export default async function LobbyPage({ params }: PageProps<"/l/[code]">) {
             <LobbyRefresh />
           ) : (
             <span className="font-semibold text-amber-400">Closed</span>
+          )}
+        </p>
+        <p className="mt-1 text-xs font-medium text-muted-foreground tabular-nums">
+          {teamCount}
+          {limit !== null && <span className="text-muted-foreground/70">/{limit}</span>}{" "}
+          {teamCount === 1 && limit === null ? "team" : "teams"}
+          {full && open && (
+            <span className="ml-1.5 font-bold text-amber-400 uppercase">· Full</span>
           )}
         </p>
       </div>
@@ -94,6 +116,19 @@ export default async function LobbyPage({ params }: PageProps<"/l/[code]">) {
         </Card>
       )}
 
+      {!open && placement !== null && placement !== 1 && (
+        <Card className="border-primary/40 bg-primary/10">
+          <CardContent className="py-3 text-center">
+            <p className="text-[10px] font-semibold tracking-widest text-primary uppercase">
+              Your result
+            </p>
+            <p className="mt-0.5 text-sm font-bold">
+              You finished {ordinal(placement)} of {teamCount}
+            </p>
+          </CardContent>
+        </Card>
+      )}
+
       {open &&
         (entered ? (
           <Card>
@@ -117,6 +152,15 @@ export default async function LobbyPage({ params }: PageProps<"/l/[code]">) {
               )}
             </CardContent>
           </Card>
+        ) : full ? (
+          <Card className="border-amber-500/40 bg-amber-500/10">
+            <CardContent className="py-4 text-center text-sm">
+              <p className="font-semibold text-amber-400">This lobby is full</p>
+              <p className="mt-0.5 text-xs text-muted-foreground">
+                All {limit} spots are taken — follow the standings below.
+              </p>
+            </CardContent>
+          </Card>
         ) : (
           <div className="space-y-2">
             <Link
@@ -130,6 +174,7 @@ export default async function LobbyPage({ params }: PageProps<"/l/[code]">) {
             </Link>
             <p className="text-center text-[11px] text-muted-foreground">
               Draft a single team for this lobby — no re-dos.
+              {limit !== null && ` ${limit - teamCount} spot${limit - teamCount === 1 ? "" : "s"} left.`}
             </p>
           </div>
         ))}
@@ -180,8 +225,28 @@ export default async function LobbyPage({ params }: PageProps<"/l/[code]">) {
               the link
             </p>
           )}
-          {viewer.isCreator && <CloseLobbyButton code={lobby.code} />}
+          {viewer.isCreator && (
+            <div className="flex flex-col items-center gap-3 border-t border-border/60 pt-4">
+              <LobbyLimitEditor
+                code={lobby.code}
+                currentLimit={limit}
+                entrantCount={teamCount}
+              />
+              <CloseLobbyButton code={lobby.code} />
+            </div>
+          )}
         </>
+      )}
+
+      {entered && (
+        <LobbyCloseNotifier
+          code={lobby.code}
+          open={open}
+          entered={entered}
+          placement={placement}
+          total={teamCount}
+          lobbyName={lobby.name}
+        />
       )}
     </main>
   );

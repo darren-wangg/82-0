@@ -1,6 +1,7 @@
 /** POST /api/lobbies — create a lobby with a fresh join code. The calling
  *  device becomes the creator: only it may end the lobby early. */
 
+import { z } from "zod";
 import { CreateLobbyRequestSchema, LobbyResponse } from "@/lib/contracts";
 import { prisma } from "@/lib/db";
 import { getOrCreateAnonId } from "@/lib/auth";
@@ -9,6 +10,18 @@ import { isDbUnavailable, jsonError } from "../_lib/teams";
 import { RATE_LIMITS, rateLimitGate } from "../_lib/rate-limit";
 
 const CODE_ATTEMPTS = 5;
+
+/** Optional team cap, kept out of the frozen contract: 2–50, or omitted/null
+ *  for unlimited. Parsed separately from CreateLobbyRequestSchema. */
+export const LOBBY_LIMIT_MIN = 2;
+export const LOBBY_LIMIT_MAX = 50;
+export const TeamLimitSchema = z
+  .number()
+  .int()
+  .min(LOBBY_LIMIT_MIN)
+  .max(LOBBY_LIMIT_MAX)
+  .nullable()
+  .optional();
 
 export async function POST(request: Request) {
   const limited = await rateLimitGate(request, RATE_LIMITS.lobbyCreate);
@@ -26,13 +39,21 @@ export async function POST(request: Request) {
     return jsonError(400, parsed.error.issues[0]?.message ?? "Invalid request");
   }
 
+  const limitParsed = TeamLimitSchema.safeParse(
+    (body as { limit?: unknown }).limit
+  );
+  if (!limitParsed.success) {
+    return jsonError(400, `Team limit must be ${LOBBY_LIMIT_MIN}–${LOBBY_LIMIT_MAX}`);
+  }
+  const teamLimit = limitParsed.data ?? null;
+
   try {
     const creatorAnonId = await getOrCreateAnonId();
     for (let attempt = 0; attempt < CODE_ATTEMPTS; attempt++) {
       const code = makeLobbyCode();
       try {
         const lobby = await prisma.lobby.create({
-          data: { code, name: parsed.data.name, creatorAnonId },
+          data: { code, name: parsed.data.name, teamLimit, creatorAnonId },
         });
         const response: LobbyResponse = {
           code: lobby.code,

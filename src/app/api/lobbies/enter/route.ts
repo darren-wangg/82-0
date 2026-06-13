@@ -54,6 +54,21 @@ export async function POST(request: Request) {
       );
     }
 
+    // Team cap: only blocks NEW entrants — a device already in the lobby can
+    // still re-submit (idempotent / name refresh below).
+    if (lobby.teamLimit !== null) {
+      const existing = await prisma.lobbyEntry.findFirst({
+        where: { lobbyCode: code, anonIdentityId },
+        select: { id: true },
+      });
+      if (!existing) {
+        const entered = await prisma.lobbyEntry.count({ where: { lobbyCode: code } });
+        if (entered >= lobby.teamLimit) {
+          return jsonError(409, "This lobby is full");
+        }
+      }
+    }
+
     try {
       await prisma.lobbyEntry.create({
         data: { lobbyCode: code, teamSlug, anonIdentityId, displayName },

@@ -22,8 +22,8 @@ export interface ActiveLobbySummary {
   name: string;
   /** Teams entered so far. */
   entrantCount: number;
-  /** Mean team OVR across entrants; null until someone has entered. */
-  avgOvr: number | null;
+  /** Max teams allowed; null = unlimited. */
+  teamLimit: number | null;
   createdAt: string;
 }
 
@@ -39,21 +39,22 @@ export async function loadActiveLobbies(): Promise<ActiveLobbySummary[]> {
     where: { closedAt: null, createdAt: { gt: cutoff } },
     orderBy: { createdAt: "desc" },
     take: ACTIVE_LOBBY_LIMIT,
-    include: { entries: { include: { team: { select: { ovr: true } } } } },
+    select: {
+      code: true,
+      name: true,
+      teamLimit: true,
+      createdAt: true,
+      _count: { select: { entries: true } },
+    },
   });
 
-  return lobbies.map((lobby) => {
-    const ovrs = lobby.entries.map((e) => e.team.ovr);
-    const avgOvr =
-      ovrs.length > 0 ? ovrs.reduce((sum, o) => sum + o, 0) / ovrs.length : null;
-    return {
-      code: lobby.code,
-      name: lobby.name,
-      entrantCount: lobby.entries.length,
-      avgOvr,
-      createdAt: lobby.createdAt.toISOString(),
-    };
-  });
+  return lobbies.map((lobby) => ({
+    code: lobby.code,
+    name: lobby.name,
+    entrantCount: lobby._count.entries,
+    teamLimit: lobby.teamLimit,
+    createdAt: lobby.createdAt.toISOString(),
+  }));
 }
 
 export async function loadLobbyResponse(code: string): Promise<LobbyResponse | null> {
@@ -105,23 +106,29 @@ export async function loadLobbyRosters(code: string): Promise<Map<string, Roster
   return rosters;
 }
 
-/** What the current device is to this lobby (page-render only, reads the
- *  anon cookie without setting one). */
+/** What the current device is to this lobby, plus the lobby's team limit
+ *  (page-render only, reads the anon cookie without setting one). */
 export async function loadLobbyViewer(code: string): Promise<{
   isCreator: boolean;
   entryTeamSlug: string | null;
+  teamLimit: number | null;
 }> {
   const anonId = await getAnonIdFromCookie();
-  if (!anonId) return { isCreator: false, entryTeamSlug: null };
   const [lobby, entry] = await Promise.all([
-    prisma.lobby.findUnique({ where: { code }, select: { creatorAnonId: true } }),
-    prisma.lobbyEntry.findFirst({
-      where: { lobbyCode: code, anonIdentityId: anonId },
-      select: { teamSlug: true },
+    prisma.lobby.findUnique({
+      where: { code },
+      select: { creatorAnonId: true, teamLimit: true },
     }),
+    anonId
+      ? prisma.lobbyEntry.findFirst({
+          where: { lobbyCode: code, anonIdentityId: anonId },
+          select: { teamSlug: true },
+        })
+      : null,
   ]);
   return {
-    isCreator: lobby?.creatorAnonId === anonId,
+    isCreator: anonId !== null && lobby?.creatorAnonId === anonId,
     entryTeamSlug: entry?.teamSlug ?? null,
+    teamLimit: lobby?.teamLimit ?? null,
   };
 }

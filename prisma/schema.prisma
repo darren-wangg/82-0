@@ -167,6 +167,9 @@ model Lobby {
   createdAt DateTime     @default(now())
   // Entries close only when the creator ends the lobby.
   closedAt  DateTime?
+  // Max teams allowed in; NULL = unlimited. Creator-set, editable after
+  // creation. Enforced on entry (see /api/lobbies/enter).
+  teamLimit Int?
   // AnonIdentity.id of the device that created the lobby (may close it early).
   // Nullable only for rows that predate creator tracking.
   creatorAnonId String?

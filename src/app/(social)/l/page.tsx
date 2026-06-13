@@ -77,12 +77,17 @@ export default async function LobbiesPage() {
                   {lobby.code}
                 </span>
               </span>
-              <span className="flex shrink-0 items-center gap-1 text-xs font-semibold text-muted-foreground tabular-nums">
+              {lobby.teamLimit !== null && lobby.entrantCount >= lobby.teamLimit && (
+                <span className="shrink-0 rounded-md bg-amber-500/15 px-1.5 py-0.5 text-[10px] font-bold tracking-wide text-amber-400 uppercase">
+                  Full
+                </span>
+              )}
+              <span className="flex shrink-0 items-center gap-1 text-sm font-semibold text-muted-foreground tabular-nums">
                 <UsersRound className="size-3.5" />
                 {lobby.entrantCount}
-              </span>
-              <span className="w-12 shrink-0 text-right font-mono text-xs text-muted-foreground tabular-nums">
-                {lobby.avgOvr === null ? "—" : `${Math.round(lobby.avgOvr)} OVR`}
+                {lobby.teamLimit !== null && (
+                  <span className="text-muted-foreground/70">/{lobby.teamLimit}</span>
+                )}
               </span>
             </li>
           ))}
