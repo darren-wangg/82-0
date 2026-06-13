@@ -13,7 +13,6 @@
 
 import {
   AdjustedStats,
-  BENCH_WEIGHT,
   CatEdge,
   Engine,
   EraBaselines,
@@ -31,20 +30,30 @@ import {
   TeamRating,
 } from "@/lib/contracts";
 import {
+  AggDir,
+  BENCH_BLOCK_W,
+  CAT_DIRECTION,
   CAT_WEIGHTS,
+  DEF_BASE,
+  DEF_SLOPE,
   DEF_WEIGHTS,
+  DRTG_DIRECTION,
+  GAMMA_DEF,
+  GAMMA_OFF,
   GATE_FLOOR_CAP,
   GATE_STEPS,
   GATE_THRESHOLDS,
   MATCHUP_EDGE_SCALE,
   MATCHUP_OVR_BLEND,
   MATCHUP_OVR_SCALE,
+  OFF_BASE,
+  OFF_SLOPE,
   OFF_WEIGHTS,
+  ORTG_DIRECTION,
   OVR_BASE,
   OVR_SLOPE,
   POSITION_PENALTY,
   RATING_BLEND,
-  SUBRATING_SLOPE,
   WIN_CURVE_EXP,
   Z_CLAMP,
 } from "./constants";
@@ -98,55 +107,110 @@ function playerScore(adj: AdjustedStats): number {
   return (1 - RATING_BLEND) * cats + RATING_BLEND * ratings;
 }
 
+/**
+ * Rank-decay OWA: sort the contributions by direction, weight them γ^0, γ^1,
+ * γ^2, …, and normalize. "best" sorts descending — the top contributor drives
+ * the result and the rest give diminishing returns (γ→0 is the pure max).
+ * "worst" sorts ascending, so the weakest link dominates (γ→0 is the pure
+ * min). Monotone non-decreasing in every input (a standard OWA property), so
+ * a better player never lowers the team's value in any category.
+ */
+function dirAgg(values: number[], gamma: number, dir: AggDir): number {
+  if (values.length === 0) return 0;
+  const sorted = [...values].sort((a, b) => (dir === "worst" ? a - b : b - a));
+  let num = 0;
+  let den = 0;
+  let w = 1;
+  for (const v of sorted) {
+    num += w * v;
+    den += w;
+    w *= gamma;
+  }
+  return num / den;
+}
+
+/**
+ * One quantity's team value: the concave aggregate over the starters blended
+ * with a discounted concave aggregate over the bench. Aggregating the two
+ * groups separately (rather than ranking all eight together) keeps the rating
+ * monotone — no player's improvement can reshuffle the starter/bench weighting
+ * against them — while still letting the bench matter less than the five.
+ */
+function blockAgg(
+  starterVals: number[],
+  benchVals: number[],
+  gamma: number,
+  dir: AggDir
+): number {
+  const s = dirAgg(starterVals, gamma, dir);
+  if (benchVals.length === 0) return s;
+  const b = dirAgg(benchVals, gamma, dir);
+  return (s + BENCH_BLOCK_W * b) / (1 + BENCH_BLOCK_W);
+}
+
 function teamRating(
   roster: Roster,
   players: Map<string, PlayerStatLine>,
   baselines: EraBaselines
 ): TeamRating {
-  interface Entry {
-    adj: AdjustedStats;
-    /** Position factor (1.0 for bench — no slot to be out of). */
-    factor: number;
-    /** Starter = 1, bench = BENCH_WEIGHT. */
-    weight: number;
-  }
-  const entries: Entry[] = [];
+  const starters: { adj: AdjustedStats; factor: number }[] = [];
   for (const slot of POSITIONS) {
     const id = roster.starters[slot];
     const p = id ? players.get(id) : undefined;
     if (!p) continue;
-    entries.push({ adj: eraAdjust(p, baselines), factor: positionFactor(slot, p), weight: 1 });
+    starters.push({ adj: eraAdjust(p, baselines), factor: positionFactor(slot, p) });
   }
+  const bench: { adj: AdjustedStats }[] = [];
   for (const id of roster.bench) {
     const p = players.get(id);
     if (!p) continue;
-    entries.push({ adj: eraAdjust(p, baselines), factor: 1, weight: BENCH_WEIGHT });
+    bench.push({ adj: eraAdjust(p, baselines) });
   }
 
-  const totalWeight = entries.reduce((s, e) => s + e.weight, 0) || 1;
+  // Concave team category profile: offense leans toward its best contributor
+  // (star-driven), defense/ball-security toward its weakest link. This is
+  // where redundancy gets taxed and complementarity (plus two-way balance)
+  // gets rewarded — no flat averaging.
+  const aggCat = (cat: NineCat): number => {
+    const dir = CAT_DIRECTION[cat];
+    const gamma = dir === "best" ? GAMMA_OFF : GAMMA_DEF;
+    return blockAgg(
+      starters.map((e) => e.adj[cat]),
+      bench.map((e) => e.adj[cat]),
+      gamma,
+      dir
+    );
+  };
+  const catProfile = Object.fromEntries(
+    NINE_CATS.map((c) => [c, aggCat(c)])
+  ) as Record<NineCat, number>;
 
-  // Scalar team strength: position penalty applies only here (it degrades a
-  // player's overall impact, not the literal stats they produce).
-  let scoreSum = 0;
-  for (const e of entries) scoreSum += playerScore(e.adj) * e.factor * e.weight;
-  const avgScore = scoreSum / totalWeight;
+  const ortgAgg = blockAgg(
+    starters.map((e) => e.adj.ortg),
+    bench.map((e) => e.adj.ortg),
+    GAMMA_OFF,
+    ORTG_DIRECTION
+  );
+  const drtgAgg = blockAgg(
+    starters.map((e) => e.adj.drtg),
+    bench.map((e) => e.adj.drtg),
+    GAMMA_DEF,
+    DRTG_DIRECTION
+  );
 
-  // Team category profile: weighted-average z per cat (and ratings for the
-  // sub-rating composites below).
-  const catProfile = Object.fromEntries(NINE_CATS.map((c) => [c, 0])) as Record<
-    NineCat,
-    number
-  >;
-  let ortgAvg = 0;
-  let drtgAvg = 0;
-  for (const e of entries) {
-    for (const cat of NINE_CATS) catProfile[cat] += e.adj[cat] * e.weight;
-    ortgAvg += e.adj.ortg * e.weight;
-    drtgAvg += e.adj.drtg * e.weight;
-  }
-  for (const cat of NINE_CATS) catProfile[cat] /= totalWeight;
-  ortgAvg /= totalWeight;
-  drtgAvg /= totalWeight;
+  // Team strength composite: the concave 9-cat blend plus the ratings blend.
+  let catComposite = 0;
+  for (const cat of NINE_CATS) catComposite += CAT_WEIGHTS[cat] * catProfile[cat];
+  const ratingComposite = 0.5 * ortgAgg + 0.5 * drtgAgg;
+  const teamComposite =
+    (1 - RATING_BLEND) * catComposite + RATING_BLEND * ratingComposite;
+
+  // Out-of-position penalty rides in as a monotone multiplier (mean starter
+  // factor): it degrades the lineup's overall impact, not the literal stats.
+  const posMult =
+    starters.length > 0
+      ? starters.reduce((s, e) => s + e.factor, 0) / starters.length
+      : 1;
 
   const offZ =
     OFF_WEIGHTS.pts * catProfile.pts +
@@ -154,17 +218,17 @@ function teamRating(
     OFF_WEIGHTS.fgPct * catProfile.fgPct +
     OFF_WEIGHTS.ftPct * catProfile.ftPct +
     OFF_WEIGHTS.tpm * catProfile.tpm +
-    OFF_WEIGHTS.ortg * ortgAvg;
+    OFF_WEIGHTS.ortg * ortgAgg;
   const defZ =
     DEF_WEIGHTS.reb * catProfile.reb +
     DEF_WEIGHTS.stl * catProfile.stl +
     DEF_WEIGHTS.blk * catProfile.blk +
-    DEF_WEIGHTS.drtg * drtgAvg;
+    DEF_WEIGHTS.drtg * drtgAgg;
 
   return {
-    ovr: round1(clamp(OVR_BASE + OVR_SLOPE * avgScore, 0, OVR_MAX)),
-    offRating: round1(clamp(50 + SUBRATING_SLOPE * offZ, 0, 100)),
-    defRating: round1(clamp(50 + SUBRATING_SLOPE * defZ, 0, 100)),
+    ovr: round1(clamp(OVR_BASE + OVR_SLOPE * posMult * teamComposite, 0, OVR_MAX)),
+    offRating: round1(clamp(OFF_BASE + OFF_SLOPE * offZ, 0, 100)),
+    defRating: round1(clamp(DEF_BASE + DEF_SLOPE * defZ, 0, 100)),
     catProfile,
   };
 }

@@ -26,16 +26,16 @@ const ALL_TIME: Roster = {
   bench: ["curryst01-GSW-2010s", "olajuha01-HOU-1990s", "jokicni01-DEN-2020s"],
 };
 
-/** Five centers, several wildly out of position — gated by ftPct. */
-const ALL_CENTERS: Roster = {
+/** High-usage stars: elite OVR, but hard-capped by turnovers. */
+const TURNOVER_PRONE: Roster = {
   starters: {
-    PG: "onealsh01-LAL-2000s",
-    SG: "malonmo01-PHI-1980s",
-    SF: "thurmna01-GSW-1960s",
-    PF: "russebi01-BOS-1960s",
-    C: "chambwi01-GSW-1960s",
+    PG: "westbru01-OKC-2010s",
+    SG: "hardeja01-HOU-2010s",
+    SF: "doncilu01-DAL-2020s",
+    PF: "antetgi01-MIL-2020s",
+    C: "jokicni01-DEN-2020s",
   },
-  bench: ["reedwi01-NYK-1970s", "abdulka01-LAL-1980s", "embiijo01-PHI-2020s"],
+  bench: ["nashst01-PHX-2000s", "johnsma02-LAL-1980s", "curryst01-GSW-2010s"],
 };
 
 /** Strong but mortal: ungated, short of 82 wins. */
@@ -58,19 +58,19 @@ describe("analyzeCost", () => {
   });
 
   it("gated season: reports the gate's cost and the worst player in the cat", () => {
-    const { season, result } = analyze(ALL_CENTERS);
-    expect(season.gatedCategory).toBe("ftPct");
+    const { season, result } = analyze(TURNOVER_PRONE);
+    expect(season.gatedCategory).toBe("tov");
     expect(result).not.toBeNull();
     if (result?.kind !== "gated") throw new Error("expected gated analysis");
-    expect(result.cat).toBe("ftPct");
+    expect(result.cat).toBe("tov");
     expect(result.winCap).toBe(season.winCap);
     // OVR pins the ceiling, so every missing win is the gate's fault.
     expect(result.winsLost).toBe(SEASON_GAMES - season.wins);
     expect(result.winsLost).toBeGreaterThan(0);
-    // The culprit is genuinely the roster's worst era-adjusted FT shooter.
-    const ids = [...Object.values(ALL_CENTERS.starters), ...ALL_CENTERS.bench];
+    // The culprit is genuinely the roster's worst era-adjusted turnover number.
+    const ids = [...Object.values(TURNOVER_PRONE.starters), ...TURNOVER_PRONE.bench];
     const worst = Math.min(
-      ...ids.map((id) => engine.eraAdjust(players.get(id)!, baselines).ftPct)
+      ...ids.map((id) => engine.eraAdjust(players.get(id)!, baselines).tov)
     );
     expect(result.culprit.z).toBe(worst);
     expect(result.culprit.z).toBeLessThan(0);

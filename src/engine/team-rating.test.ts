@@ -43,22 +43,24 @@ describe("teamRating", () => {
   it("golden master: all-time roster pins the OVR ceiling", () => {
     const tr = rate(ALL_TIME);
     expect(tr.ovr).toBe(100);
-    expect(tr.offRating).toBe(79);
-    expect(tr.defRating).toBe(75);
-    expect(tr.catProfile.pts).toBeCloseTo(2.934, 3);
-    expect(tr.catProfile.tov).toBeCloseTo(-2.071, 3);
+    expect(tr.offRating).toBe(100);
+    expect(tr.defRating).toBe(93.5);
+    expect(tr.catProfile.pts).toBeCloseTo(3.592, 3);
+    expect(tr.catProfile.tov).toBeCloseTo(-2.326, 3);
   });
 
   it("golden master: balanced roster lands in the strong-but-mortal band", () => {
-    expect(rate(BALANCED).ovr).toBe(90.7);
+    expect(rate(BALANCED).ovr).toBe(91);
   });
 
-  it("golden master: all-centers roster is big-skewed (great D, weak ftPct)", () => {
+  it("golden master: all-centers roster is glass/rim dominant (great D, no spacing)", () => {
     const tr = rate(ALL_CENTERS);
     expect(tr.ovr).toBe(100);
+    // Five rim protectors with no holes: weakest-link defense aggregation
+    // rewards them, so the defensive sub-rating clears the offensive one.
     expect(tr.defRating).toBeGreaterThan(tr.offRating);
-    expect(tr.catProfile.ftPct).toBeCloseTo(-0.947, 3);
     expect(tr.catProfile.blk).toBeGreaterThan(2);
+    expect(tr.catProfile.reb).toBeGreaterThan(2);
   });
 
   it("bounds: ovr ∈ [0, OVR_MAX], sub-ratings ∈ [0, 100] across random rosters", () => {
@@ -130,5 +132,38 @@ describe("teamRating", () => {
 
   it("is deterministic and side-effect free", () => {
     expect(rate(ALL_TIME)).toEqual(rate(ALL_TIME));
+  });
+});
+
+describe("construction model (concave aggregation)", () => {
+  const adj = (id: string) => engine.eraAdjust(players.get(id)!, baselines);
+  const mid = (xs: number[]) => (Math.min(...xs) + Math.max(...xs)) / 2;
+
+  it("leans offense toward the best contributor and defense toward the weakest link", () => {
+    const ids = [...Object.values(BALANCED.starters), ...BALANCED.bench];
+    const tr = rate(BALANCED);
+    // Best-direction (offense): the team value sits above the midpoint of the
+    // players, pulled toward the top scorer.
+    expect(tr.catProfile.pts).toBeGreaterThan(mid(ids.map((id) => adj(id).pts)));
+    // Worst-direction (defense): pulled below the midpoint by the weakest
+    // rim-protector — one non-shot-blocker drags the unit.
+    expect(tr.catProfile.blk).toBeLessThan(mid(ids.map((id) => adj(id).blk)));
+  });
+
+  it("taxes redundancy: a second elite scorer adds less than the first", () => {
+    // Fixed starters; add elite scorers one at a time into a uniformly
+    // low-scoring bench. Order the two so the second can't outrank the first.
+    // Because offense leans toward the best contributor, the second scorer
+    // enters at a discount — stacking the same skill has diminishing returns.
+    const [E1, E2] = ["jordami01-CHI-1990s", "curryst01-GSW-2010s"].sort(
+      (a, b) => adj(b).pts - adj(a).pts
+    );
+    const lows = ["russebi01-BOS-1960s", "thurmna01-GSW-1960s", "reedwi01-NYK-1970s"];
+    const pts = (bench: string[]) =>
+      rate({ starters: BALANCED.starters, bench }).catProfile.pts;
+    const gain1 = pts([E1, lows[1], lows[2]]) - pts(lows);
+    const gain2 = pts([E1, E2, lows[2]]) - pts([E1, lows[1], lows[2]]);
+    expect(gain1).toBeGreaterThan(0);
+    expect(gain2).toBeLessThan(gain1);
   });
 });

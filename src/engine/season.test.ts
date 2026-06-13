@@ -60,23 +60,26 @@ describe("projectSeason", () => {
     });
   });
 
-  it("golden master: balanced roster lands in the strong-but-mortal band (73-9)", () => {
+  it("golden master: balanced roster lands in the strong-but-mortal band (74-8)", () => {
     expect(project(BALANCED)).toEqual({
-      wins: 73,
-      losses: 9,
-      ovr: 90.7,
+      wins: 74,
+      losses: 8,
+      ovr: 91,
       gatedCategory: null,
       winCap: 82,
     });
   });
 
-  it("golden master: all-centers roster is gated by free-throw shooting", () => {
+  it("golden master: all-centers roster clears the gates on two-way dominance", () => {
+    // A wall of rim protectors has no defensive/ball-security hole for a gate
+    // to catch (offense is star-driven, so its lack of spacing isn't gated) —
+    // an elite, if one-dimensional, season.
     expect(project(ALL_CENTERS)).toEqual({
-      wins: 78,
-      losses: 4,
+      wins: 82,
+      losses: 0,
       ovr: 100,
-      gatedCategory: "ftPct",
-      winCap: 78,
+      gatedCategory: null,
+      winCap: 82,
     });
   });
 
@@ -114,7 +117,8 @@ describe("projectSeason", () => {
   });
 
   it("gatedCategory is the binding (lowest-cap) category", () => {
-    const tr = engine.teamRating(ALL_CENTERS, players, baselines);
+    // TURNOVER_PRONE actually trips a gate (tov); all-centers no longer does.
+    const tr = engine.teamRating(TURNOVER_PRONE, players, baselines);
     const s = engine.projectSeason(tr);
     const minCap = Math.min(
       ...NINE_CATS.map((cat) => gateCapFor(cat, tr.catProfile[cat]))
