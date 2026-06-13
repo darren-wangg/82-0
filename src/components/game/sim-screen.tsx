@@ -927,7 +927,7 @@ export function SimScreen() {
                 {cost.outOfPosition && (
                   <span className="text-amber-400"> — playing out of position</span>
                 )}
-                . Upgrade that spot to push past {season.wins} wins.
+                .
               </p>
             )}
           </Card>
