@@ -61,6 +61,9 @@ import { usePhaseGuard } from "./use-phase-guard";
 const COUNT_UP_SECONDS = 2.2;
 /** catProfile values are z-score-ish; clamp the bars to ±3. */
 const CAT_RANGE = 3;
+/** Lobby entrants get one re-draft if they don't like their first team. */
+const MAX_LOBBY_RETRIES = 1;
+const lobbyRetryKey = (code: string) => `ud:lobby-retries:${code}`;
 
 function useCountUp(target: number, duration: number, delay = 0): number {
   const reducedMotion = useReducedMotion();
@@ -429,6 +432,9 @@ export function SimScreen() {
   const [localOpen, setLocalOpen] = useState(false);
   const [localName, setLocalName] = useState("");
   const [localSaved, setLocalSaved] = useState(false);
+  // Lobby re-draft: one per device per lobby, tracked in localStorage so it
+  // survives the NEW_GAME state reset and page reloads. null until read.
+  const [lobbyRetriesUsed, setLobbyRetriesUsed] = useState<number | null>(null);
 
   const sim = useMemo(() => {
     if (!state || state.status !== "locked") return null;
@@ -453,6 +459,20 @@ export function SimScreen() {
       // storage unavailable (private mode) — start blank
     }
   }, []);
+
+  // Read how many lobby re-drafts this device has already used (per lobby).
+  const lobbyCode = state?.lobbyCode ?? null;
+  useEffect(() => {
+    if (!lobbyCode) return;
+    let used = 0;
+    try {
+      used = Number(window.localStorage.getItem(lobbyRetryKey(lobbyCode))) || 0;
+    } catch {
+      // storage unavailable — treat as no retries used
+    }
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- hydrate once per lobby
+    setLobbyRetriesUsed(used);
+  }, [lobbyCode]);
 
   useEffect(() => {
     if (!toast) return;
@@ -602,6 +622,31 @@ export function SimScreen() {
 
   const runItBack = () => {
     dispatch({ type: "NEW_GAME", seed: freshSeed() });
+    router.push(mode.playPath);
+  };
+
+  // One re-draft per lobby: scrap this team and draft a fresh one for the same
+  // lobby. Consumes the single retry (persisted), then sends them back to draft.
+  const reDraftForLobby = () => {
+    const code = state?.lobbyCode;
+    if (!code) return;
+    if (
+      !window.confirm(
+        "Re-draft your team? This uses your one re-draft and scraps this lineup."
+      )
+    ) {
+      return;
+    }
+    try {
+      window.localStorage.setItem(
+        lobbyRetryKey(code),
+        String((lobbyRetriesUsed ?? 0) + 1)
+      );
+    } catch {
+      // storage unavailable — the retry still proceeds this session
+    }
+    setLobbyRetriesUsed((n) => (n ?? 0) + 1);
+    dispatch({ type: "NEW_GAME", seed: freshSeed(), lobbyCode: code });
     router.push(mode.playPath);
   };
 
@@ -915,6 +960,17 @@ export function SimScreen() {
       <div className="sticky bottom-0 mt-auto flex flex-col gap-2 bg-gradient-to-t from-background via-background/95 to-transparent pt-4 pb-[max(1rem,env(safe-area-inset-bottom))]">
         {state.lobbyCode && save.phase !== "saved" && (
           <>
+            {/* One re-draft per lobby — hidden once it's been used. */}
+            {lobbyRetriesUsed !== null && lobbyRetriesUsed < MAX_LOBBY_RETRIES && (
+              <Button
+                variant="outline"
+                className="h-12 w-full rounded-2xl text-sm font-bold"
+                onClick={reDraftForLobby}
+              >
+                <RotateCcw className="size-4" /> Re-draft (
+                {MAX_LOBBY_RETRIES - lobbyRetriesUsed} left)
+              </Button>
+            )}
             <Button
               className="h-14 w-full rounded-2xl font-display text-xl tracking-wide shadow-lg shadow-primary/30"
               onClick={() => setShareOpen(true)}
