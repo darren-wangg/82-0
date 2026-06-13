@@ -102,7 +102,7 @@ export default function Home() {
             className="mt-1 inline-flex items-center gap-1.5 rounded-full border border-violet-400/40 bg-violet-400/10 px-3 py-1.5 text-[11px] font-semibold text-violet-300 transition-transform active:scale-95"
           >
             <FlaskConical className="size-3.5" />
-            Try 10-Player mode
+            10-Player Mode
             <span className="rounded bg-violet-400/20 px-1 py-px text-[9px] tracking-wider uppercase">
               Beta
             </span>

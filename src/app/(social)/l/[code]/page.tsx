@@ -187,8 +187,7 @@ export default async function LobbyPage({ params }: PageProps<"/l/[code]">) {
               Draft your team
             </Link>
             <p className="text-center text-[11px] text-muted-foreground">
-              Draft your team for this lobby — you get one re-draft if you
-              don&apos;t like your first.
+              Draft your team — you get one re-draft.
               {limit !== null && ` ${limit - teamCount} spot${limit - teamCount === 1 ? "" : "s"} left.`}
             </p>
           </div>
