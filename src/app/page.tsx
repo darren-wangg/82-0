@@ -21,8 +21,8 @@ const NAV_TILES = [
       "border-amber-400/40 bg-amber-400/10 text-amber-300 hover:bg-amber-400/20",
   },
   {
-    href: "/l/new",
-    label: "Create a Lobby",
+    href: "/l",
+    label: "Lobbies",
     icon: UsersRound,
     className: "border-sky-400/40 bg-sky-400/10 text-sky-300 hover:bg-sky-400/20",
   },

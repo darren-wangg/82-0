@@ -12,6 +12,50 @@ export function lobbyIsOpen(lobby: { closedAt: Date | null }): boolean {
   return lobby.closedAt === null;
 }
 
+/** How long an open lobby stays on the public discovery list. */
+const ACTIVE_LOBBY_TTL_MS = 24 * 60 * 60 * 1000;
+const ACTIVE_LOBBY_LIMIT = 50;
+
+/** One row of the global "active lobbies" list. */
+export interface ActiveLobbySummary {
+  code: string;
+  name: string;
+  /** Teams entered so far. */
+  entrantCount: number;
+  /** Mean team OVR across entrants; null until someone has entered. */
+  avgOvr: number | null;
+  createdAt: string;
+}
+
+/**
+ * Lobbies discoverable on the global list: still open AND opened within the
+ * last 24h. Closed or aged-out lobbies simply fall out of this query — their
+ * /l/[code] pages stay reachable, they just leave the public board so it stays
+ * clean. Newest first.
+ */
+export async function loadActiveLobbies(): Promise<ActiveLobbySummary[]> {
+  const cutoff = new Date(Date.now() - ACTIVE_LOBBY_TTL_MS);
+  const lobbies = await prisma.lobby.findMany({
+    where: { closedAt: null, createdAt: { gt: cutoff } },
+    orderBy: { createdAt: "desc" },
+    take: ACTIVE_LOBBY_LIMIT,
+    include: { entries: { include: { team: { select: { ovr: true } } } } },
+  });
+
+  return lobbies.map((lobby) => {
+    const ovrs = lobby.entries.map((e) => e.team.ovr);
+    const avgOvr =
+      ovrs.length > 0 ? ovrs.reduce((sum, o) => sum + o, 0) / ovrs.length : null;
+    return {
+      code: lobby.code,
+      name: lobby.name,
+      entrantCount: lobby.entries.length,
+      avgOvr,
+      createdAt: lobby.createdAt.toISOString(),
+    };
+  });
+}
+
 export async function loadLobbyResponse(code: string): Promise<LobbyResponse | null> {
   const lobby = await prisma.lobby.findUnique({
     where: { code },
