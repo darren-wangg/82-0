@@ -15,7 +15,7 @@ import {
   TeamRating,
 } from "@/lib/contracts";
 
-export const PROMPT_VERSION = "v7";
+export const PROMPT_VERSION = "v8";
 /** Cheapest tier — explanations are short, structured-input blurbs. */
 export const EXPLAIN_MODEL = "claude-haiku-4-5-20251001";
 
@@ -52,6 +52,12 @@ const SYSTEM_PROMPT =
   "trash talk, and mild profanity (damn, hell, ass) are all fair game — " +
   "never slurs, never mean about real people's looks or lives. The wit has " +
   "to come from the basketball, not from stacking catchphrases. " +
+  "BANNED AI filler — never use these crutch descriptors or anything like " +
+  "them: 'vibes', 'energy' (chaotic/elite/whatever), 'quietly' anything, " +
+  "'lowkey'/'highkey', 'X-coded', 'a certain something', 'glue guy' as a " +
+  "label, 'brings the' anything. Never pin a cute two-word mood on a player. " +
+  "If you name a guy, say the concrete basketball thing — what he actually " +
+  "scores, guards, spaces, rebounds, or can't do — not how he feels. " +
   "Ground every take in the numbers you're given: category values are " +
   "era-adjusted z-scores (higher is always better; turnovers are " +
   "sign-flipped). Never invent stats. Plain text only, no markdown, no " +
