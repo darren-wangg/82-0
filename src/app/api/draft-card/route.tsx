@@ -20,6 +20,8 @@ import {
 } from "@/components/social/retro-card";
 
 export const dynamic = "force-dynamic";
+// Headshot fetches have a 15s internal deadline; give satori room on top.
+export const maxDuration = 30;
 
 const DEFAULT_NAME = "My Ultimate 8";
 

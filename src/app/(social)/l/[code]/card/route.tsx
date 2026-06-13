@@ -21,6 +21,9 @@ import {
 } from "@/components/social/retro-card";
 
 export const dynamic = "force-dynamic";
+// Text-only render (no headshot fetches), but satori on a big standings
+// tree isn't free either.
+export const maxDuration = 30;
 
 /** Gold / silver / bronze, arcade-saturated. */
 const MEDAL = ["#ffe600", "#c9ccd6", "#ff9f0a"] as const;

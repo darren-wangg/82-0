@@ -156,6 +156,9 @@ model Matchup {
   createdAt DateTime @default(now())
 
   @@unique([teamASlug, teamBSlug, seed])
+  // Battle history reads: OR over both slugs, newest first.
+  @@index([teamASlug, createdAt])
+  @@index([teamBSlug, createdAt])
 }
 
 model Lobby {

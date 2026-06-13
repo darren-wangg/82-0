@@ -66,8 +66,15 @@ export interface RateLimitResult {
 
 export async function checkRateLimit(
   rule: RateLimitRule,
-  id: string
+  id: string,
+  opts: {
+    /** Fail open by default (limits are protection, not a dependency). The
+     *  AI spend ceiling passes false: no DB means no budget accounting, so
+     *  generation must pause rather than run uncapped. */
+    failOpen?: boolean;
+  } = {}
 ): Promise<RateLimitResult> {
+  const { failOpen = true } = opts;
   const windowMs = rule.windowSeconds * 1000;
   const now = Date.now();
   const windowStart = new Date(now - (now % windowMs));
@@ -101,8 +108,9 @@ export async function checkRateLimit(
     }
     return { ok: true, retryAfterSeconds: 0 };
   } catch {
-    // Fail open: rate limiting is protection, not a dependency.
-    return { ok: true, retryAfterSeconds: 0 };
+    return failOpen
+      ? { ok: true, retryAfterSeconds: 0 }
+      : { ok: false, retryAfterSeconds: 60 };
   }
 }
 

@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import {
   AnimatePresence,
@@ -419,6 +419,9 @@ export function SimScreen() {
   // is whose; remembered per device so it's typed once.
   const [playerName, setPlayerName] = useState("");
   const [save, setSave] = useState<SaveState>({ phase: "idle" });
+  // Synchronous double-tap guard: the disabled prop lags a fast second tap
+  // (React state), so two parallel saves are otherwise possible.
+  const savingRef = useRef(false);
   const [toast, setToast] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
   const [shareOpen, setShareOpen] = useState(false);
@@ -473,11 +476,13 @@ export function SimScreen() {
   const perfect = season.wins === SEASON_GAMES;
 
   const saveTeam = async () => {
+    if (savingRef.current) return;
     const name = teamName.trim();
     if (name.length === 0 || name.length > 40) {
       setToast("Give your team a name (1–40 characters) first.");
       return;
     }
+    savingRef.current = true;
     setSave({ phase: "saving" });
     const body: SaveTeamRequest = {
       teamName: name,
@@ -490,6 +495,14 @@ export function SimScreen() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(body),
       });
+      // Deploy-time skew: the server is on newer player data than this draft.
+      if (res.status === 409) {
+        setSave({ phase: "error" });
+        setToast(
+          "Player data was updated since this draft — refresh the page and draft again."
+        );
+        return;
+      }
       if (!res.ok) throw new Error(`save failed: ${res.status}`);
       const data: SaveTeamResponse = await res.json();
       // Lobby draft: enter the team and jump to the standings.
@@ -549,6 +562,8 @@ export function SimScreen() {
     } catch {
       setSave({ phase: "error" });
       setToast("Saving is unavailable right now — your season is safe on this device.");
+    } finally {
+      savingRef.current = false;
     }
   };
 

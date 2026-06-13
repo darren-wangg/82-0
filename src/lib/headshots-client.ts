@@ -14,7 +14,11 @@ let urls: FallbackUrls = {};
 let pending: Promise<void> | null = null;
 
 export function loadHeadshotFallbacks(): Promise<void> {
-  pending ??= fetch(FALLBACKS_URL, { cache: "force-cache" })
+  // Timeout so a stalled connection can't wedge GameProvider's load gate.
+  pending ??= fetch(FALLBACKS_URL, {
+    cache: "force-cache",
+    signal: AbortSignal.timeout(20_000),
+  })
     .then((res) => {
       if (!res.ok) throw new Error(`fallback map fetch failed: ${res.status}`);
       return res.json();

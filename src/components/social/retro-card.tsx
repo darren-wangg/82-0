@@ -73,24 +73,36 @@ function cacheHeadshot(url: string, dataUri: string) {
   headshotCache.set(url, dataUri);
 }
 
+/** Hard ceiling across ALL of a card's headshot fetches — slow hosts fail to
+ *  silhouettes instead of pushing the render past the function timeout. */
+const FETCH_DEADLINE_MS = 15_000;
+
 /** First source in the chain that actually serves an image, as a data URI —
  *  satori can't fall through broken <img> sources the way the browser does.
  *  Honors 429 retry-after (Wikimedia throttles bursts) and retries network
- *  hiccups once before moving down the chain. */
-export async function fetchHeadshot(p: PlayerStatLine): Promise<string | null> {
+ *  hiccups once before moving down the chain. Stops cold once `deadline`
+ *  (epoch ms) passes. */
+export async function fetchHeadshot(
+  p: PlayerStatLine,
+  deadline = Date.now() + FETCH_DEADLINE_MS
+): Promise<string | null> {
   for (const url of headshotSources(p)) {
     const cached = headshotCache.get(url);
     if (cached) return cached;
     for (let attempt = 0; attempt < 3; attempt++) {
+      const remaining = deadline - Date.now();
+      if (remaining <= 0) return null;
       try {
         const res = await fetch(url, {
           headers: { "user-agent": "ultimate-draft-card/1.0" },
-          signal: AbortSignal.timeout(8000),
+          signal: AbortSignal.timeout(Math.min(8000, remaining)),
         });
         if (res.status === 429 || res.status >= 500) {
           const retryAfter = Number(res.headers.get("retry-after"));
+          const wait =
+            Number.isFinite(retryAfter) && retryAfter > 0 ? retryAfter * 1000 : 800;
           await new Promise((r) =>
-            setTimeout(r, Number.isFinite(retryAfter) && retryAfter > 0 ? retryAfter * 1000 : 800)
+            setTimeout(r, Math.min(wait, Math.max(0, deadline - Date.now())))
           );
           continue;
         }
@@ -118,13 +130,15 @@ export async function fetchSlotHeadshots(
   limit = 3
 ): Promise<(string | null)[]> {
   const out: (string | null)[] = new Array(slots.length).fill(null);
+  // One shared deadline for the whole card, not per player.
+  const deadline = Date.now() + FETCH_DEADLINE_MS;
   let next = 0;
   await Promise.all(
     Array.from({ length: Math.min(limit, slots.length) }, async () => {
       while (next < slots.length) {
         const i = next++;
         const player = slots[i].player;
-        if (player) out[i] = await fetchHeadshot(player);
+        if (player) out[i] = await fetchHeadshot(player, deadline);
       }
     })
   );

@@ -44,6 +44,11 @@ const TEXT_STREAM_HEADERS = {
   "content-type": "text/plain; charset=utf-8",
 } as const;
 
+/** In-flight generations by content hash (per instance): concurrent first
+ *  views of the same team wait for one Claude call instead of each paying
+ *  for their own. */
+const inFlight = new Map<string, Promise<string>>();
+
 function payloadFromRoster(
   teamName: string,
   roster: Roster,
@@ -176,10 +181,29 @@ export async function POST(request: Request) {
     );
   }
 
+  // A generation for this exact content is already running — wait for its
+  // text instead of paying for a duplicate Claude call.
+  const pending = inFlight.get(contentHash);
+  if (pending) {
+    try {
+      const text = await pending;
+      return new Response(text, {
+        headers: { ...TEXT_STREAM_HEADERS, "x-explain-cache": "joined" },
+      });
+    } catch {
+      return jsonError(503, "Explanations are temporarily unavailable");
+    }
+  }
+
   // App-level spend ceiling: only uncached generations reach this point, and
   // a global daily budget bounds worst-case model spend no matter how many
-  // unique rosters a script invents.
-  const budget = await checkRateLimit(RATE_LIMITS.explainGenerationDaily, "global");
+  // unique rosters a script invents. Fails CLOSED: no DB = no accounting =
+  // no generation.
+  const budget = await checkRateLimit(
+    RATE_LIMITS.explainGenerationDaily,
+    "global",
+    { failOpen: false }
+  );
   if (!budget.ok) {
     return jsonError(503, "The scouting desk is slammed today — check back tomorrow");
   }
@@ -200,6 +224,11 @@ export async function POST(request: Request) {
       }
     },
   });
+
+  // result.text resolves with the full output (the AI SDK tees the stream).
+  const textPromise = Promise.resolve(result.text);
+  inFlight.set(contentHash, textPromise);
+  textPromise.catch(() => {}).finally(() => inFlight.delete(contentHash));
 
   return result.toTextStreamResponse({
     headers: { "x-explain-cache": "miss" },

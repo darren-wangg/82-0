@@ -19,7 +19,12 @@ let pending: Promise<Snapshot> | null = null;
 
 export function loadSnapshot(): Promise<Snapshot> {
   if (cached) return Promise.resolve(cached);
-  pending ??= fetch(SNAPSHOT_URL, { cache: "force-cache" })
+  // The timeout turns a stalled mobile connection into a rejection, which
+  // lands in the caller's existing retry UI instead of an eternal skeleton.
+  pending ??= fetch(SNAPSHOT_URL, {
+    cache: "force-cache",
+    signal: AbortSignal.timeout(20_000),
+  })
     .then((res) => {
       if (!res.ok) throw new Error(`snapshot fetch failed: ${res.status}`);
       return res.json();
