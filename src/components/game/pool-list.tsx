@@ -93,9 +93,9 @@ export function PoolList({
           type="search"
           value={query}
           onChange={(e) => setQuery(e.target.value)}
-          placeholder="Search"
-          aria-label="Search players by name"
-          className="h-8 w-40 rounded-lg border border-border bg-card px-2.5 text-xs text-foreground placeholder:text-muted-foreground/70 focus:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+          placeholder="Search for a player"
+          aria-label="Search for a player"
+          className="h-8 w-50 rounded-lg border border-border bg-card px-2.5 text-xs text-foreground placeholder:text-muted-foreground/70 focus:outline-none focus-visible:ring-1 focus-visible:ring-ring"
         />
         <button
           type="button"
