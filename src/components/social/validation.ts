@@ -2,7 +2,8 @@
  * Pure roster validation against the player snapshot. The zod RosterSchema
  * (contracts) handles shape; this enforces the game rules:
  *   - all five positions have a starter
- *   - exactly BENCH_COUNT bench players
+ *   - an allowed number of bench players (default BENCH_COUNT; 10-player mode
+ *     passes its larger bench via benchCounts)
  *   - every id exists in the snapshot
  *   - no player (playerSlug) appears twice
  */
@@ -20,17 +21,21 @@ export type RosterValidation =
 
 export function validateRoster(
   roster: Roster,
-  players: Map<string, PlayerStatLine>
+  players: Map<string, PlayerStatLine>,
+  options: { benchCounts?: readonly number[] } = {}
 ): RosterValidation {
+  const benchCounts = options.benchCounts ?? [BENCH_COUNT];
   const missing = POSITIONS.filter((pos) => !roster.starters[pos]);
   if (missing.length > 0) {
     return { ok: false, error: `Missing starter at ${missing.join(", ")}` };
   }
 
-  if (roster.bench.length !== BENCH_COUNT) {
+  if (!benchCounts.includes(roster.bench.length)) {
+    const expected =
+      benchCounts.length === 1 ? `exactly ${benchCounts[0]}` : benchCounts.join(" or ");
     return {
       ok: false,
-      error: `Bench must have exactly ${BENCH_COUNT} players (got ${roster.bench.length})`,
+      error: `Bench must have ${expected} players (got ${roster.bench.length})`,
     };
   }
 

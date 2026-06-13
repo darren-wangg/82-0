@@ -2,8 +2,10 @@
  * Post-season "what cost you" analysis. Pure logic over engine outputs:
  *  - gated season → how many wins the gate ate and which rostered player is
  *    the biggest culprit in the gated category (worst era-adjusted z),
- *  - ungated-but-imperfect season → the weakest starter by playerScore, with
+ *  - ungated-but-imperfect season → the weakest player by playerScore, with
  *    an out-of-position note when their slot doesn't fit their positions.
+ *    Starters only by default; pass considerBench (10-player mode) to let a
+ *    weak bench player be named as the weakest link too.
  * A perfect season returns null — nothing cost you anything.
  */
 
@@ -37,6 +39,8 @@ export type CostAnalysis =
       slot: Position;
       player: PlayerStatLine;
       outOfPosition: boolean;
+      /** True when the weakest link is a bench player (10-player mode). */
+      bench: boolean;
     };
 
 /** Every cat comfortably above its gate threshold, so projecting a season
@@ -51,7 +55,8 @@ export function analyzeCost(
   rating: TeamRating,
   season: SeasonResult,
   players: Map<string, PlayerStatLine>,
-  baselines: EraBaselines
+  baselines: EraBaselines,
+  options: { considerBench?: boolean } = {}
 ): CostAnalysis | null {
   if (season.wins >= SEASON_GAMES) return null;
   const engine = getEngine();
@@ -80,23 +85,40 @@ export function analyzeCost(
     };
   }
 
-  let weakest: { slot: Position; player: PlayerStatLine; score: number } | null =
-    null;
+  let weakest: {
+    slot: Position;
+    player: PlayerStatLine;
+    score: number;
+    bench: boolean;
+  } | null = null;
+  const consider = (slot: Position, player: PlayerStatLine, bench: boolean) => {
+    const score = engine.playerScore(engine.eraAdjust(player, baselines));
+    if (!weakest || score < weakest.score) weakest = { slot, player, score, bench };
+  };
   for (const slot of POSITIONS) {
     const id = roster.starters[slot];
     const player = id ? players.get(id) : undefined;
-    if (!player) continue;
-    const score = engine.playerScore(engine.eraAdjust(player, baselines));
-    if (!weakest || score < weakest.score) weakest = { slot, player, score };
+    if (player) consider(slot, player, false);
+  }
+  // 10-player mode: a weak bench player can be the weakest link. Bench slots
+  // are positional and players always fit them, so a bench player is reported
+  // at their own primary position (never out of position).
+  if (options.considerBench) {
+    for (const id of roster.bench) {
+      const player = players.get(id);
+      if (player) consider(player.position, player, true);
+    }
   }
   if (!weakest) return null;
+  const w: { slot: Position; player: PlayerStatLine; score: number; bench: boolean } =
+    weakest;
   return {
     kind: "weakest",
-    slot: weakest.slot,
-    player: weakest.player,
-    outOfPosition: !slotAccepts(weakest.slot, [
-      weakest.player.position,
-      ...weakest.player.altPositions,
-    ]),
+    slot: w.slot,
+    player: w.player,
+    bench: w.bench,
+    outOfPosition:
+      !w.bench &&
+      !slotAccepts(w.slot, [w.player.position, ...w.player.altPositions]),
   };
 }

@@ -437,7 +437,10 @@ export function SimScreen() {
     const engine = getEngine();
     const rating = engine.teamRating(roster, players, getBaselines());
     const season = engine.projectSeason(rating);
-    const cost = analyzeCost(roster, rating, season, players, getBaselines());
+    const cost = analyzeCost(roster, rating, season, players, getBaselines(), {
+      // 10-player rosters carry a deeper bench — let a weak reserve be named.
+      considerBench: roster.bench.length > 3,
+    });
     return { roster, rating, season, cost };
   }, [state, players]);
 
@@ -886,6 +889,9 @@ export function SimScreen() {
                 Weakest link:{" "}
                 <span className="font-semibold">{cost.player.name}</span> at{" "}
                 {cost.slot}
+                {cost.bench && (
+                  <span className="text-muted-foreground"> (bench)</span>
+                )}
                 {cost.outOfPosition && (
                   <span className="text-amber-400"> — playing out of position</span>
                 )}
@@ -897,28 +903,26 @@ export function SimScreen() {
       )}
 
       {/* AI scouting report on the unsaved draft (server re-runs the engine).
-          Beta modes skip it: the /api/explain draft path validates the frozen
-          8-man RosterSchema, which a 10-player roster isn't. */}
-      {mode.social && (
-        <motion.div
-          initial={{ opacity: 0, y: 10 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: COUNT_UP_SECONDS + 0.6 }}
-        >
-          <Card className="mt-3 gap-1.5 border-border/60 bg-card/80 p-4">
-            <p className="font-arcade text-[9px] text-muted-foreground uppercase">
-              Scouting report
-            </p>
-            <ExplainStream
-              request={{
-                kind: "draft",
-                roster,
-                snapshotVersion: state.snapshotVersion,
-              }}
-            />
-          </Card>
-        </motion.div>
-      )}
+          Works in both modes — the /api/explain draft path accepts the
+          10-player roster via a route-local schema. */}
+      <motion.div
+        initial={{ opacity: 0, y: 10 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: COUNT_UP_SECONDS + 0.6 }}
+      >
+        <Card className="mt-3 gap-1.5 border-border/60 bg-card/80 p-4">
+          <p className="font-arcade text-[9px] text-muted-foreground uppercase">
+            Scouting report
+          </p>
+          <ExplainStream
+            request={{
+              kind: "draft",
+              roster,
+              snapshotVersion: state.snapshotVersion,
+            }}
+          />
+        </Card>
+      </motion.div>
 
       {/* thumb-zone footer */}
       <div className="sticky bottom-0 mt-auto flex flex-col gap-2 bg-gradient-to-t from-background via-background/95 to-transparent pt-4 pb-[max(1rem,env(safe-area-inset-bottom))]">

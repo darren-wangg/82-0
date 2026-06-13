@@ -9,9 +9,12 @@
 
 import { streamText } from "ai";
 import { anthropic } from "@ai-sdk/anthropic";
+import { z } from "zod";
 import {
+  ExplainRequest,
   ExplainRequestSchema,
   MatchupResult,
+  POSITIONS,
   Roster,
   RosterSchema,
   TeamRating,
@@ -43,6 +46,23 @@ import { checkRateLimit, RATE_LIMITS, rateLimitGate } from "../_lib/rate-limit";
 const TEXT_STREAM_HEADERS = {
   "content-type": "text/plain; charset=utf-8",
 } as const;
+
+/**
+ * Route-local schema for an unsaved-draft explanation. The frozen
+ * ExplainRequestSchema's "draft" kind pins the bench to the 8-man roster; this
+ * accepts the 10-player beta's deeper bench too (3–5). It only feeds the
+ * engine + prompt (never persisted as a team), so it stays off the frozen
+ * contract. Bench order is the mode's convention; the engine is bench-count
+ * agnostic.
+ */
+const DraftExplainSchema = z.object({
+  kind: z.literal("draft"),
+  roster: z.object({
+    starters: z.record(z.enum(POSITIONS), z.string()),
+    bench: z.array(z.string()).min(3).max(5),
+  }),
+  snapshotVersion: z.string(),
+});
 
 /** In-flight generations by content hash (per instance): concurrent first
  *  views of the same team wait for one Claude call instead of each paying
@@ -94,11 +114,24 @@ export async function POST(request: Request) {
     return jsonError(400, "Request body must be JSON");
   }
 
-  const parsed = ExplainRequestSchema.safeParse(body);
-  if (!parsed.success) {
-    return jsonError(400, parsed.error.issues[0]?.message ?? "Invalid request");
+  // Drafts (incl. the 10-player beta's deeper bench) parse with a route-local
+  // schema; saved teams and matchups use the frozen contract schema.
+  const isDraft = (body as { kind?: unknown } | null)?.kind === "draft";
+  let draftReq: z.infer<typeof DraftExplainSchema> | null = null;
+  let req: ExplainRequest | null = null;
+  if (isDraft) {
+    const parsed = DraftExplainSchema.safeParse(body);
+    if (!parsed.success) {
+      return jsonError(400, parsed.error.issues[0]?.message ?? "Invalid request");
+    }
+    draftReq = parsed.data;
+  } else {
+    const parsed = ExplainRequestSchema.safeParse(body);
+    if (!parsed.success) {
+      return jsonError(400, parsed.error.issues[0]?.message ?? "Invalid request");
+    }
+    req = parsed.data;
   }
-  const req = parsed.data;
 
   // 1. Load the engine outputs the explanation will describe.
   let kind: "team" | "matchup";
@@ -107,33 +140,34 @@ export async function POST(request: Request) {
   let prompt: string;
 
   try {
-    if (req.kind === "team") {
-      const team = await findTeamBySlug(req.teamSlug);
+    if (draftReq) {
+      // Unsaved roster from /sim — no DB row; re-run the engine server-side.
+      if (draftReq.snapshotVersion !== getSnapshot().version) {
+        return jsonError(422, "Snapshot version mismatch — refresh and redraft");
+      }
+      const players = getPlayerMap();
+      const roster = draftReq.roster as Roster;
+      const valid = validateRoster(roster, players, { benchCounts: [3, 5] });
+      if (!valid.ok) return jsonError(422, valid.error);
+      const rating = getEngine().teamRating(roster, players, getBaselines());
+      kind = "team";
+      // Constant name: identical rosters share one cache entry; the saved
+      // variant hashes the real team name instead.
+      const teamPayload = payloadFromRoster("This draft", roster, rating);
+      payload = teamPayload;
+      system = buildTeamSystemPrompt();
+      prompt = buildTeamPrompt(teamPayload);
+    } else if (req!.kind === "team") {
+      const team = await findTeamBySlug(req!.teamSlug);
       if (!team) return jsonError(404, "Team not found");
       kind = "team";
       const teamPayload = buildTeamPayload(team);
       payload = teamPayload;
       system = buildTeamSystemPrompt();
       prompt = buildTeamPrompt(teamPayload);
-    } else if (req.kind === "draft") {
-      // Unsaved roster from /sim — no DB row; re-run the engine server-side.
-      if (req.snapshotVersion !== getSnapshot().version) {
-        return jsonError(422, "Snapshot version mismatch — refresh and redraft");
-      }
-      const players = getPlayerMap();
-      const valid = validateRoster(req.roster, players);
-      if (!valid.ok) return jsonError(422, valid.error);
-      const rating = getEngine().teamRating(req.roster, players, getBaselines());
-      kind = "team";
-      // Constant name: identical rosters share one cache entry pre- and
-      // post-naming would not (the saved variant hashes the real team name).
-      const teamPayload = payloadFromRoster("This draft", req.roster, rating);
-      payload = teamPayload;
-      system = buildTeamSystemPrompt();
-      prompt = buildTeamPrompt(teamPayload);
-    } else {
+    } else if (req!.kind === "matchup") {
       const matchup = await prisma.matchup.findUnique({
-        where: { id: req.matchupId },
+        where: { id: req!.matchupId },
         include: { teamA: true, teamB: true },
       });
       if (!matchup) return jsonError(404, "Matchup not found");
@@ -152,6 +186,9 @@ export async function POST(request: Request) {
       payload = matchupPayload;
       system = buildMatchupSystemPrompt();
       prompt = buildMatchupPrompt(matchupPayload);
+    } else {
+      // Unreachable: a "draft" kind is handled by draftReq above.
+      return jsonError(400, "Invalid request");
     }
   } catch (err) {
     if (isDbUnavailable(err)) {
