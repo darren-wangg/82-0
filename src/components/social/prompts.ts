@@ -15,7 +15,7 @@ import {
   TeamRating,
 } from "@/lib/contracts";
 
-export const PROMPT_VERSION = "v8";
+export const PROMPT_VERSION = "v9";
 /** Cheapest tier — explanations are short, structured-input blurbs. */
 export const EXPLAIN_MODEL = "claude-haiku-4-5-20251001";
 
@@ -61,9 +61,10 @@ const SYSTEM_PROMPT =
   "Ground every take in the numbers you're given: category values are " +
   "era-adjusted z-scores (higher is always better; turnovers are " +
   "sign-flipped). Never invent stats. Plain text only, no markdown, no " +
-  "headings, no bullet points. Hard limit: 2 sentences, no exceptions — " +
-  "and keep them SHORT and punchy, like bars: no filler words, no warm-up, " +
-  "no stacked clauses. Get in, land the take, get out.";
+  "headings, no bullet points. Hard limit: ONE punchy sentence (two only if " +
+  "the second is just as short), ~30 words max, no exceptions — like a bar, " +
+  "not a paragraph: no filler, no warm-up, no stacked clauses. Get in, land " +
+  "the take, get out.";
 
 export function buildTeamSystemPrompt(): string {
   return SYSTEM_PROMPT;
@@ -82,10 +83,10 @@ export function buildTeamPrompt(payload: TeamExplainPayload): string {
     ...(perfect
       ? [
           `This roster just went a PERFECT ${SEASON_GAMES}-0 — the rarest thing in the game.`,
-          `Give them their flowers in AT MOST 2 sentences: pure hype, crown them, shout out what makes the machine unbeatable. Zero criticism, no fixes, no "but".`,
+          `Give them their flowers in ONE short sentence (two only if both are tiny): pure hype, crown them, name what makes the machine unbeatable. Zero criticism, no fixes, no "but".`,
         ]
       : [
-          `Give your take on this roster in AT MOST 2 short sentences:`,
+          `Give your take on this roster in ONE short sentence (two only if both are tiny):`,
           `what makes them dangerous, and what's holding them back${
             season.gatedCategory
               ? ` (the binding weakness is ${CAT_LABELS[season.gatedCategory]} — it capped them at ${season.winCap} wins, call it out)`
@@ -118,7 +119,7 @@ export function buildMatchupPrompt(payload: MatchupExplainPayload): string {
     .join("\n");
 
   return [
-    `Recap this simulated best-of-7 in AT MOST 2 short sentences.`,
+    `Recap this simulated best-of-7 in ONE short sentence (two only if both are tiny).`,
     `Who got cooked (or how close it was), and the edge that decided it — nothing else.`,
     ``,
     `Matchup: "${teamA.teamName}" (OVR ${teamA.rating.ovr.toFixed(1)}) vs "${teamB.teamName}" (OVR ${teamB.rating.ovr.toFixed(1)})`,
