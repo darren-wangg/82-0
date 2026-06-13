@@ -37,6 +37,16 @@ const nextConfig: NextConfig = {
     // Headshots are proxied through the image optimizer: the server fetches
     // from the (unofficial) NBA CDN and serves resized, cached, same-origin
     // images — clients never hit cdn.nba.com directly.
+    //
+    // Cost controls (Vercel bills per transformation = unique source×width×
+    // quality×format). Headshots are immutable, so cache optimized output for
+    // a year instead of the 4-hour default (stops re-billing on revisit), and
+    // trim the width buckets so small avatars don't generate large variants.
+    // NOTE: once headshots are baked to static assets at ETL time these stop
+    // mattering for them — they remain sensible defaults for any other image.
+    minimumCacheTTL: 31_536_000,
+    imageSizes: [32, 48, 64, 128],
+    deviceSizes: [640, 1080, 1920],
     remotePatterns: [
       {
         protocol: "https",

@@ -16,7 +16,7 @@ import {
   type SeasonResult,
   type TeamRating,
 } from "@/lib/contracts";
-import { headshotSources } from "@/lib/headshots";
+import { headshotSourcesRemote } from "@/lib/headshots";
 
 export const CARD_WIDTH = 1080;
 export const CARD_HEIGHT = 1620;
@@ -86,7 +86,7 @@ export async function fetchHeadshot(
   p: PlayerStatLine,
   deadline = Date.now() + FETCH_DEADLINE_MS
 ): Promise<string | null> {
-  for (const url of headshotSources(p)) {
+  for (const url of headshotSourcesRemote(p)) {
     const cached = headshotCache.get(url);
     if (cached) return cached;
     for (let attempt = 0; attempt < 3; attempt++) {

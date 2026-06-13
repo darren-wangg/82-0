@@ -7,6 +7,7 @@
 
 import { useState } from "react";
 import Image from "next/image";
+import { isLocalHeadshot } from "@/lib/headshots-core";
 import { cn } from "@/lib/utils";
 
 function Silhouette({ className }: { className?: string }) {
@@ -40,15 +41,32 @@ export function PlayerHeadshot({
 
   if (!src) return <Silhouette className={className} />;
 
+  const onError = () => setFailed((f) => [...f, src]);
+
+  // Baked static assets render as a plain <img> (no image optimizer). The
+  // remote fallback chain still goes through the Next optimizer (remotePatterns
+  // in next.config.ts) so clients never hit the unofficial CDN directly.
+  if (isLocalHeadshot(src)) {
+    return (
+      // eslint-disable-next-line @next/next/no-img-element -- baked static asset, intentionally not optimized
+      <img
+        src={src}
+        alt={alt}
+        loading="lazy"
+        decoding="async"
+        onError={onError}
+        className={cn("bg-muted object-cover object-top", className)}
+      />
+    );
+  }
+
   return (
-    // Proxied through the Next image optimizer (remotePatterns in
-    // next.config.ts) so clients never hit the unofficial CDN directly.
     <Image
       src={src}
       alt={alt}
       width={260}
       height={200}
-      onError={() => setFailed((f) => [...f, src])}
+      onError={onError}
       className={cn("bg-muted object-cover object-top", className)}
     />
   );
