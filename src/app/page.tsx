@@ -9,7 +9,7 @@ import { cn } from "@/lib/utils";
 export const metadata: Metadata = {
   title: "Ultimate Draft — Chase the perfect 82-0 season",
   description:
-    "Spin for a franchise and an era, draft 8 legends, and chase the perfect 82-0 season.",
+    "Spin for a team and an era, draft 8 players, and chase the perfect 82-0 season.",
 };
 
 const NAV_TILES = [
@@ -61,7 +61,7 @@ export default function Home() {
             Draft
           </h1>
           <p className="max-w-xs text-base text-balance text-muted-foreground">
-            Spin for a franchise and an era, draft 8 legends, and chase the
+            Spin for a team and an era, draft 8 players, and chase the
             perfect <span className="font-semibold text-foreground">82-0</span>{" "}
             season.
           </p>

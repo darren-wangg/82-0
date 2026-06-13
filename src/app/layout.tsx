@@ -34,7 +34,7 @@ const pressStart = Press_Start_2P({
 
 const SITE_TITLE = "Ultimate Draft — Chase the Perfect 82-0 Season";
 const SITE_DESCRIPTION =
-  "Spin for a random NBA franchise and era, draft an 8-man all-time roster, and see if your team can go 82-0.";
+  "Spin for a random NBA team and era, draft an 8-man all-time roster, and see if your team can go 82-0.";
 
 // The og/twitter images come from the opengraph-image.jpg file convention.
 export const metadata: Metadata = {

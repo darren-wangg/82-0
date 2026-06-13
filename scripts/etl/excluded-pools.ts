@@ -5,7 +5,7 @@
  * These are the 10 weakest combos by the strength of the best player you could
  * draft from them (era-adjusted composite, the same score the engine uses).
  * They're mostly expansion teams' first partial decade (Heat/Hornets entered
- * 1988, Raptors/Grizzlies 1995, ABA-era Nets) or a franchise's barren stretch —
+ * 1988, Raptors/Grizzlies 1995, ABA-era Nets) or a team's barren stretch —
  * pools whose best available pick is a fringe rotation player.
  *
  * Regenerate the ranking with: node --import tsx scripts/etl/rank-pools.ts

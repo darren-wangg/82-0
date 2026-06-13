@@ -9,24 +9,22 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import {
-  DRAFT_ROUNDS,
   ERA_SKIPS_PER_GAME,
-  SEASON_GAMES,
   TEAM_SKIPS_PER_GAME,
 } from "@/lib/contracts";
 
 const STEPS: { title: string; body: string }[] = [
   {
     title: "Spin",
-    body: `Each of the ${DRAFT_ROUNDS} rounds spins a random team and era. The same team-era combo never comes up twice.`,
+    body: `Spin for a random team and era. The same team-era combo never comes up twice.`,
   },
   {
     title: "Re-spins",
-    body: `${TEAM_SKIPS_PER_GAME} team re-spin and ${ERA_SKIPS_PER_GAME} era re-spin per game. A re-spin rolls only that axis — spend them wisely.`,
+    body: `${TEAM_SKIPS_PER_GAME} team re-spin and ${ERA_SKIPS_PER_GAME} era re-spin per game. A re-spin rolls only that axis.`,
   },
   {
     title: "Pick",
-    body: "Tap a player, then one of their positions. Starters need a PG, SG, SF, PF, and C; the bench needs a G, a F, and a C.",
+    body: "Tap a player, then one of their positions. Starters need a PG, SG, SF, PF, C. The bench needs a G, a F, and C.",
   },
   {
     title: "Optimize",
@@ -34,7 +32,7 @@ const STEPS: { title: string; body: string }[] = [
   },
   {
     title: "Simulate",
-    body: `Your squad is era-adjusted and runs a full ${SEASON_GAMES}-game season. One glaring weakness can cap your wins.`,
+    body: "Your team is era-adjusted and runs a full season. One weakness can cap your wins.",
   },
 ];
 
