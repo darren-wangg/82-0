@@ -49,6 +49,7 @@ function PlaySkeleton() {
 export function PlayScreen() {
   const { state, dispatch, ctx, players, franchiseById } = useGame();
   const allowed = usePhaseGuard(["draft"]);
+  const rounds = ctx.mode?.draftRounds ?? DRAFT_ROUNDS;
 
   // Arriving via /play?challenge={slug} retargets the draft at that team;
   // /play?lobby={code} starts a draft destined for that lobby. A fresh (or
@@ -147,7 +148,7 @@ export function PlayScreen() {
                 transition={{ type: "spring", stiffness: 400, damping: 16 }}
                 className="inline-block font-mono tabular-nums"
               >
-                {Math.min(state.picks.length + 1, DRAFT_ROUNDS)} of {DRAFT_ROUNDS}
+                {Math.min(state.picks.length + 1, rounds)} of {rounds}
               </motion.span>
             </p>
             {/* Lobby drafts are one-shot — no restarting into a fresh pool. */}
@@ -164,7 +165,7 @@ export function PlayScreen() {
             )}
           </div>
           <Progress
-            value={(state.picks.length / DRAFT_ROUNDS) * 100}
+            value={(state.picks.length / rounds) * 100}
             className="mt-1 w-28"
             aria-label="Draft progress"
           />

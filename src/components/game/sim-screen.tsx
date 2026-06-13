@@ -51,7 +51,7 @@ import { DownloadCardButton } from "@/components/social/download-card";
 import { ExplainStream } from "@/components/social/explain-stream";
 import { analyzeCost } from "./cost-analysis";
 import { Confetti } from "./confetti";
-import { toRoster } from "./draft-state";
+import { CLASSIC_MODE, toRoster, type BenchSlotDef } from "./draft-state";
 import { saveLocalTeam } from "./local-teams";
 import { CAT_FRIENDLY, CAT_LABELS } from "./format";
 import { freshSeed, useGame } from "./game-provider";
@@ -347,20 +347,19 @@ type SaveState =
   | { phase: "saved"; url: string }
   | { phase: "error" };
 
-/** The final roster: 5 starters + 3 bench, images and names only. */
+/** The final roster: 5 starters + the mode's bench, images and names only. */
 function TeamView({
   roster,
   players,
+  benchSlots,
 }: {
   roster: Roster;
   players: Map<string, PlayerStatLine>;
+  benchSlots: readonly BenchSlotDef[];
 }) {
   const slots: { label: string; id: string }[] = [
     ...POSITIONS.map((pos) => ({ label: pos as string, id: roster.starters[pos]! })),
-    ...(["G", "F", "C"] as const).map((label, i) => ({
-      label: label as string,
-      id: roster.bench[i],
-    })),
+    ...benchSlots.map((b, i) => ({ label: b.label, id: roster.bench[i] })),
   ];
   return (
     <div className="mt-5 flex items-end gap-1">
@@ -409,10 +408,11 @@ function SimSkeleton() {
 }
 
 export function SimScreen() {
-  const { state, dispatch, players } = useGame();
+  const { state, dispatch, ctx, players } = useGame();
   const allowed = usePhaseGuard(["locked"]);
   const router = useRouter();
   const reducedMotion = useReducedMotion();
+  const mode = ctx.mode ?? CLASSIC_MODE;
 
   const [teamName, setTeamName] = useState("");
   // Lobby entries carry the entrant's name so the standings show whose team
@@ -599,7 +599,7 @@ export function SimScreen() {
 
   const runItBack = () => {
     dispatch({ type: "NEW_GAME", seed: freshSeed() });
-    router.push("/play");
+    router.push(mode.playPath);
   };
 
   // Saved teams get the canonical (named) card; unsaved drafts render one
@@ -614,7 +614,19 @@ export function SimScreen() {
       {/* perfect-season celebration, timed to the record landing */}
       {perfect && !reducedMotion && <Confetti delay={COUNT_UP_SECONDS} />}
 
+      {/* Beta tag — the 10-player mode lives apart from the saved-team /
+          share / lobby / leaderboard surface (the frozen contract only knows
+          the 8-man roster), so it's draft → simulate → record only. */}
+      {!mode.social && (
+        <div className="flex justify-end">
+          <span className="rounded-md bg-violet-500/15 px-2 py-0.5 font-arcade text-[9px] tracking-widest text-violet-300 uppercase">
+            {mode.label}
+          </span>
+        </div>
+      )}
+
       {/* download image + save (device) + share icons, top right */}
+      {mode.social && (
       <div className="flex justify-end gap-2">
         <DownloadCardButton
           cardUrl={cardUrl}
@@ -775,12 +787,13 @@ export function SimScreen() {
           </DialogContent>
         </Dialog>
       </div>
+      )}
 
       {/* final record */}
       <RecordReveal season={season} />
 
       {/* the team */}
-      <TeamView roster={roster} players={players} />
+      <TeamView roster={roster} players={players} benchSlots={mode.benchSlots} />
 
       {/* gate callout */}
       {season.gatedCategory && (
@@ -883,25 +896,29 @@ export function SimScreen() {
         </motion.div>
       )}
 
-      {/* AI scouting report on the unsaved draft (server re-runs the engine) */}
-      <motion.div
-        initial={{ opacity: 0, y: 10 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: COUNT_UP_SECONDS + 0.6 }}
-      >
-        <Card className="mt-3 gap-1.5 border-border/60 bg-card/80 p-4">
-          <p className="font-arcade text-[9px] text-muted-foreground uppercase">
-            Scouting report
-          </p>
-          <ExplainStream
-            request={{
-              kind: "draft",
-              roster,
-              snapshotVersion: state.snapshotVersion,
-            }}
-          />
-        </Card>
-      </motion.div>
+      {/* AI scouting report on the unsaved draft (server re-runs the engine).
+          Beta modes skip it: the /api/explain draft path validates the frozen
+          8-man RosterSchema, which a 10-player roster isn't. */}
+      {mode.social && (
+        <motion.div
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: COUNT_UP_SECONDS + 0.6 }}
+        >
+          <Card className="mt-3 gap-1.5 border-border/60 bg-card/80 p-4">
+            <p className="font-arcade text-[9px] text-muted-foreground uppercase">
+              Scouting report
+            </p>
+            <ExplainStream
+              request={{
+                kind: "draft",
+                roster,
+                snapshotVersion: state.snapshotVersion,
+              }}
+            />
+          </Card>
+        </motion.div>
+      )}
 
       {/* thumb-zone footer */}
       <div className="sticky bottom-0 mt-auto flex flex-col gap-2 bg-gradient-to-t from-background via-background/95 to-transparent pt-4 pb-[max(1rem,env(safe-area-inset-bottom))]">

@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { preload } from "react-dom";
-import { Shirt, Trophy, UsersRound } from "lucide-react";
+import { FlaskConical, Shirt, Trophy, UsersRound } from "lucide-react";
 import { buttonVariants } from "@/components/ui/button";
 import { HowToPlayDialog } from "@/components/game/how-to-play";
 import { cn } from "@/lib/utils";
@@ -95,6 +95,18 @@ export default function Home() {
             ))}
           </div>
           <HowToPlayDialog />
+
+          {/* Beta: a longer 10-player draft, walled off from the main flow. */}
+          <Link
+            href="/play10"
+            className="mt-1 inline-flex items-center gap-1.5 rounded-full border border-violet-400/40 bg-violet-400/10 px-3 py-1.5 text-[11px] font-semibold text-violet-300 transition-transform active:scale-95"
+          >
+            <FlaskConical className="size-3.5" />
+            Try 10-Player mode
+            <span className="rounded bg-violet-400/20 px-1 py-px text-[9px] tracking-wider uppercase">
+              Beta
+            </span>
+          </Link>
         </div>
 
         {/* CC BY-SA attribution for the source dataset (required by license). */}

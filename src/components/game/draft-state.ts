@@ -6,12 +6,14 @@
  * reducer never touches the DOM, storage, or module state — persistence lives
  * in the provider (game-provider.tsx).
  *
- * Roster model (hard requirements): five starter slots PG/SG/SF/PF/C plus
- * three bench slots BG (guard: PG|SG), BF (forward: SF|PF), BC (center).
+ * The roster shape, round count, and re-spin budget are not hard-coded: a
+ * GameMode supplies them, so the same machine drives both Classic (8 players:
+ * five starters PG/SG/SF/PF/C + a guard/forward/center bench, 1+1 skips) and
+ * the 10-Player beta (five starters + a PG/SG/SF/PF/C bench, 2+2 skips).
  * Players are placed into a slot AT DRAFT TIME — pick a player from the spun
  * pool, then click an open slot they're eligible for. Spins only ever land on
- * pools containing at least one player who fits an open slot, so the draft
- * can always be completed.
+ * pools containing at least one player who fits an open slot, so the draft can
+ * always be completed.
  */
 
 import { z } from "zod";
@@ -30,38 +32,116 @@ import {
 } from "@/lib/contracts";
 
 // ---------------------------------------------------------------------------
-// Slots
+// Slots & game modes
 // ---------------------------------------------------------------------------
 
-export const BENCH_SLOTS = ["BG", "BF", "BC"] as const;
-export type BenchSlot = (typeof BENCH_SLOTS)[number];
-export type Slot = Position | BenchSlot;
-export const ALL_SLOTS: readonly Slot[] = [...POSITIONS, ...BENCH_SLOTS];
+/** A slot key is a starter position (PG…C) or a mode-specific bench-slot key. */
+export type Slot = string;
 
-export const SLOT_LABELS: Record<Slot, string> = {
+export interface BenchSlotDef {
+  /** Globally unique key (starter positions are reused as-is; bench keys are
+   *  distinct across modes so a slot key alone resolves what it accepts). */
+  key: string;
+  /** Short label shown under the slot. */
+  label: string;
+  /** Starter positions this bench slot will take. */
+  accepts: readonly Position[];
+}
+
+export interface GameMode {
+  id: string;
+  label: string;
+  /** Number of draft rounds = roster size. */
+  draftRounds: number;
+  teamSkips: number;
+  eraSkips: number;
+  benchSlots: readonly BenchSlotDef[];
+  /** Starter slots then bench slots, in display/iteration order. */
+  allSlots: readonly Slot[];
+  /** localStorage key — distinct per mode so drafts don't clobber each other. */
+  storageKey: string;
+  /** Draft- and sim-screen routes for this mode. */
+  playPath: string;
+  simPath: string;
+  /** Beta modes have no server save/share/lobby/leaderboard/AI surface
+   *  (those go through the frozen contract, which only knows the 8-man roster). */
+  social: boolean;
+}
+
+const CLASSIC_BENCH: BenchSlotDef[] = [
+  { key: "BG", label: "G", accepts: ["PG", "SG"] },
+  { key: "BF", label: "F", accepts: ["SF", "PF"] },
+  { key: "BC", label: "C", accepts: ["C"] },
+];
+
+/** 10-player beta: a strict positional bench (a second of each position). */
+const TEN_BENCH: BenchSlotDef[] = [
+  { key: "bPG", label: "PG", accepts: ["PG"] },
+  { key: "bSG", label: "SG", accepts: ["SG"] },
+  { key: "bSF", label: "SF", accepts: ["SF"] },
+  { key: "bPF", label: "PF", accepts: ["PF"] },
+  { key: "bC", label: "C", accepts: ["C"] },
+];
+
+export const CLASSIC_MODE: GameMode = {
+  id: "classic",
+  label: "Classic",
+  draftRounds: DRAFT_ROUNDS,
+  teamSkips: TEAM_SKIPS_PER_GAME,
+  eraSkips: ERA_SKIPS_PER_GAME,
+  benchSlots: CLASSIC_BENCH,
+  allSlots: [...POSITIONS, ...CLASSIC_BENCH.map((b) => b.key)],
+  storageKey: "eighty-two-zero/game/v2",
+  playPath: "/play",
+  simPath: "/sim",
+  social: true,
+};
+
+export const TEN_MODE: GameMode = {
+  id: "ten",
+  label: "10-Player (Beta)",
+  draftRounds: 10,
+  teamSkips: 2,
+  eraSkips: 2,
+  benchSlots: TEN_BENCH,
+  allSlots: [...POSITIONS, ...TEN_BENCH.map((b) => b.key)],
+  storageKey: "eighty-two-zero/game10/v1",
+  playPath: "/play10",
+  simPath: "/sim10",
+  social: false,
+};
+
+export const MODES: Record<string, GameMode> = {
+  [CLASSIC_MODE.id]: CLASSIC_MODE,
+  [TEN_MODE.id]: TEN_MODE,
+};
+
+/** Bench-slot defs across every mode, keyed by their (globally unique) key. */
+const BENCH_DEFS: Record<string, BenchSlotDef> = {};
+for (const m of Object.values(MODES)) {
+  for (const b of m.benchSlots) BENCH_DEFS[b.key] = b;
+}
+
+/** Classic bench keys / all slots — kept for back-compat with classic UI. */
+export const BENCH_SLOTS = CLASSIC_MODE.benchSlots.map((b) => b.key);
+export const ALL_SLOTS: readonly Slot[] = CLASSIC_MODE.allSlots;
+
+/** Slot key → short label, across all modes. */
+export const SLOT_LABELS: Record<string, string> = {
   PG: "PG",
   SG: "SG",
   SF: "SF",
   PF: "PF",
   C: "C",
-  BG: "G",
-  BF: "F",
-  BC: "C",
+  ...Object.fromEntries(Object.values(BENCH_DEFS).map((b) => [b.key, b.label])),
 };
 
-/** Starter positions a bench slot accepts. */
-const BENCH_ACCEPTS: Record<BenchSlot, readonly Position[]> = {
-  BG: ["PG", "SG"],
-  BF: ["SF", "PF"],
-  BC: ["C"],
-};
-
-/** Can a player with these listed positions man this slot? */
+/** Can a player with these listed positions man this slot? Resolves bench
+ *  slots from their (mode-independent) key, so it needs no mode context. */
 export function slotAccepts(slot: Slot, positions: readonly Position[]): boolean {
-  if (slot === "BG" || slot === "BF" || slot === "BC") {
-    return positions.some((p) => BENCH_ACCEPTS[slot].includes(p));
-  }
-  return positions.includes(slot);
+  const bench = BENCH_DEFS[slot];
+  if (bench) return positions.some((p) => bench.accepts.includes(p));
+  return positions.includes(slot as Position);
 }
 
 // ---------------------------------------------------------------------------
@@ -76,9 +156,14 @@ export interface DraftContext {
   /** player id → [primary position, ...altPositions]. */
   positionsById: Record<string, Position[]>;
   snapshotVersion: string;
+  /** The mode this context drives (defaults to Classic when absent). */
+  mode?: GameMode;
 }
 
-export function buildDraftContext(snapshot: Snapshot): DraftContext {
+export function buildDraftContext(
+  snapshot: Snapshot,
+  mode: GameMode = CLASSIC_MODE
+): DraftContext {
   const pools: DraftContext["pools"] = {};
   for (const [fid, byDecade] of Object.entries(snapshot.pools)) {
     for (const [decade, ids] of Object.entries(byDecade)) {
@@ -92,8 +177,12 @@ export function buildDraftContext(snapshot: Snapshot): DraftContext {
     slugById[p.id] = p.playerSlug;
     positionsById[p.id] = [p.position, ...p.altPositions];
   }
-  return { pools, slugById, positionsById, snapshotVersion: snapshot.version };
+  return { pools, slugById, positionsById, snapshotVersion: snapshot.version, mode };
 }
+
+const ctxMode = (ctx: DraftContext): GameMode => ctx.mode ?? CLASSIC_MODE;
+const stateMode = (state: GameState): GameMode =>
+  MODES[state.modeId] ?? CLASSIC_MODE;
 
 // ---------------------------------------------------------------------------
 // Seeded RNG
@@ -131,13 +220,15 @@ function shuffled<T>(items: readonly T[], rng: () => number): T[] {
 export type GameStatus = "draft" | "locked";
 
 export interface GameState {
+  /** Which GameMode this draft belongs to. */
+  modeId: string;
   snapshotVersion: string;
   seed: number;
   /** Count of randomness-consuming actions taken so far. */
   rngCursor: number;
   status: GameStatus;
   excludedDecades: Decade[];
-  /** 1-based, up to DRAFT_ROUNDS. */
+  /** 1-based, up to the mode's draftRounds. */
   round: number;
   spin: SpinResult | null;
   /** Increments on every (re)spin — lets the UI key reel animations. */
@@ -178,16 +269,11 @@ export type GameAction =
 
 export const comboKey = (c: SpinResult) => `${c.franchiseId}|${c.decade}`;
 
-const emptySlots = (): Record<Slot, string | null> => ({
-  PG: null,
-  SG: null,
-  SF: null,
-  PF: null,
-  C: null,
-  BG: null,
-  BF: null,
-  BC: null,
-});
+function emptySlots(mode: GameMode): Record<Slot, string | null> {
+  const out: Record<Slot, string | null> = {};
+  for (const s of mode.allSlots) out[s] = null;
+  return out;
+}
 
 // ---------------------------------------------------------------------------
 // Derived helpers (exported for UI + tests)
@@ -198,7 +284,7 @@ export function draftedSlugs(state: GameState, ctx: DraftContext): Set<string> {
 }
 
 export function openSlots(state: GameState): Slot[] {
-  return ALL_SLOTS.filter((s) => state.slots[s] === null);
+  return stateMode(state).allSlots.filter((s) => state.slots[s] === null);
 }
 
 /** Open slots this specific player may fill. */
@@ -224,7 +310,7 @@ export function moveTargetsFor(
   const moving = state.slots[from];
   const positions = moving ? ctx.positionsById[moving] : undefined;
   if (!positions) return [];
-  return ALL_SLOTS.filter((to) => {
+  return stateMode(state).allSlots.filter((to) => {
     if (to === from || !slotAccepts(to, positions)) return false;
     const occupant = state.slots[to];
     if (!occupant) return true;
@@ -304,17 +390,24 @@ export function canSkipEra(state: GameState, ctx: DraftContext): boolean {
 }
 
 export function rosterComplete(state: GameState): boolean {
-  return ALL_SLOTS.every((s) => state.slots[s] != null);
+  return stateMode(state).allSlots.every((s) => state.slots[s] != null);
 }
 
-/** Build the contracts Roster. Bench order convention: [BG, BF, BC]. */
+/**
+ * Build the contracts Roster. Bench order follows the mode's benchSlots.
+ * For the 10-player beta the bench carries five entries; the engine weights
+ * each bench player identically regardless of count, so this stays valid
+ * input for teamRating/projectSeason even though it isn't a frozen-schema
+ * (8-man) Roster.
+ */
 export function toRoster(state: GameState): Roster | null {
   if (!rosterComplete(state)) return null;
+  const mode = stateMode(state);
   const starters = {} as Record<Position, string>;
   for (const p of POSITIONS) starters[p] = state.slots[p]!;
   return {
     starters,
-    bench: [state.slots.BG!, state.slots.BF!, state.slots.BC!],
+    bench: mode.benchSlots.map((b) => state.slots[b.key]!),
   };
 }
 
@@ -328,8 +421,10 @@ export function newGame(
   challengeSlug: string | null = null,
   lobbyCode: string | null = null
 ): GameState {
+  const mode = ctxMode(ctx);
   const rng = mulberry32(seed >>> 0);
   const base: GameState = {
+    modeId: mode.id,
     snapshotVersion: ctx.snapshotVersion,
     seed: seed >>> 0,
     rngCursor: 0,
@@ -338,11 +433,11 @@ export function newGame(
     round: 1,
     spin: null,
     spinNonce: 0,
-    teamSkipsLeft: TEAM_SKIPS_PER_GAME,
-    eraSkipsLeft: ERA_SKIPS_PER_GAME,
+    teamSkipsLeft: mode.teamSkips,
+    eraSkipsLeft: mode.eraSkips,
     spunCombos: [],
     picks: [],
-    slots: emptySlots(),
+    slots: emptySlots(mode),
     selectedPlayerId: null,
     challengeSlug,
     lobbyCode,
@@ -471,14 +566,15 @@ export function gameReducer(
       if (state.status !== "draft" || !state.spin || !state.selectedPlayerId) {
         return state;
       }
-      if (state.picks.length >= DRAFT_ROUNDS) return state;
+      const rounds = ctxMode(ctx).draftRounds;
+      if (state.picks.length >= rounds) return state;
       const playerId = state.selectedPlayerId;
       if (!eligibleSlotsFor(playerId, state, ctx).includes(action.slot)) {
         return state;
       }
       const picks = [...state.picks, playerId];
       const slots = { ...state.slots, [action.slot]: playerId };
-      const done = picks.length >= DRAFT_ROUNDS;
+      const done = picks.length >= rounds;
       return {
         ...state,
         picks,
@@ -499,27 +595,29 @@ export function gameReducer(
 // Persistence (serialization only — storage I/O lives in the provider)
 // ---------------------------------------------------------------------------
 
-export const STORAGE_KEY = "eighty-two-zero/game/v2";
-
-const SLOT_KEYS = [...POSITIONS, ...BENCH_SLOTS] as [Slot, ...Slot[]];
+/** Classic storage key — kept exported for back-compat; per-mode keys live on
+ *  the GameMode. */
+export const STORAGE_KEY = CLASSIC_MODE.storageKey;
 
 const PersistedSchema = z.object({
+  // Optional for saves written before multi-mode support (default Classic).
+  modeId: z.string().default(CLASSIC_MODE.id),
   snapshotVersion: z.string(),
   seed: z.number(),
   rngCursor: z.number().int().min(0),
   status: z.enum(["draft", "locked"]),
   excludedDecades: z.array(z.enum(DECADES)),
-  round: z.number().int().min(1).max(DRAFT_ROUNDS),
+  round: z.number().int().min(1).max(40),
   spin: z
     .object({ franchiseId: z.string(), decade: z.enum(DECADES) })
     .nullable(),
   spinNonce: z.number().int().min(0),
-  teamSkipsLeft: z.number().int().min(0).max(TEAM_SKIPS_PER_GAME),
-  eraSkipsLeft: z.number().int().min(0).max(ERA_SKIPS_PER_GAME),
+  teamSkipsLeft: z.number().int().min(0).max(20),
+  eraSkipsLeft: z.number().int().min(0).max(20),
   // Optional for saves written before duplicate-combo tracking.
   spunCombos: z.array(z.string()).default([]),
-  picks: z.array(z.string()).max(DRAFT_ROUNDS),
-  slots: z.record(z.enum(SLOT_KEYS), z.string().nullable()),
+  picks: z.array(z.string()).max(40),
+  slots: z.record(z.string(), z.string().nullable()),
   selectedPlayerId: z.string().nullable(),
   // Optional for saves written before challenges / lobbies existed.
   challengeSlug: z.string().nullable().default(null),
@@ -532,8 +630,8 @@ export function serializeGame(state: GameState): string {
 
 /**
  * Parse a persisted state. Returns null (caller starts a new game) when the
- * payload is malformed, from another snapshot version, or references players
- * that no longer exist.
+ * payload is malformed, from another snapshot version, from a different mode
+ * than this context drives, or references players that no longer exist.
  */
 export function deserializeGame(
   raw: string | null,
@@ -543,9 +641,11 @@ export function deserializeGame(
   try {
     const parsed = PersistedSchema.parse(JSON.parse(raw));
     if (parsed.snapshotVersion !== ctx.snapshotVersion) return null;
+    if (parsed.modeId !== ctxMode(ctx).id) return null;
     if (parsed.picks.some((id) => !(id in ctx.slugById))) return null;
-    const slots = emptySlots();
-    for (const s of ALL_SLOTS) slots[s] = parsed.slots[s] ?? null;
+    const mode = MODES[parsed.modeId] ?? CLASSIC_MODE;
+    const slots = emptySlots(mode);
+    for (const s of mode.allSlots) slots[s] = parsed.slots[s] ?? null;
     return { ...parsed, slots };
   } catch {
     return null;

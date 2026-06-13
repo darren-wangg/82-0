@@ -22,13 +22,14 @@ import { getPlayerMap, loadSnapshot } from "@/lib/snapshot-client";
 import { loadHeadshotFallbacks } from "@/lib/headshots-client";
 import {
   buildDraftContext,
+  CLASSIC_MODE,
   deserializeGame,
   gameReducer,
   newGame,
   serializeGame,
-  STORAGE_KEY,
   type DraftContext,
   type GameAction,
+  type GameMode,
   type GameState,
 } from "./draft-state";
 
@@ -72,7 +73,14 @@ function SnapshotGate({ error, retry }: { error: boolean; retry: () => void }) {
   );
 }
 
-export function GameProvider({ children }: { children: ReactNode }) {
+export function GameProvider({
+  children,
+  mode = CLASSIC_MODE,
+}: {
+  children: ReactNode;
+  /** Which game mode this provider drives (defaults to Classic). */
+  mode?: GameMode;
+}) {
   // The snapshot is fetched from /data (not bundled); the game renders a
   // shell until it lands. The headshot fallback map loads alongside it.
   const [snapshot, setSnapshot] = useState<Snapshot | null>(null);
@@ -96,11 +104,11 @@ export function GameProvider({ children }: { children: ReactNode }) {
   const derived = useMemo(() => {
     if (!snapshot) return null;
     return {
-      ctx: buildDraftContext(snapshot),
+      ctx: buildDraftContext(snapshot, mode),
       players: getPlayerMap(snapshot),
       franchiseById: new Map(snapshot.franchises.map((f) => [f.id, f])),
     };
-  }, [snapshot]);
+  }, [snapshot, mode]);
   const ctx = derived?.ctx ?? null;
 
   const [state, setState] = useState<GameState | null>(null);
@@ -110,7 +118,7 @@ export function GameProvider({ children }: { children: ReactNode }) {
     if (!ctx) return;
     let stored: string | null = null;
     try {
-      stored = window.localStorage.getItem(STORAGE_KEY);
+      stored = window.localStorage.getItem(mode.storageKey);
     } catch {
       // storage unavailable (private mode etc.) — play in memory
     }
@@ -118,17 +126,17 @@ export function GameProvider({ children }: { children: ReactNode }) {
     // (or in the first client render) would cause a hydration mismatch.
     // eslint-disable-next-line react-hooks/set-state-in-effect
     setState(deserializeGame(stored, ctx) ?? newGame(freshSeed(), ctx));
-  }, [ctx]);
+  }, [ctx, mode]);
 
   // Persist on every change.
   useEffect(() => {
     if (!state) return;
     try {
-      window.localStorage.setItem(STORAGE_KEY, serializeGame(state));
+      window.localStorage.setItem(mode.storageKey, serializeGame(state));
     } catch {
       // best-effort persistence only
     }
-  }, [state]);
+  }, [state, mode.storageKey]);
 
   const dispatch = useCallback(
     (action: GameAction) =>

@@ -5,7 +5,6 @@ import { motion } from "framer-motion";
 import { POSITIONS } from "@/lib/contracts";
 import { cn } from "@/lib/utils";
 import {
-  BENCH_SLOTS,
   eligibleSlotsFor,
   moveTargetsFor,
   SLOT_LABELS,
@@ -20,7 +19,7 @@ function SlotCircle({
   highlighted,
   moveSource,
   onTap,
-  small,
+  size = "size-10",
 }: {
   slot: Slot;
   /** Pulsing target: placement (pool pick) or move destination. */
@@ -28,14 +27,12 @@ function SlotCircle({
   /** This filled slot is currently selected for moving. */
   moveSource: boolean;
   onTap: (slot: Slot) => void;
-  small?: boolean;
+  /** Circle size class — shrunk so 10 slots still fit a 375px viewport. */
+  size?: string;
 }) {
   const { state, players } = useGame();
   const id = state?.slots[slot] ?? null;
   const player = id ? players.get(id) : undefined;
-  // Sized so 5 starters + divider + 3 bench fit a 375px viewport without
-  // the circles (and their rings) overlapping.
-  const size = small ? "size-9" : "size-10";
 
   return (
     <div className="flex min-w-0 flex-1 flex-col items-center gap-1">
@@ -156,6 +153,13 @@ export function RosterBoard({ className }: { className?: string }) {
   const drafted = state.picks.flatMap((id) => players.get(id) ?? []);
   const avgs = teamAverages(drafted);
 
+  const benchSlots = ctx.mode?.benchSlots ?? [];
+  // 5 starters + a 3-slot bench fits at the default size; the 10-player
+  // beta's 5-slot bench needs tighter circles to stay on one row.
+  const compact = benchSlots.length > 3;
+  const starterSize = compact ? "size-9" : "size-10";
+  const benchSize = compact ? "size-8" : "size-9";
+
   return (
     <div className={cn("flex flex-col gap-2", className)}>
       <div className="flex items-end gap-1">
@@ -166,17 +170,18 @@ export function RosterBoard({ className }: { className?: string }) {
             highlighted={highlights.has(p)}
             moveSource={moveFrom === p}
             onTap={onTap}
+            size={starterSize}
           />
         ))}
         <div className="mx-0.5 h-10 w-px shrink-0 self-center bg-border" />
-        {BENCH_SLOTS.map((s) => (
+        {benchSlots.map(({ key }) => (
           <SlotCircle
-            key={s}
-            slot={s}
-            highlighted={highlights.has(s)}
-            moveSource={moveFrom === s}
+            key={key}
+            slot={key}
+            highlighted={highlights.has(key)}
+            moveSource={moveFrom === key}
             onTap={onTap}
-            small
+            size={benchSize}
           />
         ))}
       </div>
