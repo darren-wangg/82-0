@@ -1,12 +1,10 @@
 # Ultimate Draft
 
-(formerly "82-0 Plus")
-
-Mobile-first web game expanding the viral 82-0 NBA draft format: spin for a
-random franchise and era, draft an 8-player all-time roster (5 starters + 3
+Mobile-first NBA Draft web game: spin for a
+random team and era, draft an 8-player all-time roster (5 starters + 3
 bench), and simulate a full 82-game season through an era-adjusted 9-cat
-engine. Share teams, run head-to-head challenges, compete in 24-hour group
-lobbies, and climb the leaderboard — with AI scouting reports along the way.
+engine. Share teams, run head-to-head challenges, compete in group
+lobbies, and climb the leaderboard.
 
 ## Stack
 
@@ -17,12 +15,12 @@ Next.js (App Router) · React · TypeScript · Tailwind v4 + shadcn/ui (Base UI)
 ## Commands
 
 ```bash
-npm run dev            # dev server
-npm test               # vitest (engine + contract tests)
-npm run build          # production build (runs prisma generate first)
+pnpm run dev            # dev server
+pnpm test               # vitest (engine + contract tests)
+pnpm run build          # production build (runs prisma generate first)
 npx prisma migrate dev # evolve the database (interactive)
-npm run etl            # rebuild public/data/snapshot-v1.json from source data
-npm run etl:headshots  # resolve fallback player images (cached, resumable)
+pnpm run etl            # rebuild public/data/snapshot-v1.json from source data
+pnpm run etl:headshots  # resolve fallback player images (cached, resumable)
 ```
 
 ## Docs
