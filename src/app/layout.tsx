@@ -3,6 +3,7 @@ import { Anton, Geist_Mono, Press_Start_2P, Space_Grotesk } from "next/font/goog
 import { AppMotion } from "@/components/app-motion";
 import "./globals.css";
 import { Analytics } from "@vercel/analytics/next";
+import { SpeedInsights } from "@vercel/speed-insights/next";
 
 /** Body face — named --font-sans so the Tailwind font-sans utility (mapped
  *  to var(--font-sans) in globals.css) picks it up. */
@@ -66,6 +67,7 @@ export default function RootLayout({
       <body className="min-h-full flex flex-col">
         <AppMotion>{children}</AppMotion>
         <Analytics />
+        <SpeedInsights />
       </body>
     </html>
   );

@@ -18,6 +18,7 @@
     "@base-ui/react": "^1.5.0",
     "@prisma/client": "^7.8.0",
     "@vercel/analytics": "^2.0.1",
+    "@vercel/speed-insights": "^2.0.0",
     "ai": "^6.0.199",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",

@@ -33,8 +33,7 @@ export default async function LobbiesPage() {
     <main className="flex flex-1 flex-col">
       <h1 className="font-display text-3xl tracking-wide">Group lobbies</h1>
       <p className="mt-1 text-sm text-muted-foreground">
-        Everyone drafts a team, every matchup runs head-to-head, and the creator
-        crowns the champ.
+        Everyone drafts a team, every matchup runs head-to-head, and a champion is crowned.
       </p>
 
       <Link
