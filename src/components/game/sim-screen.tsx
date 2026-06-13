@@ -617,19 +617,7 @@ export function SimScreen() {
       {/* perfect-season celebration, timed to the record landing */}
       {perfect && !reducedMotion && <Confetti delay={COUNT_UP_SECONDS} />}
 
-      {/* Beta tag — the 10-player mode lives apart from the saved-team /
-          share / lobby / leaderboard surface (the frozen contract only knows
-          the 8-man roster), so it's draft → simulate → record only. */}
-      {!mode.social && (
-        <div className="flex justify-end">
-          <span className="rounded-md bg-violet-500/15 px-2 py-0.5 font-arcade text-[9px] tracking-widest text-violet-300 uppercase">
-            {mode.label}
-          </span>
-        </div>
-      )}
-
       {/* download image + save (device) + share icons, top right */}
-      {mode.social && (
       <div className="flex justify-end gap-2">
         <DownloadCardButton
           cardUrl={cardUrl}
@@ -790,7 +778,6 @@ export function SimScreen() {
           </DialogContent>
         </Dialog>
       </div>
-      )}
 
       {/* final record */}
       <RecordReveal season={season} />

@@ -178,21 +178,24 @@ export interface CardSlot {
   player: PlayerStatLine | null;
 }
 
-/** Roster → the 8 display slots (5 starters then G/F/C bench). */
+/** Roster → display slots: 5 starters then the bench. The 8-man bench is
+ *  G/F/C; the 10-player beta's 5 bench slots are a second PG/SG/SF/PF/C. */
 export function rosterSlots(
   roster: Roster,
   playerMap: Map<string, PlayerStatLine>
 ): CardSlot[] {
+  const benchLabels =
+    roster.bench.length >= 5 ? ["PG", "SG", "SF", "PF", "C"] : ["G", "F", "C"];
   return [
     ...POSITIONS.map((pos) => ({
       label: pos as string,
       bench: false,
       player: playerMap.get(roster.starters[pos] ?? "") ?? null,
     })),
-    ...(["G", "F", "C"] as const).map((label, i) => ({
-      label: label as string,
+    ...roster.bench.map((id, i) => ({
+      label: benchLabels[i] ?? "B",
       bench: true,
-      player: playerMap.get(roster.bench[i] ?? "") ?? null,
+      player: playerMap.get(id ?? "") ?? null,
     })),
   ];
 }

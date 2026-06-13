@@ -122,6 +122,9 @@ model Team {
   ownerName       String?
   roster          Json // Roster (contracts.ts), validated on write
   snapshotVersion String
+  // Roster size: 8 (normal) or 10 (10-player beta). Drives the leaderboard
+  // filter (10-man teams are excluded) and the My Teams badge.
+  teamSize        Int    @default(8)
   // Server-computed (authoritative) engine outputs, denormalized for reads
   ovr        Float
   offRating  Float
@@ -170,6 +173,9 @@ model Lobby {
   // Max teams allowed in; NULL = unlimited. Creator-set, editable after
   // creation. Enforced on entry (see /api/lobbies/enter).
   teamLimit Int?
+  // Roster size for this lobby: 8 (normal) or 10 (10-player beta). Entrants
+  // must submit a team of this size (enforced in /api/lobbies/enter).
+  teamSize  Int     @default(8)
   // AnonIdentity.id of the device that created the lobby (may close it early).
   // Nullable only for rows that predate creator tracking.
   creatorAnonId String?

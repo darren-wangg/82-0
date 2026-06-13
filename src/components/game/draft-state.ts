@@ -63,9 +63,6 @@ export interface GameMode {
   /** Draft- and sim-screen routes for this mode. */
   playPath: string;
   simPath: string;
-  /** Beta modes have no server save/share/lobby/leaderboard/AI surface
-   *  (those go through the frozen contract, which only knows the 8-man roster). */
-  social: boolean;
 }
 
 const CLASSIC_BENCH: BenchSlotDef[] = [
@@ -94,7 +91,6 @@ export const CLASSIC_MODE: GameMode = {
   storageKey: "eighty-two-zero/game/v2",
   playPath: "/play",
   simPath: "/sim",
-  social: true,
 };
 
 export const TEN_MODE: GameMode = {
@@ -108,7 +104,6 @@ export const TEN_MODE: GameMode = {
   storageKey: "eighty-two-zero/game10/v1",
   playPath: "/play10",
   simPath: "/sim10",
-  social: false,
 };
 
 export const MODES: Record<string, GameMode> = {

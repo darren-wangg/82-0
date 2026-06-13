@@ -33,6 +33,9 @@ const loadRows = unstable_cache(
     const teams = await prisma.team.findMany({
       where: {
         snapshotVersion,
+        // 10-player beta teams compete only in their lobbies, never on the
+        // global/weekly ladder (the deeper bench inflates ratings).
+        teamSize: 8,
         ...(scope === "weekly"
           ? { createdAt: { gte: new Date(Date.now() - WEEKLY_WINDOW_MS) } }
           : {}),

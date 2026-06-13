@@ -5,26 +5,34 @@
  * team with anon (and, if signed in, user) ownership.
  */
 
-import {
-  SaveTeamRequestSchema,
-  SaveTeamResponse,
-} from "@/lib/contracts";
+import { z } from "zod";
+import { SaveTeamResponse } from "@/lib/contracts";
 import { getSnapshot } from "@/lib/snapshot";
 import { prisma } from "@/lib/db";
 import { getOrCreateAnonId } from "@/lib/auth";
 import { makeTeamSlug } from "@/components/social/hashing";
 import {
   computeTeamOutputs,
+  FlexibleRosterSchema,
   isDbUnavailable,
   jsonError,
   RosterError,
   teamInclude,
+  teamSizeOf,
   toJsonInput,
   toSavedTeam,
 } from "../_lib/teams";
 import { RATE_LIMITS, rateLimitGate } from "../_lib/rate-limit";
 
 const SLUG_ATTEMPTS = 5;
+
+/** Save-team body. Mirrors the frozen SaveTeamRequestSchema but accepts the
+ *  10-player beta's deeper bench (3–5) via the flexible roster parser. */
+const SaveTeamBodySchema = z.object({
+  teamName: z.string().min(1).max(40),
+  roster: FlexibleRosterSchema,
+  snapshotVersion: z.string(),
+});
 
 export async function POST(request: Request) {
   const limited = await rateLimitGate(request, RATE_LIMITS.teamSave);
@@ -37,7 +45,7 @@ export async function POST(request: Request) {
     return jsonError(400, "Request body must be JSON");
   }
 
-  const parsed = SaveTeamRequestSchema.safeParse(body);
+  const parsed = SaveTeamBodySchema.safeParse(body);
   if (!parsed.success) {
     return jsonError(400, parsed.error.issues[0]?.message ?? "Invalid request");
   }
@@ -73,6 +81,7 @@ export async function POST(request: Request) {
             teamName,
             roster: toJsonInput(roster),
             snapshotVersion,
+            teamSize: teamSizeOf(roster),
             ovr: rating.ovr,
             offRating: rating.offRating,
             defRating: rating.defRating,

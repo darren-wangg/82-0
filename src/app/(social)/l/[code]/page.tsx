@@ -65,6 +65,8 @@ export default async function LobbyPage({ params }: PageProps<"/l/[code]">) {
   const entered = viewer.entryTeamSlug !== null;
   const teamCount = lobby.standings.length;
   const limit = viewer.teamLimit;
+  // 10-man lobbies draft through the 10-player beta flow.
+  const draftPath = viewer.teamSize === 10 ? "/play10" : "/play";
   const full = limit !== null && teamCount >= limit;
   const placementIdx = entered
     ? lobby.standings.findIndex((s) => s.teamSlug === viewer.entryTeamSlug)
@@ -90,6 +92,18 @@ export default async function LobbyPage({ params }: PageProps<"/l/[code]">) {
           {full && open && (
             <span className="ml-1.5 font-bold text-amber-400 uppercase">· Full</span>
           )}
+        </p>
+        <p className="mt-1.5 flex justify-center">
+          <span
+            className={cn(
+              "rounded-md px-2 py-0.5 text-[10px] font-bold tracking-wide uppercase",
+              viewer.teamSize === 10
+                ? "bg-violet-400/15 text-violet-300"
+                : "bg-muted text-muted-foreground"
+            )}
+          >
+            {viewer.teamSize}-man{viewer.teamSize === 10 ? " · Beta" : ""}
+          </span>
         </p>
       </div>
 
@@ -164,7 +178,7 @@ export default async function LobbyPage({ params }: PageProps<"/l/[code]">) {
         ) : (
           <div className="space-y-2">
             <Link
-              href={`/play?lobby=${encodeURIComponent(lobby.code)}`}
+              href={`${draftPath}?lobby=${encodeURIComponent(lobby.code)}`}
               className={cn(
                 buttonVariants({ size: "lg" }),
                 "h-14 w-full rounded-2xl font-display text-xl tracking-wide shadow-lg shadow-primary/30"

@@ -76,6 +76,16 @@ export default async function LobbiesPage() {
                   {lobby.code}
                 </span>
               </span>
+              <span
+                className={cn(
+                  "shrink-0 rounded-md px-1.5 py-0.5 text-[10px] font-bold tracking-wide uppercase",
+                  lobby.teamSize === 10
+                    ? "bg-violet-400/15 text-violet-300"
+                    : "bg-muted text-muted-foreground"
+                )}
+              >
+                {lobby.teamSize}-man{lobby.teamSize === 10 ? " · Beta" : ""}
+              </span>
               {lobby.teamLimit !== null && lobby.entrantCount >= lobby.teamLimit && (
                 <span className="shrink-0 rounded-md bg-amber-500/15 px-1.5 py-0.5 text-[10px] font-bold tracking-wide text-amber-400 uppercase">
                   Full

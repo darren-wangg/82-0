@@ -1,11 +1,16 @@
 /** Lobby loading + lifecycle shared by /api/lobbies/* and the /l/[code] page. */
 
-import { LobbyResponse, Roster, RosterSchema } from "@/lib/contracts";
+import { LobbyResponse, Roster } from "@/lib/contracts";
 import { prisma } from "@/lib/db";
 import { getAnonIdFromCookie } from "@/lib/auth";
 import { getEngine } from "@/lib/engine-provider";
 import { computeStandings } from "@/components/social/standings";
-import { ownerDisplayName, ratingFromRow, teamInclude } from "./teams";
+import {
+  FlexibleRosterSchema,
+  ownerDisplayName,
+  ratingFromRow,
+  teamInclude,
+} from "./teams";
 
 /** Open means entries are still accepted: the creator hasn't ended it. */
 export function lobbyIsOpen(lobby: { closedAt: Date | null }): boolean {
@@ -24,6 +29,8 @@ export interface ActiveLobbySummary {
   entrantCount: number;
   /** Max teams allowed; null = unlimited. */
   teamLimit: number | null;
+  /** Roster size: 8 (normal) or 10 (10-player beta). */
+  teamSize: number;
   createdAt: string;
 }
 
@@ -43,6 +50,7 @@ export async function loadActiveLobbies(): Promise<ActiveLobbySummary[]> {
       code: true,
       name: true,
       teamLimit: true,
+      teamSize: true,
       createdAt: true,
       _count: { select: { entries: true } },
     },
@@ -53,6 +61,7 @@ export async function loadActiveLobbies(): Promise<ActiveLobbySummary[]> {
     name: lobby.name,
     entrantCount: lobby._count.entries,
     teamLimit: lobby.teamLimit,
+    teamSize: lobby.teamSize,
     createdAt: lobby.createdAt.toISOString(),
   }));
 }
@@ -100,7 +109,7 @@ export async function loadLobbyRosters(code: string): Promise<Map<string, Roster
   });
   const rosters = new Map<string, Roster>();
   for (const entry of entries) {
-    const parsed = RosterSchema.safeParse(entry.team.roster);
+    const parsed = FlexibleRosterSchema.safeParse(entry.team.roster);
     if (parsed.success) rosters.set(entry.team.slug, parsed.data);
   }
   return rosters;
@@ -112,12 +121,13 @@ export async function loadLobbyViewer(code: string): Promise<{
   isCreator: boolean;
   entryTeamSlug: string | null;
   teamLimit: number | null;
+  teamSize: number;
 }> {
   const anonId = await getAnonIdFromCookie();
   const [lobby, entry] = await Promise.all([
     prisma.lobby.findUnique({
       where: { code },
-      select: { creatorAnonId: true, teamLimit: true },
+      select: { creatorAnonId: true, teamLimit: true, teamSize: true },
     }),
     anonId
       ? prisma.lobbyEntry.findFirst({
@@ -130,5 +140,6 @@ export async function loadLobbyViewer(code: string): Promise<{
     isCreator: anonId !== null && lobby?.creatorAnonId === anonId,
     entryTeamSlug: entry?.teamSlug ?? null,
     teamLimit: lobby?.teamLimit ?? null,
+    teamSize: lobby?.teamSize ?? 8,
   };
 }

@@ -23,6 +23,10 @@ export const TeamLimitSchema = z
   .nullable()
   .optional();
 
+/** Roster size for the lobby: 8 (normal, default) or 10 (10-player beta).
+ *  Kept out of the frozen contract like the team limit. */
+export const TeamSizeSchema = z.union([z.literal(8), z.literal(10)]).optional();
+
 export async function POST(request: Request) {
   const limited = await rateLimitGate(request, RATE_LIMITS.lobbyCreate);
   if (limited) return limited;
@@ -47,13 +51,19 @@ export async function POST(request: Request) {
   }
   const teamLimit = limitParsed.data ?? null;
 
+  const sizeParsed = TeamSizeSchema.safeParse((body as { teamSize?: unknown }).teamSize);
+  if (!sizeParsed.success) {
+    return jsonError(400, "Team size must be 8 or 10");
+  }
+  const teamSize = sizeParsed.data ?? 8;
+
   try {
     const creatorAnonId = await getOrCreateAnonId();
     for (let attempt = 0; attempt < CODE_ATTEMPTS; attempt++) {
       const code = makeLobbyCode();
       try {
         const lobby = await prisma.lobby.create({
-          data: { code, name: parsed.data.name, teamLimit, creatorAnonId },
+          data: { code, name: parsed.data.name, teamLimit, teamSize, creatorAnonId },
         });
         const response: LobbyResponse = {
           code: lobby.code,

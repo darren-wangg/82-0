@@ -6,9 +6,12 @@
  */
 
 import { ImageResponse } from "next/og";
-import { RosterSchema } from "@/lib/contracts";
 import { getPlayerMap } from "@/lib/snapshot";
-import { RosterError, computeTeamOutputs } from "@/app/api/_lib/teams";
+import {
+  FlexibleRosterSchema,
+  RosterError,
+  computeTeamOutputs,
+} from "@/app/api/_lib/teams";
 import { RATE_LIMITS, rateLimitGate } from "@/app/api/_lib/rate-limit";
 import {
   CARD_HEIGHT,
@@ -23,22 +26,23 @@ export const dynamic = "force-dynamic";
 // Headshot fetches have a 15s internal deadline; give satori room on top.
 export const maxDuration = 30;
 
-const DEFAULT_NAME = "My Ultimate 8";
-
 export async function GET(req: Request) {
   // Every unique roster payload is a fresh satori render — cap per IP.
   const limited = await rateLimitGate(req, RATE_LIMITS.cardRender);
   if (limited) return limited;
 
   const url = new URL(req.url);
-  const teamName = (url.searchParams.get("name") ?? "").trim().slice(0, 40) || DEFAULT_NAME;
 
   let roster;
   try {
-    roster = RosterSchema.parse(JSON.parse(url.searchParams.get("r") ?? ""));
+    roster = FlexibleRosterSchema.parse(JSON.parse(url.searchParams.get("r") ?? ""));
   } catch {
     return new Response("Invalid roster.", { status: 400 });
   }
+
+  const defaultName = roster.bench.length >= 5 ? "My Ultimate 10" : "My Ultimate 8";
+  const teamName =
+    (url.searchParams.get("name") ?? "").trim().slice(0, 40) || defaultName;
 
   let outputs;
   try {

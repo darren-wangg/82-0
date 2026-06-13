@@ -5,6 +5,7 @@
  * recomputed by the engine here, never trusted from the client.
  */
 
+import { z } from "zod";
 import { prisma } from "@/lib/db";
 import type { Prisma } from "@/generated/prisma/client";
 import { getEngine } from "@/lib/engine-provider";
@@ -12,13 +13,29 @@ import { getBaselines, getPlayerMap, getSnapshot } from "@/lib/snapshot";
 import {
   NineCat,
   NINE_CATS,
+  POSITIONS,
   Roster,
-  RosterSchema,
   SavedTeam,
   SeasonResult,
   TeamRating,
 } from "@/lib/contracts";
 import { validateRoster } from "@/components/social/validation";
+
+/**
+ * Roster parser that accepts both the normal 8-man (3 bench) and 10-player
+ * beta (5 bench) shapes. The frozen contract's RosterSchema pins the bench to
+ * 3; this is its persistence-layer counterpart, kept off the frozen contract.
+ * The inferred shape is structurally a `Roster` (bench: string[]).
+ */
+export const FlexibleRosterSchema = z.object({
+  starters: z.record(z.enum(POSITIONS), z.string()),
+  bench: z.array(z.string()).min(3).max(5),
+});
+
+/** Bench length → roster size label stored on the Team/Lobby rows. */
+export function teamSizeOf(roster: Roster): number {
+  return roster.bench.length >= 5 ? 10 : 8;
+}
 
 /** Row shape returned by team queries below (with owner relation). */
 export interface TeamWithOwner {
@@ -58,7 +75,8 @@ export function computeTeamOutputs(roster: Roster): {
 } {
   const snapshot = getSnapshot();
   const players = getPlayerMap(snapshot);
-  const validation = validateRoster(roster, players);
+  // Accept the normal 8-man and the 10-player beta (5 bench) shapes.
+  const validation = validateRoster(roster, players, { benchCounts: [3, 5] });
   if (!validation.ok) throw new RosterError(validation.error);
 
   const engine = getEngine();
@@ -93,7 +111,7 @@ export function toSavedTeam(team: TeamWithOwner): SavedTeam {
   return {
     slug: team.slug,
     teamName: team.teamName,
-    roster: RosterSchema.parse(team.roster),
+    roster: FlexibleRosterSchema.parse(team.roster),
     snapshotVersion: team.snapshotVersion,
     rating,
     season,

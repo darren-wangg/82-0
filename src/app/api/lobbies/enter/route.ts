@@ -53,6 +53,12 @@ export async function POST(request: Request) {
         "Lobby entries must be drafted fresh — start a draft from the lobby page"
       );
     }
+    if (team.teamSize !== lobby.teamSize) {
+      return jsonError(
+        422,
+        `This is a ${lobby.teamSize}-man lobby — draft a ${lobby.teamSize}-man team.`
+      );
+    }
 
     // Team cap: only blocks NEW entrants — a device already in the lobby can
     // still re-submit (idempotent / name refresh below).

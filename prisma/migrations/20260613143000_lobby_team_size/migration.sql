@@ -1,0 +1,5 @@
+-- AlterTable
+ALTER TABLE "Team" ADD COLUMN     "teamSize" INTEGER NOT NULL DEFAULT 8;
+
+-- AlterTable
+ALTER TABLE "Lobby" ADD COLUMN     "teamSize" INTEGER NOT NULL DEFAULT 8;

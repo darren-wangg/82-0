@@ -91,6 +91,15 @@ export function MyTeams({ snapshotVersion }: { snapshotVersion: string }) {
             </span>
             <span className="block truncate text-[11px] text-muted-foreground">
               {formatDate(t.savedAt)}
+              <span
+                className={cn(
+                  "font-semibold",
+                  t.roster.bench.length >= 5 ? "text-violet-300" : undefined
+                )}
+              >
+                {" · "}
+                {t.roster.bench.length >= 5 ? "10-man" : "8-man"}
+              </span>
               {t.snapshotVersion !== snapshotVersion && (
                 <span className="text-amber-400/90"> · older player data</span>
               )}
