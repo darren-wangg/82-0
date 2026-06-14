@@ -8,18 +8,23 @@
  * download.
  *
  * The PNG is prefetched so navigator.share() can run inside the tap's
- * user-activation window (satori takes a few seconds to render the card) —
- * but lazily: a few seconds after mount so the render doesn't compete with
- * the reveal animations, and eagerly on pointerdown/focus as a head start
- * before the click lands.
+ * user-activation window. This matters most for the heavier 10-player card
+ * (5+5 layout, ten headshots): satori takes longer to render it, so if the
+ * blob isn't ready at tap time the in-click fetch overruns the activation
+ * window, navigator.share() is rejected, and the save falls back to a file
+ * download (Files, not Photos). We kick the prefetch off shortly after mount
+ * (the render is server-side, so it doesn't compete with the client's reveal
+ * animations) and again on pointerdown/focus as a head start.
  */
 
 import { useEffect, useRef, useState } from "react";
 import { ImageDown, LoaderCircle } from "lucide-react";
 import { cn } from "@/lib/utils";
 
-/** Delay before the idle prefetch — past the sim screen's reveal sequence. */
-const PREFETCH_DELAY_MS = 3500;
+/** Small settle delay before the prefetch — just past first paint, then we
+ *  give the (server-side) card render as long as possible to be ready before
+ *  the user taps save. */
+const PREFETCH_DELAY_MS = 300;
 
 export function DownloadCardButton({
   cardUrl,

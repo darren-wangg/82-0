@@ -82,14 +82,13 @@ export function PoolList({
   selectedId,
   isDraftable,
   onSelect,
-  showStats,
 }: {
   pool: PlayerStatLine[];
   selectedId: string | null;
   isDraftable: (id: string) => boolean;
   onSelect: (id: string | null) => void;
-  showStats: boolean;
 }) {
+  const { showStats, toggleStats } = useStatsToggle();
   const [sortCat, setSortCat] = useState<NineCat>("pts");
   const [query, setQuery] = useState("");
   const [searchExpanded, setSearchExpanded] = useState(loadSearchExpanded);
@@ -147,18 +146,30 @@ export function PoolList({
           aria-label="Search for a player"
           // text-base (16px) keeps iOS from auto-zooming the page on focus.
           // sr-only when collapsed: stays in the DOM (so expandSearch can focus
-          // it inside the gesture) but visually hidden behind the icon.
+          // it inside the gesture) but visually hidden behind the icon. Expanded,
+          // it flexes to fill the row so the right-hand controls always fit.
           className={cn(
             "h-8 rounded-lg border border-border bg-card px-2.5 text-base text-foreground placeholder:text-muted-foreground/70 focus:outline-none focus-visible:ring-1 focus-visible:ring-ring",
-            searchExpanded ? "w-50" : "sr-only"
+            searchExpanded ? "min-w-0 flex-1" : "sr-only"
           )}
         />
+        <button
+          type="button"
+          aria-pressed={!showStats}
+          onClick={toggleStats}
+          className={cn(
+            "ml-auto h-8 shrink-0 rounded-lg px-2 text-xs font-semibold transition-colors",
+            showStats ? "text-muted-foreground" : "text-primary"
+          )}
+        >
+          {showStats ? "Hide Stats" : "Show Stats"}
+        </button>
         {/* No ranking control when stats are hidden — it's one flat list. */}
         {showStats && (
           <select
             value={sortCat}
             onChange={(e) => setSortCat(e.target.value as NineCat)}
-            className="ml-auto h-8 rounded-lg border border-border bg-card px-2 font-mono text-xs font-bold text-foreground"
+            className="h-8 shrink-0 rounded-lg border border-border bg-card px-2 font-mono text-xs font-bold text-foreground"
             aria-label="Sort players by stat"
           >
             {SORT_OPTIONS.map(({ cat, label }) => (
