@@ -20,11 +20,11 @@ const STEPS: { title: string; body: string }[] = [
   },
   {
     title: "Re-spins",
-    body: `${TEAM_SKIPS_PER_GAME} team re-spin and ${ERA_SKIPS_PER_GAME} era re-spin per game. A re-spin rolls only that axis.`,
+    body: `${TEAM_SKIPS_PER_GAME} Team re-spin and ${ERA_SKIPS_PER_GAME} Era re-spin. A re-spin rolls only that axis.`,
   },
   {
     title: "Pick",
-    body: "Tap a player, then one of their positions. Starters need a PG, SG, SF, PF, C. The bench needs a G, a F, and C.",
+    body: "Tap a player, then one of their positions. Starters need a PG, SG, SF, PF, C. Bench needs a G, a F, and C.",
   },
   {
     title: "Optimize",
