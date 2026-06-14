@@ -7,9 +7,9 @@
  * in the provider (game-provider.tsx).
  *
  * The roster shape, round count, and re-spin budget are not hard-coded: a
- * GameMode supplies them, so the same machine drives both Classic (8 players:
- * five starters PG/SG/SF/PF/C + a guard/forward/center bench, 1+1 skips) and
- * the 10-Player beta (five starters + a PG/SG/SF/PF/C bench, 2+2 skips).
+ * GameMode supplies them, so the same machine drives every size: Classic (8
+ * players: five starters PG/SG/SF/PF/C + a guard/forward/center bench), 5-man
+ * (starters only), and 10-man (five starters + a PG/SG/SF/PF/C bench).
  * Players are placed into a slot AT DRAFT TIME — pick a player from the spun
  * pool, then click an open slot they're eligible for. Spins only ever land on
  * pools containing at least one player who fits an open slot, so the draft can
@@ -71,7 +71,7 @@ const CLASSIC_BENCH: BenchSlotDef[] = [
   { key: "BC", label: "C", accepts: ["C"] },
 ];
 
-/** 10-player beta: a strict positional bench (a second of each position). */
+/** 10-man: a strict positional bench (a second of each position). */
 const TEN_BENCH: BenchSlotDef[] = [
   { key: "bPG", label: "PG", accepts: ["PG"] },
   { key: "bSG", label: "SG", accepts: ["SG"] },
@@ -406,8 +406,8 @@ export function rosterComplete(state: GameState): boolean {
 
 /**
  * Build the contracts Roster. Bench order follows the mode's benchSlots.
- * For the 10-player beta the bench carries five entries; the engine weights
- * each bench player identically regardless of count, so this stays valid
+ * In 10-man the bench carries five entries (and none in 5-man); the engine
+ * weights each bench player identically regardless of count, so this stays valid
  * input for teamRating/projectSeason even though it isn't a frozen-schema
  * (8-man) Roster.
  */

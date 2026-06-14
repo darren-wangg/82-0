@@ -1,5 +1,13 @@
 import type { Decade, NineCat, PlayerStatLine } from "@/lib/contracts";
 
+/** Shared options for the one-decimal stat display, passed to a next-intl
+ *  `format.number(...)` (or `useFormatter`) so the decimal separator follows
+ *  the active locale (e.g. "28.5" en → "28,5" es/de). */
+export const ONE_DECIMAL = {
+  minimumFractionDigits: 1,
+  maximumFractionDigits: 1,
+} as const;
+
 export const CAT_LABELS: Record<NineCat, string> = {
   pts: "PTS",
   reb: "REB",
@@ -51,10 +59,12 @@ export const DECADE_COLORS: Record<Decade, { text: string; chip: string; ring: s
 };
 
 /** Running per-game averages over drafted players (the only stats shown
- *  during the draft — no engine breakdown until the season simulates). */
+ *  during the draft — no engine breakdown until the season simulates).
+ *  Returns raw numbers (or null for an empty roster) so the render site can
+ *  format them locale-aware via next-intl; labels are universal abbreviations. */
 export function teamAverages(
   players: PlayerStatLine[]
-): { label: string; value: string }[] {
+): { label: string; value: number | null }[] {
   const cats = ["pts", "reb", "ast", "stl", "blk", "tov"] as const;
   const labels: Record<(typeof cats)[number], string> = {
     pts: "PPG",
@@ -68,9 +78,7 @@ export function teamAverages(
     label: labels[cat],
     value:
       players.length === 0
-        ? "—"
-        : (
-            players.reduce((sum, p) => sum + p.stats[cat], 0) / players.length
-          ).toFixed(1),
+        ? null
+        : players.reduce((sum, p) => sum + p.stats[cat], 0) / players.length,
   }));
 }

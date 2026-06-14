@@ -1,0 +1,158 @@
+{
+  "home": {
+    "tagline": "팀과 시대를 돌려 뽑고, {size}명을 드래프트해 완벽한 <b>82-0</b> 시즌에 도전하세요.",
+    "startDraft": "드래프트 시작",
+    "nav": {
+      "leaderboard": "순위표",
+      "lobbies": "로비",
+      "myTeams": "내 팀"
+    },
+    "attribution": "통계는 Sumitro Datta의 <link>NBA Stats(1947년~현재)</link> 데이터셋(CC BY-SA 4.0)에서 가져왔습니다. NBA와 무관합니다.",
+    "language": "언어",
+    "teamSize": "팀 인원"
+  },
+  "howToPlay": {
+    "trigger": "게임 방법",
+    "title": "게임 방법",
+    "steps": {
+      "spin": {
+        "title": "돌리기",
+        "body": "무작위 팀과 시대를 뽑습니다. 같은 팀-시대 조합은 두 번 나오지 않습니다."
+      },
+      "reSpins": {
+        "title": "다시 돌리기",
+        "body": "팀 다시 돌리기 {teamSkips}회와 시대 다시 돌리기 {eraSkips}회. 다시 돌리기는 해당 축만 다시 굴립니다."
+      },
+      "pick": {
+        "title": "선택",
+        "body": "선수를 탭한 다음 그 포지션 중 하나를 선택하세요. 주전에는 PG, SG, SF, PF, C가 필요합니다. 벤치에는 G, F, C가 한 명씩 필요합니다."
+      },
+      "optimize": {
+        "title": "최적화",
+        "body": "드래프트 중 언제든지 드래프트한 선수를 가능한 자리 사이에서 재배치할 수 있습니다."
+      },
+      "simulate": {
+        "title": "시뮬레이션",
+        "body": "당신의 팀은 시대에 맞게 보정되어 풀 시즌을 치릅니다. 약점 하나가 승수를 제한할 수 있습니다."
+      }
+    }
+  },
+  "play": {
+    "pick": "선택",
+    "countOf": "{current} / {total}",
+    "newDraftAria": "새 드래프트",
+    "progressAria": "드래프트 진행",
+    "teamRespin": "팀",
+    "eraRespin": "시대",
+    "confirmRetargetLobby": "로비 드래프트를 시작할까요? 현재 드래프트는 폐기됩니다.",
+    "confirmRetargetChallenge": "챌린지 드래프트를 시작할까요? 현재 드래프트는 폐기됩니다.",
+    "confirmNewGame": "이 드래프트를 폐기하고 처음부터 다시 시작할까요?",
+    "lobbyDraft": "로비 드래프트",
+    "leave": "나가기",
+    "confirmLeave": "로비 {code}에서 나갈까요? 이 드래프트는 자유 플레이로 계속됩니다. 나중에 로비에 참여하려면 링크와 새 드래프트가 필요합니다.",
+    "spin": "돌리기",
+    "spinning": "돌리는 중…"
+  },
+  "sim": {
+    "finalRecordAria": "최종 전적 {wins}승 {losses}패",
+    "onFire": "🔥 완전 불붙었다! 🔥",
+    "toastNameRequired": "먼저 팀 이름을 정해 주세요(1~40자).",
+    "toastStaleData": "이 드래프트 이후 선수 데이터가 업데이트되었습니다 — 페이지를 새로고침하고 다시 드래프트하세요.",
+    "toastLobbyEnterFailed": "저장됨! 지금은 로비에 참여할 수 없습니다.",
+    "toastBattleFailed": "저장됨! 지금은 대결을 진행할 수 없습니다 — 팀 페이지에서 다시 시도하세요.",
+    "toastSaveUnavailable": "지금은 저장할 수 없습니다 — 당신의 시즌은 이 기기에 안전하게 저장되어 있습니다.",
+    "toastDeviceSaveFailed": "이 기기에 저장할 수 없습니다 — 저장소를 사용할 수 없습니다.",
+    "confirmReDraft": "팀을 다시 드래프트할까요? 단 한 번뿐인 재드래프트를 사용하고 이 라인업을 폐기합니다.",
+    "downloadCardAria": "팀 카드 이미지 다운로드",
+    "saveToDeviceAria": "이 팀을 이 기기에 저장",
+    "deviceDialogTitle": "이 기기에 저장",
+    "deviceDialogDescription": "팀 이름을 정하세요 — 이 브라우저에만 저장되며, 링크도 없고 아무것도 공유되지 않습니다.",
+    "savedToDevice": "이 기기에 저장되었습니다.",
+    "teamNamePlaceholder": "팀 이름을 입력",
+    "teamNameAria": "팀 이름",
+    "save": "저장",
+    "shareTeamAria": "이 팀 공유",
+    "shareTitleLobby": "팀 제출",
+    "shareTitleChallenge": "라이벌과 대결",
+    "shareTitleDefault": "팀 공유",
+    "shareDescLobby": "이름과 팀 이름을 추가하세요 — 당신의 참가가 로비 {code}에 즉시 표시됩니다.",
+    "shareDescChallenge": "팀 이름을 정하세요 — 공유하면 라이벌과 7전 4선승제로 대결합니다.",
+    "shareDescDefault": "팀 이름을 정해 공유 링크를 받으세요 — 링크를 여는 누구나 당신의 로스터와 전적을 보고, 자신의 팀을 드래프트해 정면 대결할 수 있습니다.",
+    "shareLinkReady": "공유 링크 준비 완료!",
+    "copied": "복사됨",
+    "copy": "복사",
+    "saveYourTeam": "팀 저장",
+    "playerNamePlaceholder": "당신의 이름(순위표에 표시)",
+    "playerNameAria": "당신의 이름",
+    "sharing": "공유 중…",
+    "enterLobby": "로비 참여",
+    "battle": "대결",
+    "share": "공유",
+    "gateCapped": "<b>{cat}</b>이(가) 당신을 {wins}승으로 제한했습니다.",
+    "nineCatProfile": "9개 항목 프로필",
+    "whatCostYou": "패인",
+    "costGatedLost": "<b>{cat}</b> 한계로 <red>{winsLost, plural, other{# 승}}</red>을(를) 잃었습니다. 최대 원인: <b>{culprit}</b> <mono>({z} 대 동시대)</mono>.",
+    "costGatedCaps": "<b>{cat}</b> 한계로 {winCap}승에 묶였습니다. 최대 원인: <b>{culprit}</b> <mono>({z} 대 동시대)</mono>.",
+    "costWeakLink": "가장 약한 고리: <b>{player}</b> ({slot}){bench, select, yes{ <muted>(벤치)</muted>} other{}}{oop, select, yes{ <amber>— 포지션 밖에서 플레이</amber>} other{}}.",
+    "scoutingReport": "스카우팅 리포트",
+    "reDraft": "다시 드래프트 ({left}회 남음)",
+    "submitTeam": "팀 제출",
+    "confirmExitLobby": "로비 {code}에서 나갈까요? 나중에 로비에 참여하려면 링크가 필요하고 다시 드래프트해야 합니다.",
+    "exitLobby": "로비 나가기",
+    "battleRival": "라이벌과 대결",
+    "runItBack": "다시 한 번"
+  },
+  "pool": {
+    "searchPlaceholder": "선수 검색",
+    "hideStats": "스탯 숨기기",
+    "showStats": "스탯 표시",
+    "sortBy": "스탯으로 선수 정렬",
+    "noMatch": "“{query}”에 일치하는 선수가 없습니다"
+  },
+  "roster": {
+    "slotFilled": "{name} ({slot})",
+    "actionSwap": "탭하여 여기서 교체",
+    "actionSelected": "선택됨",
+    "actionMove": "탭하여 이동",
+    "placeAt": "{slot}에 선수 배치",
+    "averagesAria": "팀 경기당 평균"
+  },
+  "lobby": {
+    "namePlaceholder": "단톡방",
+    "nameAria": "로비 이름",
+    "teamSize": "팀 인원",
+    "manCount": "{size}인",
+    "limitTeams": "팀 수 제한",
+    "limitHint": "끄면 = 무제한. 나중에 변경할 수 있습니다.",
+    "limitAria": "팀 수 제한",
+    "maxTeamsAria": "최대 팀 수",
+    "maxTeamsHint": "최대 팀(2~50)",
+    "creating": "생성 중…",
+    "createLobby": "로비 만들기",
+    "limitError": "팀 한도는 2에서 50 사이의 정수여야 합니다.",
+    "createError": "지금은 로비를 만들 수 없습니다 — 잠시 후 다시 시도하세요.",
+    "blurb5": "주전",
+    "blurb8": "클래식",
+    "blurb10": "두꺼운 벤치"
+  },
+  "myTeams": {
+    "empty": "아직 저장된 {size}인 팀이 없습니다 — 시즌을 마치고 저장을 누르세요.",
+    "startDraft": "드래프트 시작 →",
+    "view": "{name} 보기",
+    "delete": "{name} 삭제",
+    "olderData": "이전 선수 데이터"
+  },
+  "cats": {
+    "friendly": {
+      "pts": "득점",
+      "reb": "리바운드",
+      "ast": "플레이메이킹",
+      "stl": "스틸",
+      "blk": "림 보호",
+      "fgPct": "야투 성공률",
+      "ftPct": "자유투 성공률",
+      "tpm": "3점슛",
+      "tov": "턴오버"
+    }
+  }
+}

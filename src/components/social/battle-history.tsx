@@ -5,18 +5,16 @@
  */
 
 import Link from "next/link";
+import { getFormatter } from "next-intl/server";
 import { loadBattleHistory } from "@/app/api/_lib/battles";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
 
-function formatDate(iso: string): string {
-  return new Date(iso).toLocaleDateString("en-US", {
-    month: "short",
-    day: "numeric",
-  });
-}
-
 export async function BattleHistory({ slug }: { slug: string }) {
+  const format = await getFormatter();
+  const formatDate = (iso: string) =>
+    format.dateTime(new Date(iso), { month: "short", day: "numeric" });
+
   let history;
   try {
     history = await loadBattleHistory(slug);

@@ -7,6 +7,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import { useFormatter, useTranslations } from "next-intl";
 import { Trash2 } from "lucide-react";
 import {
   LocalTeam,
@@ -32,14 +33,6 @@ function sizeOf(team: LocalTeam): TeamSize {
       : 8;
 }
 
-function formatDate(iso: string): string {
-  return new Date(iso).toLocaleDateString("en-US", {
-    month: "short",
-    day: "numeric",
-    year: "numeric",
-  });
-}
-
 export function MyTeams({
   snapshotVersion,
   teamSize,
@@ -47,6 +40,14 @@ export function MyTeams({
   snapshotVersion: string;
   teamSize: TeamSize;
 }) {
+  const tr = useTranslations("myTeams");
+  const format = useFormatter();
+  const formatDate = (iso: string) =>
+    format.dateTime(new Date(iso), {
+      month: "short",
+      day: "numeric",
+      year: "numeric",
+    });
   // null until mounted — localStorage is unavailable on the server.
   const [teams, setTeams] = useState<LocalTeam[] | null>(null);
 
@@ -75,12 +76,12 @@ export function MyTeams({
   if (shown.length === 0) {
     return (
       <div className="mt-10 text-center text-sm text-muted-foreground">
-        <p>No saved {teamSize}-man teams yet — finish a season and hit Save.</p>
+        <p>{tr("empty", { size: teamSize })}</p>
         <Link
           href={PLAY_PATH[teamSize]}
           className="mt-2 inline-block font-semibold text-primary"
         >
-          Start a draft →
+          {tr("startDraft")}
         </Link>
       </div>
     );
@@ -99,7 +100,7 @@ export function MyTeams({
         >
           <Link
             href={`/teams/${t.id}`}
-            aria-label={`View ${t.name}`}
+            aria-label={tr("view", { name: t.name })}
             className="absolute inset-0 rounded-xl"
           />
           <span className="min-w-0 flex-1">
@@ -114,7 +115,7 @@ export function MyTeams({
             <span className="block truncate text-[11px] text-muted-foreground">
               {formatDate(t.savedAt)}
               {t.snapshotVersion !== snapshotVersion && (
-                <span className="text-amber-400/90"> · older player data</span>
+                <span className="text-amber-400/90"> · {tr("olderData")}</span>
               )}
             </span>
           </span>
@@ -131,7 +132,7 @@ export function MyTeams({
           </span>
           <button
             type="button"
-            aria-label={`Delete ${t.name}`}
+            aria-label={tr("delete", { name: t.name })}
             onClick={() => {
               removeLocalTeam(t.id);
               setTeams((prev) => prev?.filter((x) => x.id !== t.id) ?? null);

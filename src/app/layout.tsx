@@ -1,5 +1,7 @@
 import type { Metadata } from "next";
 import { Anton, Geist_Mono, Press_Start_2P, Space_Grotesk } from "next/font/google";
+import { NextIntlClientProvider } from "next-intl";
+import { getLocale } from "next-intl/server";
 import { AppMotion } from "@/components/app-motion";
 import "./globals.css";
 import { Analytics } from "@vercel/analytics/next";
@@ -54,18 +56,31 @@ export const metadata: Metadata = {
   },
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  // Cookie-driven locale (no URL prefix); NextIntlClientProvider inherits the
+  // locale + messages from the request config (src/i18n/request.ts).
+  const locale = await getLocale();
   return (
     <html
-      lang="en"
+      lang={locale}
+      // The language switcher flips `lang` (and all strings) client-side via a
+      // cookie + router.refresh(); the initial document was hydrated with the
+      // previous locale. suppressHydrationWarning covers only <html>'s own
+      // attributes (same pattern as next-themes) — real mismatches in the tree
+      // still surface. A fresh request renders the cookie's locale directly.
+      suppressHydrationWarning
       className={`${spaceGrotesk.variable} ${geistMono.variable} ${anton.variable} ${pressStart.variable} h-full antialiased`}
     >
-      <body className="min-h-full flex flex-col">
-        <AppMotion>{children}</AppMotion>
+      {/* Browser extensions (e.g. Grammarly) inject attributes on <body> after
+          SSR; suppress the resulting one-level hydration warning. */}
+      <body className="min-h-full flex flex-col" suppressHydrationWarning>
+        <NextIntlClientProvider>
+          <AppMotion>{children}</AppMotion>
+        </NextIntlClientProvider>
         <Analytics />
         <SpeedInsights />
       </body>

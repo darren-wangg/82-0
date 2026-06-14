@@ -1,0 +1,158 @@
+{
+  "home": {
+    "tagline": "Gira para un equipo y una era, ficha {size} jugadores y persigue la temporada perfecta de <b>82-0</b>.",
+    "startDraft": "Empezar draft",
+    "nav": {
+      "leaderboard": "Clasificación",
+      "lobbies": "Salas",
+      "myTeams": "Mis equipos"
+    },
+    "attribution": "Estadísticas derivadas del conjunto de datos <link>NBA Stats (1947–presente)</link> de Sumitro Datta (CC BY-SA 4.0). No afiliado a la NBA.",
+    "language": "Idioma",
+    "teamSize": "Tamaño del equipo"
+  },
+  "howToPlay": {
+    "trigger": "Cómo jugar",
+    "title": "Cómo jugar",
+    "steps": {
+      "spin": {
+        "title": "Girar",
+        "body": "Gira para un equipo y una era al azar. La misma combinación de equipo y era nunca sale dos veces."
+      },
+      "reSpins": {
+        "title": "Regiros",
+        "body": "{teamSkips} regiro de equipo y {eraSkips} regiro de era. Un regiro solo cambia ese eje."
+      },
+      "pick": {
+        "title": "Elegir",
+        "body": "Toca un jugador y luego una de sus posiciones. Los titulares necesitan un PG, SG, SF, PF y C. El banquillo necesita un G, un F y un C."
+      },
+      "optimize": {
+        "title": "Optimizar",
+        "body": "Puedes reorganizar a los jugadores fichados entre posiciones elegibles en cualquier momento del draft."
+      },
+      "simulate": {
+        "title": "Simular",
+        "body": "Tu equipo se ajusta por era y disputa una temporada completa. Una sola debilidad puede limitar tus victorias."
+      }
+    }
+  },
+  "play": {
+    "pick": "Selección",
+    "countOf": "{current} de {total}",
+    "newDraftAria": "Nuevo draft",
+    "progressAria": "Progreso del draft",
+    "teamRespin": "Equipo",
+    "eraRespin": "Era",
+    "confirmRetargetLobby": "¿Empezar un draft de sala? Tu draft actual se descartará.",
+    "confirmRetargetChallenge": "¿Empezar un draft de reto? Tu draft actual se descartará.",
+    "confirmNewGame": "¿Descartar este draft y empezar de nuevo?",
+    "lobbyDraft": "Draft de sala",
+    "leave": "Salir",
+    "confirmLeave": "¿Salir de la sala {code}? Este draft continúa como juego libre; para entrar en la sala más tarde necesitarás su enlace y un draft nuevo.",
+    "spin": "Girar",
+    "spinning": "GIRANDO…"
+  },
+  "sim": {
+    "finalRecordAria": "Récord final {wins} a {losses}",
+    "onFire": "🔥 ¡ESTÁ EN LLAMAS! 🔥",
+    "toastNameRequired": "Primero ponle un nombre a tu equipo (1–40 caracteres).",
+    "toastStaleData": "Los datos de jugadores se actualizaron desde este draft — recarga la página y vuelve a draftear.",
+    "toastLobbyEnterFailed": "¡Guardado! No se pudo entrar en la sala ahora mismo.",
+    "toastBattleFailed": "¡Guardado! No se pudo disputar la batalla ahora — inténtalo de nuevo desde la página del equipo.",
+    "toastSaveUnavailable": "Guardar no está disponible ahora — tu temporada está a salvo en este dispositivo.",
+    "toastDeviceSaveFailed": "No se pudo guardar en este dispositivo — el almacenamiento no está disponible.",
+    "confirmReDraft": "¿Volver a draftear tu equipo? Esto usa tu único re-draft y descarta esta alineación.",
+    "downloadCardAria": "Descargar la imagen de la tarjeta del equipo",
+    "saveToDeviceAria": "Guardar este equipo en este dispositivo",
+    "deviceDialogTitle": "Guardar en este dispositivo",
+    "deviceDialogDescription": "Ponle un nombre a tu equipo — se guarda solo en este navegador, sin enlace, sin compartir nada.",
+    "savedToDevice": "Guardado en este dispositivo.",
+    "teamNamePlaceholder": "Nombra tu equipo",
+    "teamNameAria": "Nombre del equipo",
+    "save": "Guardar",
+    "shareTeamAria": "Compartir este equipo",
+    "shareTitleLobby": "Envía tu equipo",
+    "shareTitleChallenge": "Reta a tu rival",
+    "shareTitleDefault": "Comparte tu equipo",
+    "shareDescLobby": "Añade tu nombre y un nombre de equipo — tu entrada aparece en la sala {code} al instante.",
+    "shareDescChallenge": "Nombra tu equipo — al compartir se disputa el mejor de 7 contra tu rival.",
+    "shareDescDefault": "Nombra tu equipo para obtener un enlace — cualquiera que lo abra ve tu plantilla y récord, y puede draftear su propio equipo para enfrentarse al tuyo.",
+    "shareLinkReady": "¡Enlace para compartir listo!",
+    "copied": "Copiado",
+    "copy": "Copiar",
+    "saveYourTeam": "Guarda tu equipo",
+    "playerNamePlaceholder": "Tu nombre (visible en la clasificación)",
+    "playerNameAria": "Tu nombre",
+    "sharing": "Compartiendo…",
+    "enterLobby": "Entrar en la sala",
+    "battle": "Batalla",
+    "share": "Compartir",
+    "gateCapped": "<b>{cat}</b> te limitó a {wins} victorias.",
+    "nineCatProfile": "Perfil de 9 categorías",
+    "whatCostYou": "Qué te costó",
+    "costGatedLost": "El límite de <b>{cat}</b> te costó <red>{winsLost, plural, one{# victoria} other{# victorias}}</red>. Mayor culpable: <b>{culprit}</b> <mono>({z} vs era)</mono>.",
+    "costGatedCaps": "El límite de <b>{cat}</b> te limita a {winCap} victorias. Mayor culpable: <b>{culprit}</b> <mono>({z} vs era)</mono>.",
+    "costWeakLink": "Eslabón más débil: <b>{player}</b> en {slot}{bench, select, yes{ <muted>(banquillo)</muted>} other{}}{oop, select, yes{ <amber>— jugando fuera de posición</amber>} other{}}.",
+    "scoutingReport": "Informe de ojeo",
+    "reDraft": "Re-draft ({left} restante)",
+    "submitTeam": "Envía tu equipo",
+    "confirmExitLobby": "¿Salir de la sala {code}? Para entrar más tarde necesitarás su enlace y tendrás que volver a draftear.",
+    "exitLobby": "Salir de la sala",
+    "battleRival": "Reta a tu rival",
+    "runItBack": "Otra vez"
+  },
+  "pool": {
+    "searchPlaceholder": "Buscar un jugador",
+    "hideStats": "Ocultar stats",
+    "showStats": "Mostrar stats",
+    "sortBy": "Ordenar jugadores por estadística",
+    "noMatch": "Ningún jugador coincide con «{query}»"
+  },
+  "roster": {
+    "slotFilled": "{name} en {slot}",
+    "actionSwap": "toca para intercambiar aquí",
+    "actionSelected": "seleccionado",
+    "actionMove": "toca para mover",
+    "placeAt": "Colocar jugador en {slot}",
+    "averagesAria": "Promedios por partido del equipo"
+  },
+  "lobby": {
+    "namePlaceholder": "El grupo de chat",
+    "nameAria": "Nombre de la sala",
+    "teamSize": "Tamaño del equipo",
+    "manCount": "{size} jug.",
+    "limitTeams": "Limitar equipos",
+    "limitHint": "Desactivado = ilimitado. Puedes cambiarlo más tarde.",
+    "limitAria": "Limitar el número de equipos",
+    "maxTeamsAria": "Equipos máximos",
+    "maxTeamsHint": "equipos máx. (2–50)",
+    "creating": "Creando…",
+    "createLobby": "Crear sala",
+    "limitError": "El límite de equipos debe ser un número entero del 2 al 50.",
+    "createError": "No se pudo crear la sala ahora mismo — inténtalo de nuevo en un minuto.",
+    "blurb5": "Titulares",
+    "blurb8": "Clásico",
+    "blurb10": "Banca amplia"
+  },
+  "myTeams": {
+    "empty": "Aún no hay equipos de {size} guardados — termina una temporada y pulsa Guardar.",
+    "startDraft": "Empezar un draft →",
+    "view": "Ver {name}",
+    "delete": "Eliminar {name}",
+    "olderData": "datos de jugadores antiguos"
+  },
+  "cats": {
+    "friendly": {
+      "pts": "Anotación",
+      "reb": "Rebotes",
+      "ast": "Generación de juego",
+      "stl": "Robos",
+      "blk": "Protección del aro",
+      "fgPct": "Tiros de campo",
+      "ftPct": "Tiros libres",
+      "tpm": "Triples",
+      "tov": "Pérdidas"
+    }
+  }
+}

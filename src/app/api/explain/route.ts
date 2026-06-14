@@ -50,10 +50,9 @@ const TEXT_STREAM_HEADERS = {
 /**
  * Route-local schema for an unsaved-draft explanation. The frozen
  * ExplainRequestSchema's "draft" kind pins the bench to the 8-man roster; this
- * accepts the 10-player beta's deeper bench too (3–5). It only feeds the
- * engine + prompt (never persisted as a team), so it stays off the frozen
- * contract. Bench order is the mode's convention; the engine is bench-count
- * agnostic.
+ * accepts every size's bench too (0–5). It only feeds the engine + prompt
+ * (never persisted as a team), so it stays off the frozen contract. Bench
+ * order is the mode's convention; the engine is bench-count agnostic.
  */
 const DraftExplainSchema = z.object({
   kind: z.literal("draft"),
@@ -114,8 +113,8 @@ export async function POST(request: Request) {
     return jsonError(400, "Request body must be JSON");
   }
 
-  // Drafts (incl. the 10-player beta's deeper bench) parse with a route-local
-  // schema; saved teams and matchups use the frozen contract schema.
+  // Drafts (any size's bench, 0–5) parse with a route-local schema; saved
+  // teams and matchups use the frozen contract schema.
   const isDraft = (body as { kind?: unknown } | null)?.kind === "draft";
   let draftReq: z.infer<typeof DraftExplainSchema> | null = null;
   let req: ExplainRequest | null = null;

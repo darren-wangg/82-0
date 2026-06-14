@@ -2,9 +2,11 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { cookies } from "next/headers";
 import { preload } from "react-dom";
+import { getTranslations } from "next-intl/server";
 import { Shirt, Trophy, UsersRound } from "lucide-react";
 import { buttonVariants } from "@/components/ui/button";
 import { HowToPlayDialog } from "@/components/game/how-to-play";
+import { LanguageSwitcher } from "@/components/i18n/language-switcher";
 import { TeamSizeSwitch } from "@/components/team-size-switch";
 import { PLAY_PATH, resolveTeamSize, TEAM_SIZE_COOKIE } from "@/lib/team-size";
 import { cn } from "@/lib/utils";
@@ -18,20 +20,20 @@ export const metadata: Metadata = {
 const NAV_TILES = [
   {
     href: "/leaderboard",
-    label: "Leaderboard",
+    labelKey: "leaderboard",
     icon: Trophy,
     className:
       "border-amber-400/40 bg-amber-400/10 text-amber-300 hover:bg-amber-400/20",
   },
   {
     href: "/l",
-    label: "Lobbies",
+    labelKey: "lobbies",
     icon: UsersRound,
     className: "border-sky-400/40 bg-sky-400/10 text-sky-300 hover:bg-sky-400/20",
   },
   {
     href: "/teams",
-    label: "My Teams",
+    labelKey: "myTeams",
     icon: Shirt,
     className:
       "border-emerald-400/40 bg-emerald-400/10 text-emerald-300 hover:bg-emerald-400/20",
@@ -39,6 +41,7 @@ const NAV_TILES = [
 ] as const;
 
 export default async function Home() {
+  const t = await getTranslations("home");
   // Warm the draft's data (~1.6 MB snapshot + fallback map, both cached
   // immutably) while the user reads the home screen — tapping Start Draft
   // then loads from the browser cache instead of fetching on /play mount.
@@ -68,16 +71,19 @@ export default async function Home() {
             Draft
           </h1>
           <p className="max-w-xs text-base text-balance text-muted-foreground">
-            Spin for a team and an era, draft 8 players, and chase the
-            perfect <span className="font-semibold text-foreground">82-0</span>{" "}
-            season.
+            {t.rich("tagline", {
+              size: teamSize,
+              b: (chunks) => (
+                <span className="font-semibold text-foreground">{chunks}</span>
+              ),
+            })}
           </p>
         </div>
 
-        <div className="flex w-full animate-in flex-col items-center gap-4 pt-2 delay-150 duration-700 fade-in slide-in-from-bottom-4 fill-mode-both">
+        <div className="flex w-full animate-in flex-col items-center gap-5 pt-2 delay-150 duration-700 fade-in slide-in-from-bottom-4 fill-mode-both">
           <div className="flex items-center gap-2">
             <span className="text-md font-semibold tracking-wide text-muted-foreground uppercase">
-              Team size
+              {t("teamSize")}
             </span>
             <TeamSizeSwitch value={teamSize} />
           </div>
@@ -88,10 +94,10 @@ export default async function Home() {
               "h-14 w-full rounded-2xl font-display text-xl tracking-wide shadow-lg shadow-primary/30 transition-transform active:scale-95"
             )}
           >
-            Start Draft
+            {t("startDraft")}
           </Link>
           <div className="grid w-full grid-cols-3 gap-2">
-            {NAV_TILES.map(({ href, label, icon: Icon, className }) => (
+            {NAV_TILES.map(({ href, labelKey, icon: Icon, className }) => (
               <Link
                 key={href}
                 href={href}
@@ -102,26 +108,30 @@ export default async function Home() {
               >
                 <Icon className="size-5" />
                 <span className="px-1 text-[11px] leading-tight font-semibold text-foreground">
-                  {label}
+                  {t(`nav.${labelKey}`)}
                 </span>
               </Link>
             ))}
           </div>
           <HowToPlayDialog />
+
+          <LanguageSwitcher className="mt-1" label={t("language")} />
         </div>
 
         {/* CC BY-SA attribution for the source dataset (required by license). */}
         <p className="mt-auto pt-6 text-center text-[10px] leading-relaxed text-muted-foreground/70">
-          Stats derived from the{" "}
-          <a
-            href="https://github.com/sumitrodatta/bball-reference-datasets"
-            className="underline underline-offset-2"
-            target="_blank"
-            rel="noreferrer"
-          >
-            NBA Stats (1947–present)
-          </a>{" "}
-          dataset by Sumitro Datta (CC BY-SA 4.0). Not affiliated with the NBA.
+          {t.rich("attribution", {
+            link: (chunks) => (
+              <a
+                href="https://github.com/sumitrodatta/bball-reference-datasets"
+                className="underline underline-offset-2"
+                target="_blank"
+                rel="noreferrer"
+              >
+                {chunks}
+              </a>
+            ),
+          })}
         </p>
       </main>
     </div>

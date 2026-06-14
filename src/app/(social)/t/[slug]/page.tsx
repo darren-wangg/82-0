@@ -6,6 +6,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { getFormatter } from "next-intl/server";
 import { Suspense } from "react";
 import { SavedTeam } from "@/lib/contracts";
 import { headshotSources } from "@/lib/headshots";
@@ -61,13 +62,15 @@ export default async function TeamPage({ params }: PageProps<"/t/[slug]">) {
   }
   if (!team) notFound();
 
+  const format = await getFormatter();
+
   return (
     <main className="space-y-5">
       <div className="text-center">
         <h1 className="text-2xl font-black tracking-tight">{team.teamName}</h1>
         <p className="mt-0.5 text-xs text-muted-foreground">
           {team.ownerDisplayName ? `by ${team.ownerDisplayName} · ` : ""}
-          {new Date(team.createdAt).toLocaleDateString("en-US", {
+          {format.dateTime(new Date(team.createdAt), {
             month: "short",
             day: "numeric",
             year: "numeric",

@@ -1,0 +1,158 @@
+{
+  "home": {
+    "tagline": "チームと時代を回して引き当て、{size}人を選んで完璧な <b>82-0</b> シーズンを目指そう。",
+    "startDraft": "ドラフト開始",
+    "nav": {
+      "leaderboard": "ランキング",
+      "lobbies": "ロビー",
+      "myTeams": "マイチーム"
+    },
+    "attribution": "統計は Sumitro Datta による <link>NBA Stats（1947年〜現在）</link> データセット（CC BY-SA 4.0）に基づきます。NBA とは無関係です。",
+    "language": "言語",
+    "teamSize": "チーム人数"
+  },
+  "howToPlay": {
+    "trigger": "遊び方",
+    "title": "遊び方",
+    "steps": {
+      "spin": {
+        "title": "回す",
+        "body": "ランダムなチームと時代を引き当てます。同じチームと時代の組み合わせは二度と出ません。"
+      },
+      "reSpins": {
+        "title": "再抽選",
+        "body": "チームの再抽選 {teamSkips} 回と時代の再抽選 {eraSkips} 回。再抽選はその軸だけを回し直します。"
+      },
+      "pick": {
+        "title": "選ぶ",
+        "body": "選手をタップし、そのポジションの1つを選びます。スターターには PG、SG、SF、PF、C が必要です。ベンチには G、F、C が1人ずつ必要です。"
+      },
+      "optimize": {
+        "title": "最適化",
+        "body": "ドラフト中はいつでも、選んだ選手を適切な枠の間で並べ替えられます。"
+      },
+      "simulate": {
+        "title": "シミュレート",
+        "body": "あなたのチームは時代に合わせて調整され、フルシーズンを戦います。1つの弱点が勝利数を制限することがあります。"
+      }
+    }
+  },
+  "play": {
+    "pick": "選択",
+    "countOf": "{current} / {total}",
+    "newDraftAria": "新しいドラフト",
+    "progressAria": "ドラフトの進捗",
+    "teamRespin": "チーム",
+    "eraRespin": "時代",
+    "confirmRetargetLobby": "ロビードラフトを始めますか？現在のドラフトは破棄されます。",
+    "confirmRetargetChallenge": "チャレンジドラフトを始めますか？現在のドラフトは破棄されます。",
+    "confirmNewGame": "このドラフトを破棄して最初からやり直しますか？",
+    "lobbyDraft": "ロビードラフト",
+    "leave": "退出",
+    "confirmLeave": "ロビー {code} から退出しますか？このドラフトはフリープレイとして続行します。後でロビーに参加するには、そのリンクと新しいドラフトが必要です。",
+    "spin": "回す",
+    "spinning": "回転中…"
+  },
+  "sim": {
+    "finalRecordAria": "最終成績 {wins} 勝 {losses} 敗",
+    "onFire": "🔥 絶好調だ！🔥",
+    "toastNameRequired": "まずチームに名前を付けてください（1〜40文字）。",
+    "toastStaleData": "このドラフト以降、選手データが更新されました——ページを再読み込みして、もう一度ドラフトしてください。",
+    "toastLobbyEnterFailed": "保存しました！今はロビーに参加できませんでした。",
+    "toastBattleFailed": "保存しました！今は対戦を実行できませんでした——チームページからもう一度お試しください。",
+    "toastSaveUnavailable": "現在保存できません——あなたのシーズンはこの端末に安全に保存されています。",
+    "toastDeviceSaveFailed": "この端末に保存できませんでした——ストレージが利用できません。",
+    "confirmReDraft": "チームを再ドラフトしますか？これは唯一の再ドラフトを消費し、この編成を破棄します。",
+    "downloadCardAria": "チームカード画像をダウンロード",
+    "saveToDeviceAria": "このチームをこの端末に保存",
+    "deviceDialogTitle": "この端末に保存",
+    "deviceDialogDescription": "チームに名前を付けてください——このブラウザにのみ保存され、リンクはなく、何も共有されません。",
+    "savedToDevice": "この端末に保存しました。",
+    "teamNamePlaceholder": "チーム名を入力",
+    "teamNameAria": "チーム名",
+    "save": "保存",
+    "shareTeamAria": "このチームを共有",
+    "shareTitleLobby": "チームを提出",
+    "shareTitleChallenge": "ライバルと対戦",
+    "shareTitleDefault": "チームを共有",
+    "shareDescLobby": "あなたの名前とチーム名を追加——あなたのエントリーはロビー {code} にすぐ表示されます。",
+    "shareDescChallenge": "チームに名前を付けてください——共有するとライバルと7戦4勝制で対戦します。",
+    "shareDescDefault": "チームに名前を付けて共有リンクを取得——開いた人は誰でもあなたのロスターと成績を見て、自分のチームをドラフトして対決できます。",
+    "shareLinkReady": "共有リンクが準備できました！",
+    "copied": "コピーしました",
+    "copy": "コピー",
+    "saveYourTeam": "チームを保存",
+    "playerNamePlaceholder": "あなたの名前（順位表に表示）",
+    "playerNameAria": "あなたの名前",
+    "sharing": "共有中…",
+    "enterLobby": "ロビーに参加",
+    "battle": "対戦",
+    "share": "共有",
+    "gateCapped": "<b>{cat}</b> により {wins} 勝に制限されました。",
+    "nineCatProfile": "9項目プロフィール",
+    "whatCostYou": "敗因",
+    "costGatedLost": "<b>{cat}</b> の制限で <red>{winsLost, plural, other{# 勝}}</red> を失いました。最大の要因：<b>{culprit}</b> <mono>（{z} 対 同時代）</mono>。",
+    "costGatedCaps": "<b>{cat}</b> の制限で {winCap} 勝に抑えられています。最大の要因：<b>{culprit}</b> <mono>（{z} 対 同時代）</mono>。",
+    "costWeakLink": "最も弱い部分：<b>{player}</b>（{slot}）{bench, select, yes{ <muted>（ベンチ）</muted>} other{}}{oop, select, yes{ <amber>— ポジション外でプレー</amber>} other{}}。",
+    "scoutingReport": "スカウティングレポート",
+    "reDraft": "再ドラフト（残り {left}）",
+    "submitTeam": "チームを提出",
+    "confirmExitLobby": "ロビー {code} から退出しますか？後でロビーに参加するには、そのリンクと再ドラフトが必要です。",
+    "exitLobby": "ロビーから退出",
+    "battleRival": "ライバルと対戦",
+    "runItBack": "もう一度"
+  },
+  "pool": {
+    "searchPlaceholder": "選手を検索",
+    "hideStats": "スタッツを隠す",
+    "showStats": "スタッツを表示",
+    "sortBy": "スタッツで選手を並べ替え",
+    "noMatch": "「{query}」に一致する選手はいません"
+  },
+  "roster": {
+    "slotFilled": "{name}（{slot}）",
+    "actionSwap": "タップしてここで交換",
+    "actionSelected": "選択中",
+    "actionMove": "タップして移動",
+    "placeAt": "{slot} に選手を配置",
+    "averagesAria": "チームの1試合平均"
+  },
+  "lobby": {
+    "namePlaceholder": "グループチャット",
+    "nameAria": "ロビー名",
+    "teamSize": "チーム人数",
+    "manCount": "{size} 人",
+    "limitTeams": "チーム数を制限",
+    "limitHint": "オフ = 無制限。後で変更できます。",
+    "limitAria": "チーム数を制限",
+    "maxTeamsAria": "最大チーム数",
+    "maxTeamsHint": "最大チーム数（2〜50）",
+    "creating": "作成中…",
+    "createLobby": "ロビーを作成",
+    "limitError": "チームの上限は 2 から 50 までの整数で指定してください。",
+    "createError": "今はロビーを作成できませんでした——1分後にもう一度お試しください。",
+    "blurb5": "スターター",
+    "blurb8": "クラシック",
+    "blurb10": "厚いベンチ"
+  },
+  "myTeams": {
+    "empty": "保存された{size}人のチームはまだありません——シーズンを終えて保存を押してください。",
+    "startDraft": "ドラフトを始める →",
+    "view": "{name} を見る",
+    "delete": "{name} を削除",
+    "olderData": "古い選手データ"
+  },
+  "cats": {
+    "friendly": {
+      "pts": "得点",
+      "reb": "リバウンド",
+      "ast": "ゲームメイク",
+      "stl": "スティール",
+      "blk": "リムプロテクト",
+      "fgPct": "フィールドゴール成功率",
+      "ftPct": "フリースロー成功率",
+      "tpm": "3ポイント",
+      "tov": "ターンオーバー"
+    }
+  }
+}

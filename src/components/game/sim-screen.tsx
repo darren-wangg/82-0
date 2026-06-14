@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
+import { useFormatter, useTranslations } from "next-intl";
 import {
   AnimatePresence,
   animate,
@@ -53,7 +54,7 @@ import { analyzeCost } from "./cost-analysis";
 import { Confetti } from "./confetti";
 import { CLASSIC_MODE, toRoster, type BenchSlotDef } from "./draft-state";
 import { saveLocalTeam } from "./local-teams";
-import { CAT_FRIENDLY, CAT_LABELS } from "./format";
+import { CAT_LABELS, ONE_DECIMAL } from "./format";
 import { freshSeed, useGame } from "./game-provider";
 import { PlayerHeadshot } from "./player-headshot";
 import { usePhaseGuard } from "./use-phase-guard";
@@ -148,6 +149,7 @@ function BallBurst() {
 /** The animated record reveal, isolated so its 60 fps count-up re-renders
  *  only this subtree — not the whole sim screen. */
 function RecordReveal({ season }: { season: SeasonResult }) {
+  const t = useTranslations("sim");
   const reducedMotion = useReducedMotion();
   const perfect = season.wins === SEASON_GAMES;
   // The record counts up like the season is actually being played: a single
@@ -165,8 +167,8 @@ function RecordReveal({ season }: { season: SeasonResult }) {
       setLanded(true);
       return;
     }
-    const t = window.setTimeout(() => setLanded(true), COUNT_UP_SECONDS * 1000);
-    return () => window.clearTimeout(t);
+    const timer = window.setTimeout(() => setLanded(true), COUNT_UP_SECONDS * 1000);
+    return () => window.clearTimeout(timer);
   }, [reducedMotion]);
 
   return (
@@ -196,7 +198,7 @@ function RecordReveal({ season }: { season: SeasonResult }) {
                 ? "bg-gradient-to-r from-yellow-200 via-amber-400 to-red-500"
                 : "bg-gradient-to-r from-amber-300 via-primary to-red-500"
             )}
-            aria-label={`Final record ${season.wins} and ${season.losses}`}
+            aria-label={t("finalRecordAria", { wins: season.wins, losses: season.losses })}
           >
             {wins}-{losses}
           </motion.p>
@@ -216,7 +218,7 @@ function RecordReveal({ season }: { season: SeasonResult }) {
               transition={{ type: "spring", stiffness: 300, damping: 14 }}
               className="font-arcade text-xs text-amber-300"
             >
-              🔥 HE&apos;S ON FIRE! 🔥
+              {t("onFire")}
             </motion.p>
           )
         )}
@@ -309,6 +311,7 @@ function CatBar({
   value: number;
   delay: number;
 }) {
+  const format = useFormatter();
   const clamped = Math.max(-CAT_RANGE, Math.min(CAT_RANGE, value));
   const positive = clamped >= 0;
   const widthPct = (Math.abs(clamped) / CAT_RANGE) * 50;
@@ -337,8 +340,7 @@ function CatBar({
           positive ? "text-emerald-400" : "text-red-400"
         )}
       >
-        {value >= 0 ? "+" : ""}
-        {value.toFixed(1)}
+        {format.number(value, { ...ONE_DECIMAL, signDisplay: "always" })}
       </span>
     </div>
   );
@@ -411,6 +413,9 @@ function SimSkeleton() {
 }
 
 export function SimScreen() {
+  const t = useTranslations("sim");
+  const catT = useTranslations("cats");
+  const format = useFormatter();
   const { state, dispatch, ctx, players } = useGame();
   const allowed = usePhaseGuard(["locked"]);
   const router = useRouter();
@@ -476,21 +481,21 @@ export function SimScreen() {
 
   useEffect(() => {
     if (!toast) return;
-    const t = window.setTimeout(() => setToast(null), 3500);
-    return () => window.clearTimeout(t);
+    const timer = window.setTimeout(() => setToast(null), 3500);
+    return () => window.clearTimeout(timer);
   }, [toast]);
 
   // Buzz when the 82-0 lands (Android; iOS has no vibration API — no-op).
   useEffect(() => {
     if (sim?.season.wins !== SEASON_GAMES) return;
-    const t = window.setTimeout(() => {
+    const timer = window.setTimeout(() => {
       try {
         navigator.vibrate?.([120, 60, 120, 60, 240]);
       } catch {
         // best-effort haptics only
       }
     }, COUNT_UP_SECONDS * 1000);
-    return () => window.clearTimeout(t);
+    return () => window.clearTimeout(timer);
   }, [sim]);
 
   if (!state || !allowed || !sim) return <SimSkeleton />;
@@ -502,7 +507,7 @@ export function SimScreen() {
     if (savingRef.current) return;
     const name = teamName.trim();
     if (name.length === 0 || name.length > 40) {
-      setToast("Give your team a name (1–40 characters) first.");
+      setToast(t("toastNameRequired"));
       return;
     }
     savingRef.current = true;
@@ -521,9 +526,7 @@ export function SimScreen() {
       // Deploy-time skew: the server is on newer player data than this draft.
       if (res.status === 409) {
         setSave({ phase: "error" });
-        setToast(
-          "Player data was updated since this draft — refresh the page and draft again."
-        );
+        setToast(t("toastStaleData"));
         return;
       }
       if (!res.ok) throw new Error(`save failed: ${res.status}`);
@@ -553,9 +556,9 @@ export function SimScreen() {
             return;
           }
           const err = (await l.json().catch(() => null)) as { error?: string } | null;
-          setToast(err?.error ?? "Saved! Couldn't enter the lobby right now.");
+          setToast(err?.error ?? t("toastLobbyEnterFailed"));
         } catch {
-          setToast("Saved! Couldn't enter the lobby right now.");
+          setToast(t("toastLobbyEnterFailed"));
         }
         setSave({ phase: "saved", url: data.url });
         return;
@@ -579,12 +582,12 @@ export function SimScreen() {
         } catch {
           // fall through: team is saved even if the battle couldn't run
         }
-        setToast("Saved! Couldn't run the battle right now — try again from the team page.");
+        setToast(t("toastBattleFailed"));
       }
       setSave({ phase: "saved", url: data.url });
     } catch {
       setSave({ phase: "error" });
-      setToast("Saving is unavailable right now — your season is safe on this device.");
+      setToast(t("toastSaveUnavailable"));
     } finally {
       savingRef.current = false;
     }
@@ -603,7 +606,7 @@ export function SimScreen() {
   const saveToDevice = () => {
     const name = localName.trim();
     if (name.length === 0 || name.length > 40) {
-      setToast("Give your team a name (1–40 characters) first.");
+      setToast(t("toastNameRequired"));
       return;
     }
     const ok = saveLocalTeam({
@@ -614,7 +617,7 @@ export function SimScreen() {
       season,
     });
     if (!ok) {
-      setToast("Couldn't save on this device — storage is unavailable.");
+      setToast(t("toastDeviceSaveFailed"));
       return;
     }
     setLocalSaved(true);
@@ -631,9 +634,7 @@ export function SimScreen() {
     const code = state?.lobbyCode;
     if (!code) return;
     if (
-      !window.confirm(
-        "Re-draft your team? This uses your one re-draft and scraps this lineup."
-      )
+      !window.confirm(t("confirmReDraft"))
     ) {
       return;
     }
@@ -668,7 +669,7 @@ export function SimScreen() {
           cardUrl={cardUrl}
           fileName="ultimate-draft-team-card.png"
           label=""
-          ariaLabel="Download the team card image"
+          ariaLabel={t("downloadCardAria")}
           className={cn(
             buttonVariants({ variant: "outline", size: "icon" }),
             "rounded-full"
@@ -686,7 +687,7 @@ export function SimScreen() {
               <Button
                 variant="outline"
                 size="icon"
-                aria-label="Save this team to this device"
+                aria-label={t("saveToDeviceAria")}
                 className="rounded-full"
               />
             }
@@ -695,24 +696,22 @@ export function SimScreen() {
           </DialogTrigger>
           <DialogContent className="dark border-border bg-background text-foreground">
             <DialogHeader>
-              <DialogTitle>Save to this device</DialogTitle>
+              <DialogTitle>{t("deviceDialogTitle")}</DialogTitle>
               <DialogDescription>
-                Name your team — it&apos;s stored only in this browser, no link,
-                nothing shared.
+                {t("deviceDialogDescription")}
               </DialogDescription>
             </DialogHeader>
             {localSaved ? (
               <p className="flex items-center gap-2 text-sm font-semibold">
-                <Check className="size-4 text-emerald-400" /> Saved to this
-                device.
+                <Check className="size-4 text-emerald-400" /> {t("savedToDevice")}
               </p>
             ) : (
               <div className="flex flex-col gap-3">
                 <Input
                   value={localName}
                   maxLength={40}
-                  placeholder="Name your team"
-                  aria-label="Team name"
+                  placeholder={t("teamNamePlaceholder")}
+                  aria-label={t("teamNameAria")}
                   className="h-11 rounded-xl"
                   onChange={(e) => setLocalName(e.target.value)}
                 />
@@ -721,7 +720,7 @@ export function SimScreen() {
                   disabled={localName.trim().length === 0}
                   onClick={saveToDevice}
                 >
-                  <SaveIcon className="size-4" /> Save
+                  <SaveIcon className="size-4" /> {t("save")}
                 </Button>
               </div>
             )}
@@ -734,7 +733,7 @@ export function SimScreen() {
               <Button
                 variant="outline"
                 size="icon"
-                aria-label="Share this team"
+                aria-label={t("shareTeamAria")}
                 className="rounded-full"
               />
             }
@@ -745,22 +744,22 @@ export function SimScreen() {
             <DialogHeader>
               <DialogTitle>
                 {state.lobbyCode
-                  ? "Submit your team"
+                  ? t("shareTitleLobby")
                   : state.challengeSlug
-                    ? "Battle your rival"
-                    : "Share your team"}
+                    ? t("shareTitleChallenge")
+                    : t("shareTitleDefault")}
               </DialogTitle>
               <DialogDescription>
                 {state.lobbyCode
-                  ? `Add your name and a team name — your entry shows up in lobby ${state.lobbyCode} instantly.`
+                  ? t("shareDescLobby", { code: state.lobbyCode })
                   : state.challengeSlug
-                    ? "Name your team — sharing runs the best-of-7 against your rival."
-                    : "Name your team to get a share link — anyone who opens it sees your squad and record, and can draft their own team to battle yours head-to-head."}
+                    ? t("shareDescChallenge")
+                    : t("shareDescDefault")}
               </DialogDescription>
             </DialogHeader>
             {save.phase === "saved" ? (
               <div className="flex flex-col gap-2">
-                <p className="text-sm font-semibold">Share link ready!</p>
+                <p className="text-sm font-semibold">{t("shareLinkReady")}</p>
                 <div className="flex items-center gap-2">
                   <code className="min-w-0 flex-1 truncate rounded-lg bg-muted px-2.5 py-2 font-mono text-xs">
                     {save.url}
@@ -771,13 +770,13 @@ export function SimScreen() {
                     onClick={() => copyLink(save.url)}
                   >
                     {copied ? <Check className="size-4" /> : <Copy className="size-4" />}
-                    {copied ? "Copied" : "Copy"}
+                    {copied ? t("copied") : t("copy")}
                   </Button>
                 </div>
                 <DownloadCardButton
                   cardUrl={`${save.url}/card`}
                   fileName="ultimate-draft-team-card.png"
-                  label="Save your team"
+                  label={t("saveYourTeam")}
                   className="mx-auto text-xs font-semibold text-primary underline-offset-2 hover:underline"
                 />
               </div>
@@ -787,8 +786,8 @@ export function SimScreen() {
                   <Input
                     value={playerName}
                     maxLength={24}
-                    placeholder="Your name (shown in standings)"
-                    aria-label="Your name"
+                    placeholder={t("playerNamePlaceholder")}
+                    aria-label={t("playerNameAria")}
                     className="h-11 rounded-xl"
                     onChange={(e) => setPlayerName(e.target.value)}
                   />
@@ -796,8 +795,8 @@ export function SimScreen() {
                 <Input
                   value={teamName}
                   maxLength={40}
-                  placeholder="Name your team"
-                  aria-label="Team name"
+                  placeholder={t("teamNamePlaceholder")}
+                  aria-label={t("teamNameAria")}
                   className="h-11 rounded-xl"
                   onChange={(e) => setTeamName(e.target.value)}
                 />
@@ -811,12 +810,12 @@ export function SimScreen() {
                   onClick={saveTeam}
                 >
                   {save.phase === "saving"
-                    ? "Sharing…"
+                    ? t("sharing")
                     : state.lobbyCode
-                      ? "Enter Lobby"
+                      ? t("enterLobby")
                       : state.challengeSlug
-                        ? "Battle"
-                        : "Share"}
+                        ? t("battle")
+                        : t("share")}
                 </Button>
               </div>
             )}
@@ -843,10 +842,11 @@ export function SimScreen() {
         >
           <TriangleAlert className="mt-0.5 size-4 shrink-0 text-destructive" />
           <p>
-            <span className="font-semibold">
-              {CAT_FRIENDLY[season.gatedCategory]}
-            </span>{" "}
-            capped you at {season.winCap} wins.
+            {t.rich("gateCapped", {
+              cat: catT(`friendly.${season.gatedCategory}`),
+              wins: season.winCap,
+              b: (chunks) => <span className="font-semibold">{chunks}</span>,
+            })}
           </p>
         </motion.div>
       )}
@@ -871,7 +871,7 @@ export function SimScreen() {
       {/* 9-cat profile */}
       <Card className="mt-3 gap-2.5 border-border/60 bg-card/80 p-4">
         <p className="flex items-center gap-1 font-arcade text-[9px] text-muted-foreground uppercase">
-          9-cat profile <CatProfileInfo />
+          {t("nineCatProfile")} <CatProfileInfo />
         </p>
         {NINE_CATS.map((cat, i) => (
           <CatBar
@@ -892,42 +892,45 @@ export function SimScreen() {
         >
           <Card className="mt-3 gap-1.5 border-border/60 bg-card/80 p-4">
             <p className="font-arcade text-[9px] text-muted-foreground uppercase">
-              What cost you
+              {t("whatCostYou")}
             </p>
             {cost.kind === "gated" ? (
               <p className="text-sm leading-relaxed">
-                The{" "}
-                <span className="font-semibold">{CAT_FRIENDLY[cost.cat]}</span>{" "}
-                gate{" "}
-                {cost.winsLost > 0 ? (
-                  <>
-                    cost you{" "}
-                    <span className="font-semibold text-red-400">
-                      {cost.winsLost} {cost.winsLost === 1 ? "win" : "wins"}
-                    </span>
-                  </>
-                ) : (
-                  <>caps you at {cost.winCap} wins</>
+                {t.rich(
+                  cost.winsLost > 0 ? "costGatedLost" : "costGatedCaps",
+                  {
+                    cat: catT(`friendly.${cost.cat}`),
+                    winsLost: cost.winsLost,
+                    winCap: cost.winCap,
+                    culprit: cost.culprit.player.name,
+                    z: format.number(cost.culprit.z, ONE_DECIMAL),
+                    b: (chunks) => <span className="font-semibold">{chunks}</span>,
+                    red: (chunks) => (
+                      <span className="font-semibold text-red-400">{chunks}</span>
+                    ),
+                    mono: (chunks) => (
+                      <span className="font-mono text-xs text-muted-foreground">
+                        {chunks}
+                      </span>
+                    ),
+                  }
                 )}
-                . Biggest culprit:{" "}
-                <span className="font-semibold">{cost.culprit.player.name}</span>{" "}
-                <span className="font-mono text-xs text-muted-foreground">
-                  ({cost.culprit.z.toFixed(1)} vs era)
-                </span>
-                .
               </p>
             ) : (
               <p className="text-sm leading-relaxed">
-                Weakest link:{" "}
-                <span className="font-semibold">{cost.player.name}</span> at{" "}
-                {cost.slot}
-                {cost.bench && (
-                  <span className="text-muted-foreground"> (bench)</span>
-                )}
-                {cost.outOfPosition && (
-                  <span className="text-amber-400"> — playing out of position</span>
-                )}
-                .
+                {t.rich("costWeakLink", {
+                  player: cost.player.name,
+                  slot: cost.slot,
+                  bench: cost.bench ? "yes" : "no",
+                  oop: cost.outOfPosition ? "yes" : "no",
+                  b: (chunks) => <span className="font-semibold">{chunks}</span>,
+                  muted: (chunks) => (
+                    <span className="text-muted-foreground">{chunks}</span>
+                  ),
+                  amber: (chunks) => (
+                    <span className="text-amber-400">{chunks}</span>
+                  ),
+                })}
               </p>
             )}
           </Card>
@@ -944,7 +947,7 @@ export function SimScreen() {
       >
         <Card className="mt-3 gap-1.5 border-border/60 bg-card/80 p-4">
           <p className="font-arcade text-[9px] text-muted-foreground uppercase">
-            Scouting report
+            {t("scoutingReport")}
           </p>
           <ExplainStream
             request={{
@@ -967,15 +970,15 @@ export function SimScreen() {
                 className="h-12 w-full rounded-2xl text-sm font-bold"
                 onClick={reDraftForLobby}
               >
-                <RotateCcw className="size-4" /> Re-draft (
-                {MAX_LOBBY_RETRIES - lobbyRetriesUsed} left)
+                <RotateCcw className="size-4" />{" "}
+                {t("reDraft", { left: MAX_LOBBY_RETRIES - lobbyRetriesUsed })}
               </Button>
             )}
             <Button
               className="h-14 w-full rounded-2xl font-display text-xl tracking-wide shadow-lg shadow-primary/30"
               onClick={() => setShareOpen(true)}
             >
-              <Users className="size-5" /> Submit your team
+              <Users className="size-5" /> {t("submitTeam")}
             </Button>
             {/* Escape hatch: a stale lobby draft (lobbyCode persists on the
                 device) shouldn't trap the team — detach and play free. */}
@@ -983,16 +986,12 @@ export function SimScreen() {
               variant="outline"
               className="h-12 w-full rounded-2xl text-sm font-bold"
               onClick={() => {
-                if (
-                  window.confirm(
-                    `Exit lobby ${state.lobbyCode}? To enter the lobby later you'll need its link and have to re-draft.`
-                  )
-                ) {
+                if (window.confirm(t("confirmExitLobby", { code: state.lobbyCode ?? "" }))) {
                   dispatch({ type: "LEAVE_LOBBY" });
                 }
               }}
             >
-              <LogOut className="size-4" /> Exit lobby
+              <LogOut className="size-4" /> {t("exitLobby")}
             </Button>
           </>
         )}
@@ -1001,7 +1000,7 @@ export function SimScreen() {
             className="h-14 w-full rounded-2xl font-display text-xl tracking-wide shadow-lg shadow-primary/30"
             onClick={() => setShareOpen(true)}
           >
-            <Swords className="size-5" /> Battle your rival
+            <Swords className="size-5" /> {t("battleRival")}
           </Button>
         )}
         {/* Lobby drafts are one-shot: this team enters the lobby or nothing
@@ -1012,7 +1011,7 @@ export function SimScreen() {
             className="h-14 w-full rounded-2xl text-lg font-bold"
             onClick={runItBack}
           >
-            Run it back <RotateCcw className="size-5" />
+            {t("runItBack")} <RotateCcw className="size-5" />
           </Button>
         )}
       </div>
