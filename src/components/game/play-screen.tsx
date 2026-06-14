@@ -4,7 +4,7 @@ import { useEffect, useMemo, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { AnimatePresence, motion } from "framer-motion";
-import { RefreshCcw, RotateCcw, Users } from "lucide-react";
+import { RefreshCcw, RotateCcw } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -17,6 +17,7 @@ import {
   pickablePool,
 } from "./draft-state";
 import { ChallengeBanner } from "./challenge-banner";
+import { LobbyBanner } from "./lobby-banner";
 import { DECADE_COLORS } from "./format";
 import { freshSeed, useGame } from "./game-provider";
 import { PoolList } from "./pool-list";
@@ -199,32 +200,14 @@ export function PlayScreen() {
 
       {state.challengeSlug && <ChallengeBanner slug={state.challengeSlug} />}
       {state.lobbyCode && (
-        <motion.div
-          initial={{ opacity: 0, y: -8 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="mt-2 flex items-center gap-2 rounded-lg border border-sky-400/40 bg-sky-400/10 px-2.5 py-1.5 text-xs"
-        >
-          <Users className="size-3.5 shrink-0 text-sky-300" />
-          <span className="min-w-0 flex-1">
-            <span className="block truncate">
-              {t("lobbyDraft")} —{" "}
-              <span className="font-mono font-bold tracking-widest text-sky-300">
-                {state.lobbyCode}
-              </span>
-            </span>
-          </span>
-          <button
-            type="button"
-            className="shrink-0 rounded-md px-2 py-1 text-[11px] font-semibold text-sky-300 underline-offset-2 hover:underline"
-            onClick={() => {
-              if (window.confirm(t("confirmLeave", { code: state.lobbyCode ?? "" }))) {
-                dispatch({ type: "LEAVE_LOBBY" });
-              }
-            }}
-          >
-            {t("leave")}
-          </button>
-        </motion.div>
+        <LobbyBanner
+          code={state.lobbyCode}
+          onLeave={() => {
+            if (window.confirm(t("confirmLeave", { code: state.lobbyCode ?? "" }))) {
+              dispatch({ type: "LEAVE_LOBBY" });
+            }
+          }}
+        />
       )}
 
       {/* slot machine — team and era cards side by side */}
