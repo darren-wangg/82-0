@@ -19,6 +19,7 @@ import { cn } from "@/lib/utils";
 import { CloseLobbyButton } from "@/components/social/close-lobby-button";
 import { CopyCode } from "@/components/social/copy-code";
 import { DownloadCardButton } from "@/components/social/download-card";
+import { LobbyCelebration } from "@/components/social/lobby-celebration";
 import { LobbyCloseNotifier } from "@/components/social/lobby-close-notifier";
 import { LobbyLimitEditor } from "@/components/social/lobby-limit-editor";
 import { LobbyRefresh } from "@/components/social/lobby-refresh";
@@ -100,6 +101,8 @@ export default async function LobbyPage({ params }: PageProps<"/l/[code]">) {
           </span>
         </p>
       </div>
+
+      {!open && lobby.winner && <LobbyCelebration code={lobby.code} />}
 
       {lobby.winner && (
         <Card className="border-amber-500/40 bg-amber-500/10">

@@ -487,6 +487,23 @@ const MEDAL_LABEL = ["1ST", "2ND", "3RD"] as const;
 const PODIUM_HEIGHTS = [240, 170, 130] as const;
 export const LOBBY_MAX_LIST_ROWS = 6;
 
+/** The lobby card fits its content — a 3-team lobby shouldn't carry the dead
+ *  space of a 9-team one. satori can't be measured ahead of time, so the
+ *  budgets below are deliberately a touch generous (footer never clips); any
+ *  slack lands as a small bottom margin, not a mid-card gap. `rosterSize` is
+ *  the slots-per-team (5 / 8 / 10) that set the podium player-name column. */
+export function lobbyCardHeight(teamCount: number, rosterSize: number): number {
+  const rest = Math.max(teamCount - 3, 0);
+  const listed = Math.min(rest, LOBBY_MAX_LIST_ROWS);
+  const overflow = rest - listed;
+  const PADDING = 92; // 52 top + 40 bottom
+  const HEADER = 120; // "FINAL STANDINGS" + lobby name
+  const PODIUM = 34 + 360 + rosterSize * 24; // marginTop + labels/block + names
+  const LIST = (listed > 0 ? 26 : 0) + listed * 80 + (overflow > 0 ? 30 : 0);
+  const FOOTER = 95;
+  return Math.round(PADDING + HEADER + PODIUM + LIST + FOOTER + 30);
+}
+
 function lobbyPlayerNames(
   roster: Roster | undefined,
   playerMap: Map<string, PlayerStatLine>
@@ -521,7 +538,7 @@ function PodiumColumn({
           display: "flex",
           fontFamily: "Press Start 2P",
           fontSize: 13,
-          color: "rgba(255,255,255,0.72)",
+          color: "rgba(255,255,255,0.88)",
           maxWidth: 300,
           whiteSpace: "nowrap",
           overflow: "hidden",
@@ -550,7 +567,7 @@ function PodiumColumn({
           marginTop: 8,
           fontFamily: "Press Start 2P",
           fontSize: 12,
-          color: "rgba(255,255,255,0.55)",
+          color: "rgba(255,255,255,0.75)",
         }}
       >
         {standing.wins}-{standing.losses} H2H
@@ -568,9 +585,9 @@ function PodiumColumn({
             key={i}
             style={{
               display: "flex",
-              fontSize: 17,
+              fontSize: 18,
               lineHeight: 1.35,
-              color: i < 5 ? "rgba(255,255,255,0.85)" : "rgba(255,255,255,0.5)",
+              color: i < 5 ? "rgba(255,255,255,0.95)" : "rgba(255,255,255,0.72)",
               maxWidth: 290,
               whiteSpace: "nowrap",
               overflow: "hidden",
@@ -686,8 +703,9 @@ export function LobbyCard({ lobbyName, standings, rosters, playerMap }: LobbyCar
         ))}
       </div>
 
-      {/* everyone else */}
-      <div style={{ display: "flex", flexDirection: "column", flex: 1, marginTop: 26 }}>
+      {/* everyone else — no greedy flex:1, so the footer sits right under the
+          content instead of being shoved to the bottom of a fixed card. */}
+      <div style={{ display: "flex", flexDirection: "column", marginTop: 26 }}>
         {listed.map((standing, i) => {
           const players = lobbyPlayerNames(rosters.get(standing.teamSlug), playerMap);
           return (
@@ -739,7 +757,7 @@ export function LobbyCard({ lobbyName, standings, rosters, playerMap }: LobbyCar
                   <span
                     style={{
                       marginLeft: 14,
-                      color: "rgba(255,255,255,0.5)",
+                      color: "rgba(255,255,255,0.72)",
                       fontSize: 22,
                     }}
                   >
@@ -750,8 +768,8 @@ export function LobbyCard({ lobbyName, standings, rosters, playerMap }: LobbyCar
                   style={{
                     display: "flex",
                     marginTop: 4,
-                    fontSize: 16,
-                    color: "rgba(255,255,255,0.45)",
+                    fontSize: 17,
+                    color: "rgba(255,255,255,0.72)",
                     maxWidth: 760,
                     whiteSpace: "nowrap",
                     overflow: "hidden",
@@ -764,8 +782,8 @@ export function LobbyCard({ lobbyName, standings, rosters, playerMap }: LobbyCar
                 style={{
                   display: "flex",
                   fontFamily: "Press Start 2P",
-                  fontSize: 13,
-                  color: "rgba(255,255,255,0.6)",
+                  fontSize: 14,
+                  color: "rgba(255,255,255,0.82)",
                 }}
               >
                 {standing.wins}-{standing.losses}

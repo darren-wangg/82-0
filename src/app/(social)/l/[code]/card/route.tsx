@@ -10,10 +10,10 @@ import { getPlayerMap } from "@/lib/snapshot";
 import { loadLobbyResponse, loadLobbyRosters } from "@/app/api/_lib/lobbies";
 import { RATE_LIMITS, rateLimitGate } from "@/app/api/_lib/rate-limit";
 import {
-  CARD_HEIGHT,
   CARD_WIDTH,
   cardFonts,
   LobbyCard,
+  lobbyCardHeight,
 } from "@/components/social/retro-card";
 
 export const dynamic = "force-dynamic";
@@ -53,6 +53,11 @@ export async function GET(
   const playerMap = getPlayerMap();
   const fonts = await cardFonts();
 
+  // Size the card to its content so a small lobby isn't mostly empty space.
+  const topRoster = rosters.get(lobby.standings[0].teamSlug);
+  const rosterSize = topRoster ? 5 + topRoster.bench.length : 8;
+  const height = lobbyCardHeight(lobby.standings.length, rosterSize);
+
   return new ImageResponse(
     (
       <LobbyCard
@@ -64,7 +69,7 @@ export async function GET(
     ),
     {
       width: CARD_WIDTH,
-      height: CARD_HEIGHT,
+      height,
       fonts,
       headers: {
         // Closed lobbies never change; cache the render forever.
