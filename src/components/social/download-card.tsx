@@ -46,22 +46,34 @@ export function DownloadCardButton({
   // Owner-gated cards 403 for visitors — the button removes itself rather
   // than offering a download that can't succeed.
   const [forbidden, setForbidden] = useState(false);
+  // Gate the button on the prefetch: "loading" until the blob is in hand so a
+  // tap always shares a ready file (in-gesture → Photos). "retry" means the
+  // prefetch failed — enable anyway so the click can refetch (it may fall back
+  // to a plain download) rather than locking the button forever.
+  const [phase, setPhase] = useState<"loading" | "ready" | "retry">("loading");
 
   const prefetch = () => {
     if (blobRef.current || fetchingRef.current === cardUrl) return;
     fetchingRef.current = cardUrl;
     fetch(cardUrl)
       .then(async (res) => {
+        if (fetchingRef.current !== cardUrl) return; // superseded by a new card
         if (res.status === 403) {
           setForbidden(true);
           return;
         }
-        if (!res.ok) return;
+        if (!res.ok) {
+          setPhase("retry");
+          return;
+        }
         const blob = await res.blob();
-        if (fetchingRef.current === cardUrl) blobRef.current = blob;
+        if (fetchingRef.current !== cardUrl) return;
+        blobRef.current = blob;
+        setPhase("ready");
       })
       .catch(() => {
-        // prefetch is best-effort; the tap handler refetches
+        // prefetch is best-effort; let the tap refetch.
+        if (fetchingRef.current === cardUrl) setPhase("retry");
       })
       .finally(() => {
         if (fetchingRef.current === cardUrl) fetchingRef.current = null;
@@ -73,6 +85,7 @@ export function DownloadCardButton({
     fetchingRef.current = null;
     // eslint-disable-next-line react-hooks/set-state-in-effect -- reset for the new card URL
     setForbidden(false);
+    setPhase("loading");
     const t = window.setTimeout(prefetch, PREFETCH_DELAY_MS);
     return () => window.clearTimeout(t);
     // eslint-disable-next-line react-hooks/exhaustive-deps -- prefetch is stable per cardUrl
@@ -122,16 +135,26 @@ export function DownloadCardButton({
 
   if (forbidden) return null;
 
+  // Spin (and disable) while the card is still rendering; the click only fires
+  // once we have a ready blob to hand straight to the share sheet.
+  const pending = phase === "loading" || busy;
+
   return (
     <button
       type="button"
       onClick={save}
       onPointerDown={prefetch}
       onFocus={prefetch}
+      disabled={pending}
+      aria-busy={pending}
       aria-label={ariaLabel}
-      className={cn("inline-flex items-center justify-center gap-1.5", className)}
+      className={cn(
+        "inline-flex items-center justify-center gap-1.5",
+        className,
+        pending && "cursor-wait opacity-60"
+      )}
     >
-      {busy ? (
+      {pending ? (
         <LoaderCircle aria-hidden className="size-4 animate-spin" />
       ) : (
         <ImageDown aria-hidden className="size-4" />
