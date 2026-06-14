@@ -12,6 +12,7 @@
 import { EnterLobbyRequestSchema } from "@/lib/contracts";
 import { prisma } from "@/lib/db";
 import { getOrCreateAnonId } from "@/lib/auth";
+import { containsProfanity, PROFANITY_ERROR } from "@/lib/profanity";
 import { isDbUnavailable, jsonError } from "../../_lib/teams";
 import { loadLobbyResponse, lobbyIsOpen } from "../../_lib/lobbies";
 import { RATE_LIMITS, rateLimitGate } from "../../_lib/rate-limit";
@@ -32,6 +33,10 @@ export async function POST(request: Request) {
     return jsonError(400, parsed.error.issues[0]?.message ?? "Invalid request");
   }
   const { code, teamSlug, displayName } = parsed.data;
+
+  if (displayName && containsProfanity(displayName)) {
+    return jsonError(422, PROFANITY_ERROR);
+  }
 
   try {
     const anonIdentityId = await getOrCreateAnonId();

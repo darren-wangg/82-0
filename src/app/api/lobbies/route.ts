@@ -6,6 +6,7 @@ import { CreateLobbyRequestSchema, LobbyResponse } from "@/lib/contracts";
 import { prisma } from "@/lib/db";
 import { getOrCreateAnonId } from "@/lib/auth";
 import { makeLobbyCode } from "@/components/social/hashing";
+import { containsProfanity, PROFANITY_ERROR } from "@/lib/profanity";
 import { isDbUnavailable, jsonError } from "../_lib/teams";
 import { RATE_LIMITS, rateLimitGate } from "../_lib/rate-limit";
 
@@ -41,6 +42,10 @@ export async function POST(request: Request) {
   const parsed = CreateLobbyRequestSchema.safeParse(body);
   if (!parsed.success) {
     return jsonError(400, parsed.error.issues[0]?.message ?? "Invalid request");
+  }
+
+  if (containsProfanity(parsed.data.name)) {
+    return jsonError(422, PROFANITY_ERROR);
   }
 
   const limitParsed = TeamLimitSchema.safeParse(
