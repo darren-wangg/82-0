@@ -14,13 +14,10 @@ import { Card, CardContent } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
 import { Unavailable } from "@/components/social/unavailable";
 
-/** Teams are immutable once saved; runtime ISR keeps challenge links off
- *  Postgres per view (same pattern as /t/[slug]). */
-export const revalidate = 3600;
-
-export function generateStaticParams(): { slug: string }[] {
-  return [];
-}
+/** Rendered per request: the cookie-driven locale (read in the root layout)
+ *  forces dynamic rendering, so this can't be ISR-cached (same as /t/[slug]).
+ *  See docs/scaling.md for the i18n caching tradeoff. */
+export const dynamic = "force-dynamic";
 
 export async function generateMetadata({
   params,

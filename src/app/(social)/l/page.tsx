@@ -16,8 +16,8 @@ import { resolveTeamSize, TEAM_SIZE_COOKIE } from "@/lib/team-size";
 import { cn } from "@/lib/utils";
 
 export const metadata: Metadata = {
-  title: "Group lobbies",
-  description: "Create a group lobby or join an open one and settle who drafts best.",
+  title: "Lobbies",
+  description: "Create a lobby or join an open one and settle who the best GM is.",
 };
 
 // The entrant counts change as people join, so always render fresh.
@@ -38,7 +38,7 @@ export default async function LobbiesPage() {
   return (
     <main className="flex flex-1 flex-col">
       <div className="flex items-start justify-between gap-3">
-        <h1 className="font-display text-3xl tracking-wide">Group lobbies</h1>
+        <h1 className="font-display text-3xl tracking-wide">Lobbies</h1>
         <TeamSizeSwitch value={teamSize} className="mt-1" />
       </div>
       <p className="mt-1 text-sm text-muted-foreground">

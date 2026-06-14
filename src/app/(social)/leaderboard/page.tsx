@@ -42,9 +42,6 @@ export default async function LeaderboardPage({
         <h1 className="font-display text-3xl tracking-wide">Leaderboard</h1>
         <TeamSizeSwitch value={teamSize} className="mt-1" />
       </div>
-      <p className="mt-1 text-sm text-muted-foreground">
-        The winningest {teamSize}-man rosters ever drafted.
-      </p>
 
       <div className="mt-4 grid grid-cols-2 gap-1 rounded-xl bg-muted/60 p-1 text-center text-sm font-semibold">
         {(["global", "weekly"] as const).map((s) => (

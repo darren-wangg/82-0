@@ -16,13 +16,10 @@ import { ExplainStream } from "@/components/social/explain-stream";
 import { ShareButton } from "@/components/social/share-button";
 import { Unavailable } from "@/components/social/unavailable";
 
-/** Matchups are immutable once simulated; runtime ISR keeps share links off
- *  Postgres per view (same pattern as /t/[slug]). */
-export const revalidate = 3600;
-
-export function generateStaticParams(): { id: string }[] {
-  return [];
-}
+/** Rendered per request: the cookie-driven locale (read in the root layout)
+ *  forces dynamic rendering, so this can't be ISR-cached (same as /t/[slug]).
+ *  See docs/scaling.md for the i18n caching tradeoff. */
+export const dynamic = "force-dynamic";
 
 export async function generateMetadata({
   params,

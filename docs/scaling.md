@@ -69,8 +69,10 @@ serverless, and AI spend.
    size, and stops blocking hydration. Optional second step: split pools per
    franchise so `/play` only pulls what the spin needs.
 9. **HTTP caching on hot reads**: `s-maxage=60, stale-while-revalidate` on
-   the leaderboard and lobby GETs; long-lived caching (or ISR) on `/t/[slug]`
-   pages, which are immutable once saved. The OG images already cache.
+   the leaderboard and lobby GETs. `/t/[slug]` and `/m/[id]` are immutable once
+   saved, but cookie-driven i18n (the root layout reads `ud:locale`) forces them
+   to render dynamically, so they currently can't be ISR-cached — re-caching the
+   share pages would mean URL-prefixed locales. The OG images already cache.
 10. **Image budget**: Vercel image optimization is metered; the headshot set
     is finite (~1,600 sources). Either keep optimizer caching (fine at small
     scale) or pre-generate the two sizes used and serve them as static files

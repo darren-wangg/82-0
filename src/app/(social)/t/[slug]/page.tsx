@@ -25,15 +25,12 @@ import { ExplainStream } from "@/components/social/explain-stream";
 import { ShareButton } from "@/components/social/share-button";
 import { Unavailable } from "@/components/social/unavailable";
 
-/** Teams are immutable once saved; ISR caches the rendered page so share
- *  links don't hit Postgres per view. Battle history may lag by up to 60s.
- *  The empty generateStaticParams opts the route into runtime ISR — nothing
- *  is prerendered at build, every slug is cached on first visit. */
-export const revalidate = 60;
-
-export function generateStaticParams(): { slug: string }[] {
-  return [];
-}
+/** Rendered per request: the root layout reads the `ud:locale` cookie to pick
+ *  the language, which opts every route into dynamic rendering — so this share
+ *  page can't be ISR-cached while i18n is cookie-driven (see docs/scaling.md).
+ *  Without it Next attempts static generation and the cookie read throws
+ *  DYNAMIC_SERVER_USAGE. */
+export const dynamic = "force-dynamic";
 
 export async function generateMetadata({
   params,
