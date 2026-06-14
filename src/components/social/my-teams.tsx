@@ -15,11 +15,21 @@ import {
 } from "@/components/game/local-teams";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
+import { PLAY_PATH, type TeamSize } from "@/lib/team-size";
 import { cn } from "@/lib/utils";
 
 /** Positive when `a` has the better record: wins, then losses, then OVR. */
 function compareRecords(a: LocalTeam, b: LocalTeam): number {
   return a.wins - b.wins || b.losses - a.losses || a.ovr - b.ovr;
+}
+
+/** A locally saved team's size, from its bench depth (0 = 5-man, 3 = 8, 5 = 10). */
+function sizeOf(team: LocalTeam): TeamSize {
+  return team.roster.bench.length === 0
+    ? 5
+    : team.roster.bench.length >= 5
+      ? 10
+      : 8;
 }
 
 function formatDate(iso: string): string {
@@ -30,7 +40,13 @@ function formatDate(iso: string): string {
   });
 }
 
-export function MyTeams({ snapshotVersion }: { snapshotVersion: string }) {
+export function MyTeams({
+  snapshotVersion,
+  teamSize,
+}: {
+  snapshotVersion: string;
+  teamSize: TeamSize;
+}) {
   // null until mounted — localStorage is unavailable on the server.
   const [teams, setTeams] = useState<LocalTeam[] | null>(null);
 
@@ -53,22 +69,28 @@ export function MyTeams({ snapshotVersion }: { snapshotVersion: string }) {
     );
   }
 
-  if (teams.length === 0) {
+  // Only the selected size — the switch above filters the list.
+  const shown = teams.filter((t) => sizeOf(t) === teamSize);
+
+  if (shown.length === 0) {
     return (
       <div className="mt-10 text-center text-sm text-muted-foreground">
-        <p>No saved teams yet — finish a season and hit Save.</p>
-        <Link href="/play" className="mt-2 inline-block font-semibold text-primary">
+        <p>No saved {teamSize}-man teams yet — finish a season and hit Save.</p>
+        <Link
+          href={PLAY_PATH[teamSize]}
+          className="mt-2 inline-block font-semibold text-primary"
+        >
           Start a draft →
         </Link>
       </div>
     );
   }
 
-  const bestId = teams.reduce((a, b) => (compareRecords(b, a) > 0 ? b : a)).id;
+  const bestId = shown.reduce((a, b) => (compareRecords(b, a) > 0 ? b : a)).id;
 
   return (
     <ul className="mt-4 space-y-1.5">
-      {teams.map((t) => (
+      {shown.map((t) => (
         // Stretched-link row: the <Link> overlays the card, the delete button
         // sits above it on its own z-layer (no button-inside-anchor).
         <li
@@ -91,15 +113,6 @@ export function MyTeams({ snapshotVersion }: { snapshotVersion: string }) {
             </span>
             <span className="block truncate text-[11px] text-muted-foreground">
               {formatDate(t.savedAt)}
-              <span
-                className={cn(
-                  "font-semibold",
-                  t.roster.bench.length >= 5 ? "text-violet-300" : undefined
-                )}
-              >
-                {" · "}
-                {t.roster.bench.length >= 5 ? "10-man" : "8-man"}
-              </span>
               {t.snapshotVersion !== snapshotVersion && (
                 <span className="text-amber-400/90"> · older player data</span>
               )}

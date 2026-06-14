@@ -5,11 +5,14 @@
 
 import type { Metadata } from "next";
 import Link from "next/link";
+import { cookies } from "next/headers";
 import { LeaderboardEntry } from "@/lib/contracts";
 import { loadLeaderboardEntries } from "@/app/api/_lib/leaderboard";
 import { Badge } from "@/components/ui/badge";
 import { ClaimTeamButton } from "@/components/social/claim-team";
 import { Unavailable } from "@/components/social/unavailable";
+import { TeamSizeSwitch } from "@/components/team-size-switch";
+import { resolveTeamSize, TEAM_SIZE_COOKIE } from "@/lib/team-size";
 import { cn } from "@/lib/utils";
 
 export const metadata: Metadata = {
@@ -22,19 +25,25 @@ export default async function LeaderboardPage({
 }: PageProps<"/leaderboard">) {
   const params = await searchParams;
   const scope = params.scope === "weekly" ? "weekly" : "global";
+  const teamSize = resolveTeamSize(
+    (await cookies()).get(TEAM_SIZE_COOKIE)?.value
+  );
 
   let entries: LeaderboardEntry[];
   try {
-    entries = await loadLeaderboardEntries(scope);
+    entries = await loadLeaderboardEntries(scope, teamSize);
   } catch {
     return <Unavailable what="the leaderboard" />;
   }
 
   return (
     <main className="flex flex-1 flex-col">
-      <h1 className="font-display text-3xl tracking-wide">Leaderboard</h1>
+      <div className="flex items-start justify-between gap-3">
+        <h1 className="font-display text-3xl tracking-wide">Leaderboard</h1>
+        <TeamSizeSwitch value={teamSize} className="mt-1" />
+      </div>
       <p className="mt-1 text-sm text-muted-foreground">
-        The winningest rosters ever drafted.
+        The winningest {teamSize}-man rosters ever drafted.
       </p>
 
       <div className="mt-4 grid grid-cols-2 gap-1 rounded-xl bg-muted/60 p-1 text-center text-sm font-semibold">

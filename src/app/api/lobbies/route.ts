@@ -24,9 +24,11 @@ export const TeamLimitSchema = z
   .nullable()
   .optional();
 
-/** Roster size for the lobby: 8 (normal, default) or 10 (10-player beta).
+/** Roster size for the lobby: 5 (starters only), 8 (normal, default), or 10.
  *  Kept out of the frozen contract like the team limit. */
-export const TeamSizeSchema = z.union([z.literal(8), z.literal(10)]).optional();
+export const TeamSizeSchema = z
+  .union([z.literal(5), z.literal(8), z.literal(10)])
+  .optional();
 
 export async function POST(request: Request) {
   const limited = await rateLimitGate(request, RATE_LIMITS.lobbyCreate);

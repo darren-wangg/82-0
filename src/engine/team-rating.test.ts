@@ -167,3 +167,27 @@ describe("construction model (concave aggregation)", () => {
     expect(gain2).toBeLessThan(gain1);
   });
 });
+
+describe("5-man rosters (starters only, no bench)", () => {
+  const fiveMan: Roster = { starters: BALANCED.starters, bench: [] };
+
+  it("rates a bench-less roster within bounds, finite, and deterministically", () => {
+    const tr = rate(fiveMan);
+    expect(tr.ovr).toBeGreaterThan(0);
+    expect(tr.ovr).toBeLessThanOrEqual(OVR_MAX);
+    expect(tr.offRating).toBeGreaterThanOrEqual(0);
+    expect(tr.offRating).toBeLessThanOrEqual(100);
+    expect(tr.defRating).toBeGreaterThanOrEqual(0);
+    expect(tr.defRating).toBeLessThanOrEqual(100);
+    for (const cat of NINE_CATS) {
+      expect(Number.isFinite(tr.catProfile[cat])).toBe(true);
+    }
+    expect(rate(fiveMan)).toEqual(tr);
+  });
+
+  it("aggregates to the starters alone — differs from the same starters + bench", () => {
+    const fiveProfile = rate(fiveMan).catProfile;
+    const withBench = rate(BALANCED).catProfile;
+    expect(fiveProfile.pts).not.toBe(withBench.pts);
+  });
+});

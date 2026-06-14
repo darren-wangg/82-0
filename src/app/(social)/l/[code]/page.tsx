@@ -12,6 +12,7 @@ import { notFound } from "next/navigation";
 import { Trophy, UserRoundPlus } from "lucide-react";
 import { LobbyResponse } from "@/lib/contracts";
 import { loadLobbyResponse, loadLobbyViewer } from "@/app/api/_lib/lobbies";
+import { PLAY_PATH, resolveTeamSize } from "@/lib/team-size";
 import { buttonVariants } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
@@ -65,8 +66,8 @@ export default async function LobbyPage({ params }: PageProps<"/l/[code]">) {
   const entered = viewer.entryTeamSlug !== null;
   const teamCount = lobby.standings.length;
   const limit = viewer.teamLimit;
-  // 10-man lobbies draft through the 10-player beta flow.
-  const draftPath = viewer.teamSize === 10 ? "/play10" : "/play";
+  // Draft through the flow matching the lobby's size (5 / 8 / 10).
+  const draftPath = PLAY_PATH[resolveTeamSize(String(viewer.teamSize))];
   const full = limit !== null && teamCount >= limit;
   const placementIdx = entered
     ? lobby.standings.findIndex((s) => s.teamSlug === viewer.entryTeamSlug)
@@ -94,15 +95,8 @@ export default async function LobbyPage({ params }: PageProps<"/l/[code]">) {
           )}
         </p>
         <p className="mt-1.5 flex justify-center">
-          <span
-            className={cn(
-              "rounded-md px-2 py-0.5 text-[10px] font-bold tracking-wide uppercase",
-              viewer.teamSize === 10
-                ? "bg-violet-400/15 text-violet-300"
-                : "bg-muted text-muted-foreground"
-            )}
-          >
-            {viewer.teamSize}-man{viewer.teamSize === 10 ? " · Beta" : ""}
+          <span className="rounded-md bg-muted px-2 py-0.5 text-[10px] font-bold tracking-wide text-muted-foreground uppercase">
+            {viewer.teamSize}-man
           </span>
         </p>
       </div>

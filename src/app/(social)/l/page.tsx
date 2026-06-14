@@ -6,10 +6,13 @@
 
 import type { Metadata } from "next";
 import Link from "next/link";
+import { cookies } from "next/headers";
 import { Plus, UsersRound } from "lucide-react";
 import { loadActiveLobbies, type ActiveLobbySummary } from "@/app/api/_lib/lobbies";
 import { buttonVariants } from "@/components/ui/button";
 import { Unavailable } from "@/components/social/unavailable";
+import { TeamSizeSwitch } from "@/components/team-size-switch";
+import { resolveTeamSize, TEAM_SIZE_COOKIE } from "@/lib/team-size";
 import { cn } from "@/lib/utils";
 
 export const metadata: Metadata = {
@@ -21,16 +24,23 @@ export const metadata: Metadata = {
 export const dynamic = "force-dynamic";
 
 export default async function LobbiesPage() {
+  const teamSize = resolveTeamSize(
+    (await cookies()).get(TEAM_SIZE_COOKIE)?.value
+  );
+
   let lobbies: ActiveLobbySummary[];
   try {
-    lobbies = await loadActiveLobbies();
+    lobbies = await loadActiveLobbies(teamSize);
   } catch {
     return <Unavailable what="open lobbies" />;
   }
 
   return (
     <main className="flex flex-1 flex-col">
-      <h1 className="font-display text-3xl tracking-wide">Group lobbies</h1>
+      <div className="flex items-start justify-between gap-3">
+        <h1 className="font-display text-3xl tracking-wide">Group lobbies</h1>
+        <TeamSizeSwitch value={teamSize} className="mt-1" />
+      </div>
       <p className="mt-1 text-sm text-muted-foreground">
         Everyone drafts a team, every matchup runs head-to-head, and a champion is crowned.
       </p>
@@ -52,7 +62,7 @@ export default async function LobbiesPage() {
       {lobbies.length === 0 ? (
         <div className="rounded-xl border border-dashed border-border/70 px-4 py-10 text-center text-sm text-muted-foreground">
           <UsersRound className="mx-auto mb-2 size-6 opacity-60" />
-          <p>No open lobbies right now.</p>
+          <p>No open {teamSize}-man lobbies right now.</p>
           <p className="mt-0.5 text-xs">Start one and share the link.</p>
         </div>
       ) : (
@@ -75,16 +85,8 @@ export default async function LobbiesPage() {
                   {lobby.code}
                 </span>
               </span>
-              <span
-                className={cn(
-                  "shrink-0 rounded-md px-1.5 py-0.5 text-[10px] font-bold tracking-wide uppercase",
-                  lobby.teamSize === 10
-                    ? "bg-violet-400/15 text-violet-300"
-                    : "bg-muted text-muted-foreground"
-                )}
-              >
-                {lobby.teamSize}-man{lobby.teamSize === 10 ? " · Beta" : ""}
-              </span>
+              {/* No per-row size badge: the list is already filtered to the
+                  selected team size by the switch above. */}
               {lobby.teamLimit !== null && lobby.entrantCount >= lobby.teamLimit && (
                 <span className="shrink-0 rounded-md bg-amber-500/15 px-1.5 py-0.5 text-[10px] font-bold tracking-wide text-amber-400 uppercase">
                   Full

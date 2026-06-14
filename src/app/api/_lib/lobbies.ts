@@ -33,15 +33,17 @@ export interface ActiveLobbySummary {
 }
 
 /**
- * Lobbies discoverable on the global list: every lobby that's still open (the
- * creator hasn't ended it), regardless of age. Closed lobbies fall out of this
- * query — their /l/[code] pages stay reachable, they just leave the public
- * board. Newest first, capped at ACTIVE_LOBBY_LIMIT. (We'll revisit the
- * age/volume policy if traffic ever warrants it.)
+ * Lobbies discoverable on the global list: every lobby of the given team size
+ * that's still open (the creator hasn't ended it), regardless of age. Closed
+ * lobbies fall out of this query — their /l/[code] pages stay reachable, they
+ * just leave the public board. Newest first, capped at ACTIVE_LOBBY_LIMIT.
+ * (We'll revisit the age/volume policy if traffic ever warrants it.)
  */
-export async function loadActiveLobbies(): Promise<ActiveLobbySummary[]> {
+export async function loadActiveLobbies(
+  teamSize: number
+): Promise<ActiveLobbySummary[]> {
   const lobbies = await prisma.lobby.findMany({
-    where: { closedAt: null },
+    where: { closedAt: null, teamSize },
     orderBy: { createdAt: "desc" },
     take: ACTIVE_LOBBY_LIMIT,
     select: {
