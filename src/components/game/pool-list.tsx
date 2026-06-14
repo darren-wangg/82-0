@@ -1,7 +1,8 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useMemo, useRef, useState } from "react";
 import { motion } from "framer-motion";
+import { Search } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import type { NineCat, PlayerStatLine } from "@/lib/contracts";
 import { cn } from "@/lib/utils";
@@ -18,6 +19,18 @@ function loadStatsVisible(): boolean {
     return window.sessionStorage.getItem(STATS_TOGGLE_KEY) !== "off";
   } catch {
     return true;
+  }
+}
+
+/** Search starts collapsed to an icon; once the user opens it, it stays open
+ *  for the rest of the tab session (and across spins, which remount the pool). */
+const SEARCH_EXPANDED_KEY = "ud:pool-search-expanded";
+
+function loadSearchExpanded(): boolean {
+  try {
+    return window.sessionStorage.getItem(SEARCH_EXPANDED_KEY) === "on";
+  } catch {
+    return false;
   }
 }
 
@@ -79,6 +92,21 @@ export function PoolList({
 }) {
   const [sortCat, setSortCat] = useState<NineCat>("pts");
   const [query, setQuery] = useState("");
+  const [searchExpanded, setSearchExpanded] = useState(loadSearchExpanded);
+  const searchRef = useRef<HTMLInputElement>(null);
+
+  // Focus synchronously inside the click so iOS opens the keyboard (a focus()
+  // deferred to an effect falls outside the user gesture and is ignored). The
+  // input is always mounted (sr-only when collapsed) so it's focusable here.
+  const expandSearch = () => {
+    setSearchExpanded(true);
+    searchRef.current?.focus();
+    try {
+      window.sessionStorage.setItem(SEARCH_EXPANDED_KEY, "on");
+    } catch {
+      // storage unavailable — still opens for this view
+    }
+  };
 
   const sorted = useMemo(() => {
     // Diacritic-insensitive ("jokic" finds Jokić) prefix-anywhere match.
@@ -99,13 +127,31 @@ export function PoolList({
       className="flex min-h-0 flex-1 flex-col"
     >
       <div className="flex items-center gap-1.5 pb-1.5">
+        {!searchExpanded && (
+          <button
+            type="button"
+            onClick={expandSearch}
+            aria-label="Search for a player"
+            aria-expanded={false}
+            className="flex size-8 shrink-0 items-center justify-center rounded-lg border border-border bg-card text-muted-foreground transition-colors active:scale-[0.97]"
+          >
+            <Search className="size-4" />
+          </button>
+        )}
         <input
+          ref={searchRef}
           type="search"
           value={query}
           onChange={(e) => setQuery(e.target.value)}
           placeholder="Search for a player"
           aria-label="Search for a player"
-          className="h-8 w-50 rounded-lg border border-border bg-card px-2.5 text-xs text-foreground placeholder:text-muted-foreground/70 focus:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+          // text-base (16px) keeps iOS from auto-zooming the page on focus.
+          // sr-only when collapsed: stays in the DOM (so expandSearch can focus
+          // it inside the gesture) but visually hidden behind the icon.
+          className={cn(
+            "h-8 rounded-lg border border-border bg-card px-2.5 text-base text-foreground placeholder:text-muted-foreground/70 focus:outline-none focus-visible:ring-1 focus-visible:ring-ring",
+            searchExpanded ? "w-50" : "sr-only"
+          )}
         />
         {/* No ranking control when stats are hidden — it's one flat list. */}
         {showStats && (
