@@ -552,6 +552,17 @@ export function SimScreen() {
             }),
           });
           if (l.ok) {
+            // The team is now locked into the lobby. Clear this device's draft
+            // so the submitted team can't be reopened from /sim or resurrected
+            // on the next /play — a stored "locked" draft would bounce the user
+            // straight back into this summary (re-draft / submit / leave).
+            // Don't dispatch NEW_GAME here: flipping state to "draft" trips the
+            // phase guard, which would race our push to the lobby.
+            try {
+              window.localStorage.removeItem(mode.storageKey);
+            } catch {
+              // storage unavailable — nothing persisted to clear
+            }
             router.push(`/l/${state.lobbyCode}`);
             return;
           }
