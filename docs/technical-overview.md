@@ -58,18 +58,34 @@ anything random). The pipeline per team:
 2. **`playerScore`** — weighted 9-cat composite (`CAT_WEIGHTS`, sums to 1.0;
    PTS/REB/AST carry ~65%, TPM/TOV are deliberately near-zero) blended 70/30
    with an ORtg/DRtg term.
-3. **`teamRating`** — weighted average of player scores: starters at 1.0
-   (with out-of-position multipliers 1.0 → 0.75 by positional distance along
-   PG–SG–SF–PF–C), bench at 0.4. Maps to `OVR = 47.3 + 37.3 × avg`, clamped
-   to [0, 100]. Also emits 0–100 OFF/DEF sub-ratings and the team's 9-cat
-   z-profile (`catProfile`), which the UI bars and the AI prompts consume.
+3. **`teamRating`** — the **construction model**, not a flat average. Each
+   category is aggregated across the roster with a rank-decay OWA (`dirAgg`):
+   the top contributor drives it, the next counts γ as much, the next γ², and
+   so on. This is deliberately asymmetric to mirror the sport — **offense
+   leans toward the best contributor** (star-driven, sort descending) while
+   **defense and ball-security lean toward the weakest link** (one
+   non-defender gets hunted, sort ascending). Two properties fall out for
+   free: redundancy is taxed (a second elite scorer earns only a fraction of
+   the first's credit) and complementarity + two-way balance are rewarded,
+   with no explicit balance term. The aggregation is monotone, so a better
+   player never lowers the team's value. Starters and bench aggregate as
+   separate blocks and blend (bench discounted at `BENCH_BLOCK_W = 0.45`),
+   which keeps monotonicity across the starter/bench boundary. Out-of-position
+   play rides in as a monotone multiplier (mean starter position factor,
+   1.0 → 0.75 by distance along PG–SG–SF–PF–C). The composite maps to
+   `OVR = 36.3 + 42.4 × posMult × composite`, clamped to [0, 100]. OFF/DEF are
+   0–100 sub-ratings calibrated onto the *same scale as OVR* (per-side base +
+   slope), so a 90+ OVR team no longer reads OFF/DEF in the 60s; the concave
+   9-cat z-profile (`catProfile`) feeds the UI bars and the AI prompts.
 4. **`projectSeason`** — wins = `82 × (OVR / 100)^1.15`, then **category
-   gates**: each cat's team z maps through per-category thresholds to a win
-   cap; the binding gate is the minimum. This is the signature mechanic — one
-   glaring weakness (e.g. an all-center team's FT%) caps the season no matter
-   how strong everything else is. Calibrated so drafted rosters cluster at
-   ~55–70 wins, 70+ takes a top-decile draft, and 82-0 needs deliberate,
-   hole-free construction around transcendent anchors.
+   gates**: each cat's team z (the concave `catProfile` value) maps through
+   per-category thresholds to a win cap; the binding gate is the minimum. This
+   is the signature mechanic — one glaring weakness (e.g. a turnover-prone
+   high-usage stack) caps the season no matter how strong everything else is.
+   Calibrated so drafted rosters cluster around a ~65-win median, 70+ takes a
+   top-decile draft, and a perfect 82-0 (~1 in 286 for a casual top-3 drafter)
+   needs deliberate, hole-free construction around transcendent anchors — not
+   just the biggest pile of box-score stats.
 5. **`simulateMatchup`** — best-of-7. Per-game win probability is a logistic
    blend (65/35) of the OVR gap and the weighted category-edge sum; games are
    drawn with a seeded PRNG so the same pairing + seed always produces the
