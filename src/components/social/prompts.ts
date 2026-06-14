@@ -15,7 +15,7 @@ import {
   TeamRating,
 } from "@/lib/contracts";
 
-export const PROMPT_VERSION = "v9";
+export const PROMPT_VERSION = "v10";
 /** Cheapest tier — explanations are short, structured-input blurbs. */
 export const EXPLAIN_MODEL = "claude-haiku-4-5-20251001";
 
@@ -98,7 +98,11 @@ export function buildTeamPrompt(payload: TeamExplainPayload): string {
     `Projected record: ${season.wins}-${season.losses}`,
     `Ratings: OVR ${rating.ovr.toFixed(1)}, OFF ${rating.offRating.toFixed(1)}, DEF ${rating.defRating.toFixed(1)}`,
     `Starters: ${starters.map((p) => `${p.name} (${p.position}, ${p.era})`).join("; ")}`,
-    `Bench: ${bench.map((p) => `${p.name} (${p.position}, ${p.era})`).join("; ")}`,
+    // 5-man lineups have no bench — don't hand the model an empty "Bench:" line
+    // (or it'll invent bench takes for a team that has none).
+    ...(bench.length > 0
+      ? [`Bench: ${bench.map((p) => `${p.name} (${p.position}, ${p.era})`).join("; ")}`]
+      : []),
     `Category profile (era-adjusted, higher is better): ${cats}`,
   ].join("\n");
 }
