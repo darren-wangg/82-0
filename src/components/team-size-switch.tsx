@@ -10,6 +10,7 @@
 
 import { useTransition } from "react";
 import { useRouter } from "next/navigation";
+import { motion } from "framer-motion";
 import { TEAM_SIZES, TEAM_SIZE_COOKIE, type TeamSize } from "@/lib/team-size";
 import { cn } from "@/lib/utils";
 
@@ -46,23 +47,33 @@ export function TeamSizeSwitch({
         className
       )}
     >
-      {TEAM_SIZES.map((size) => (
-        <button
-          key={size}
-          type="button"
-          aria-pressed={size === value}
-          disabled={pending}
-          onClick={() => select(size)}
-          className={cn(
-            "h-7 min-w-8 rounded-md px-2 text-xs font-bold tabular-nums transition-colors",
-            size === value
-              ? "bg-primary text-primary-foreground shadow"
-              : "text-muted-foreground hover:text-foreground"
-          )}
-        >
-          {size}
-        </button>
-      ))}
+      {TEAM_SIZES.map((size) => {
+        const active = size === value;
+        return (
+          <button
+            key={size}
+            type="button"
+            aria-pressed={active}
+            disabled={pending}
+            onClick={() => select(size)}
+            className={cn(
+              "relative z-10 h-10 min-w-12 rounded-md px-4 text-md font-bold tabular-nums transition-colors duration-200",
+              active
+                ? "text-primary-foreground"
+                : "text-muted-foreground hover:text-foreground"
+            )}
+          >
+            {active && (
+              <motion.span
+                layoutId="team-size-indicator"
+                className="absolute inset-0 rounded-md bg-primary shadow"
+                transition={{ type: "spring", stiffness: 500, damping: 32 }}
+              />
+            )}
+            <span className="relative">{size}</span>
+          </button>
+        );
+      })}
     </div>
   );
 }
