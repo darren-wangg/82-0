@@ -15,6 +15,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import { useFormatter } from "next-intl";
 import { useParams } from "next/navigation";
 import { ArrowLeft } from "lucide-react";
 import type {
@@ -56,6 +57,7 @@ type ViewState =
 
 export function LocalTeamView() {
   const { id } = useParams<{ id: string }>();
+  const format = useFormatter();
   const [state, setState] = useState<ViewState>({ phase: "loading" });
 
   useEffect(() => {
@@ -123,7 +125,7 @@ export function LocalTeamView() {
   }
 
   const { team } = state;
-  const savedOn = new Date(team.savedAt).toLocaleDateString("en-US", {
+  const savedOn = format.dateTime(new Date(team.savedAt), {
     month: "short",
     day: "numeric",
     year: "numeric",

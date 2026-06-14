@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { motion } from "framer-motion";
+import { useFormatter, useTranslations } from "next-intl";
 import { POSITIONS } from "@/lib/contracts";
 import { cn } from "@/lib/utils";
 import {
@@ -10,7 +11,7 @@ import {
   SLOT_LABELS,
   type Slot,
 } from "./draft-state";
-import { teamAverages } from "./format";
+import { ONE_DECIMAL, teamAverages } from "./format";
 import { useGame } from "./game-provider";
 import { PlayerHeadshot } from "./player-headshot";
 
@@ -30,6 +31,7 @@ function SlotCircle({
   /** Circle size class — shrunk so 10 slots still fit a 375px viewport. */
   size?: string;
 }) {
+  const t = useTranslations("roster");
   const { state, players } = useGame();
   const id = state?.slots[slot] ?? null;
   const player = id ? players.get(id) : undefined;
@@ -39,7 +41,13 @@ function SlotCircle({
       {player ? (
         <motion.button
           type="button"
-          aria-label={`${player.name} at ${SLOT_LABELS[slot]}${highlighted ? " — tap to swap here" : moveSource ? " — selected" : " — tap to move"}`}
+          aria-label={`${t("slotFilled", { name: player.name, slot: SLOT_LABELS[slot] })} — ${
+            highlighted
+              ? t("actionSwap")
+              : moveSource
+                ? t("actionSelected")
+                : t("actionMove")
+          }`}
           onClick={() => onTap(slot)}
           initial={{ scale: 0.3, opacity: 0, rotate: -8 }}
           animate={
@@ -67,7 +75,7 @@ function SlotCircle({
       ) : (
         <motion.button
           type="button"
-          aria-label={`Place player at ${SLOT_LABELS[slot]}`}
+          aria-label={t("placeAt", { slot: SLOT_LABELS[slot] })}
           disabled={!highlighted}
           onClick={() => onTap(slot)}
           animate={highlighted ? { scale: [1, 1.12, 1] } : { scale: 1 }}
@@ -111,6 +119,8 @@ function SlotCircle({
  * hidden until the season simulates.
  */
 export function RosterBoard({ className }: { className?: string }) {
+  const t = useTranslations("roster");
+  const format = useFormatter();
   const { state, dispatch, ctx, players } = useGame();
   const [moveFrom, setMoveFrom] = useState<Slot | null>(null);
 
@@ -187,25 +197,28 @@ export function RosterBoard({ className }: { className?: string }) {
       </div>
       <div
         className="flex items-center justify-between rounded-lg bg-muted/60 px-2.5 py-1.5"
-        aria-label="Team per-game averages"
+        aria-label={t("averagesAria")}
       >
-        {avgs.map(({ label, value }) => (
+        {avgs.map(({ label, value }) => {
+          const display = value === null ? "—" : format.number(value, ONE_DECIMAL);
+          return (
           <div key={label} className="flex flex-col items-center">
             {/* keyed by value so every draft pick pops the number */}
             <motion.span
-              key={value}
+              key={display}
               initial={{ scale: 1.4 }}
               animate={{ scale: 1 }}
               transition={{ type: "spring", stiffness: 500, damping: 18 }}
               className="font-mono text-[11px] font-bold tabular-nums"
             >
-              {value}
+              {display}
             </motion.span>
             <span className="text-[8px] font-semibold tracking-wider text-muted-foreground">
               {label}
             </span>
           </div>
-        ))}
+          );
+        })}
       </div>
     </div>
   );

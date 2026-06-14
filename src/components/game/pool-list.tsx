@@ -2,11 +2,12 @@
 
 import { useMemo, useRef, useState } from "react";
 import { motion } from "framer-motion";
+import { useFormatter, useTranslations } from "next-intl";
 import { Search } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import type { NineCat, PlayerStatLine } from "@/lib/contracts";
 import { cn } from "@/lib/utils";
-import { isEstimated, SORT_OPTIONS } from "./format";
+import { ONE_DECIMAL, isEstimated, SORT_OPTIONS } from "./format";
 import { isLegendary } from "./legends";
 import { PlayerHeadshot } from "./player-headshot";
 
@@ -88,6 +89,8 @@ export function PoolList({
   isDraftable: (id: string) => boolean;
   onSelect: (id: string | null) => void;
 }) {
+  const t = useTranslations("pool");
+  const format = useFormatter();
   const { showStats, toggleStats } = useStatsToggle();
   const [sortCat, setSortCat] = useState<NineCat>("pts");
   const [query, setQuery] = useState("");
@@ -130,7 +133,7 @@ export function PoolList({
           <button
             type="button"
             onClick={expandSearch}
-            aria-label="Search for a player"
+            aria-label={t("searchPlaceholder")}
             aria-expanded={false}
             className="flex size-8 shrink-0 items-center justify-center rounded-lg border border-border bg-card text-muted-foreground transition-colors active:scale-[0.97]"
           >
@@ -142,8 +145,8 @@ export function PoolList({
           type="search"
           value={query}
           onChange={(e) => setQuery(e.target.value)}
-          placeholder="Search for a player"
-          aria-label="Search for a player"
+          placeholder={t("searchPlaceholder")}
+          aria-label={t("searchPlaceholder")}
           // text-base (16px) keeps iOS from auto-zooming the page on focus.
           // sr-only when collapsed: stays in the DOM (so expandSearch can focus
           // it inside the gesture) but visually hidden behind the icon. Expanded,
@@ -162,7 +165,7 @@ export function PoolList({
             showStats ? "text-muted-foreground" : "text-primary"
           )}
         >
-          {showStats ? "Hide Stats" : "Show Stats"}
+          {showStats ? t("hideStats") : t("showStats")}
         </button>
         {/* No ranking control when stats are hidden — it's one flat list. */}
         {showStats && (
@@ -170,7 +173,7 @@ export function PoolList({
             value={sortCat}
             onChange={(e) => setSortCat(e.target.value as NineCat)}
             className="h-8 shrink-0 rounded-lg border border-border bg-card px-2 font-mono text-xs font-bold text-foreground"
-            aria-label="Sort players by stat"
+            aria-label={t("sortBy")}
           >
             {SORT_OPTIONS.map(({ cat, label }) => (
               <option key={cat} value={cat}>
@@ -183,7 +186,7 @@ export function PoolList({
 
       {sorted.length === 0 && (
         <p className="py-6 text-center text-xs text-muted-foreground">
-          No players match &ldquo;{query.trim()}&rdquo;
+          {t("noMatch", { query: query.trim() })}
         </p>
       )}
       <ul className="min-h-0 flex-1 space-y-1.5 overflow-y-auto overscroll-contain pb-2">
@@ -249,7 +252,7 @@ export function PoolList({
                             cat === sortCat ? "text-primary" : "text-foreground/90"
                           )}
                         >
-                          {p.stats[cat].toFixed(1)}
+                          {format.number(p.stats[cat], ONE_DECIMAL)}
                           {isEstimated(p, cat) && (
                             <span className="text-muted-foreground">*</span>
                           )}

@@ -1,11 +1,16 @@
+"use client";
+
 /**
  * Per-category edge bars for a matchup: a centered diverging bar per cat.
  * Positive edge extends left toward team A, negative right toward team B.
  */
 
+import { useFormatter } from "next-intl";
 import { CatEdge } from "@/lib/contracts";
 import { CAT_LABELS } from "./prompts";
 import { cn } from "@/lib/utils";
+
+const ONE_DP = { minimumFractionDigits: 1, maximumFractionDigits: 1 } as const;
 
 const EDGE_SCALE = 3;
 
@@ -18,6 +23,7 @@ export function EdgeBars({
   teamAName: string;
   teamBName: string;
 }) {
+  const format = useFormatter();
   return (
     <div className="space-y-2">
       <div className="flex justify-between text-[10px] font-semibold tracking-widest text-muted-foreground uppercase">
@@ -29,9 +35,9 @@ export function EdgeBars({
         return (
           <div key={e.cat} className="space-y-0.5">
             <div className="flex items-center justify-between text-[10px] text-muted-foreground">
-              <span className="font-mono tabular-nums">{e.teamA.toFixed(1)}</span>
+              <span className="font-mono tabular-nums">{format.number(e.teamA, ONE_DP)}</span>
               <span className="capitalize">{CAT_LABELS[e.cat]}</span>
-              <span className="font-mono tabular-nums">{e.teamB.toFixed(1)}</span>
+              <span className="font-mono tabular-nums">{format.number(e.teamB, ONE_DP)}</span>
             </div>
             <div className="relative h-2 overflow-hidden rounded-full bg-muted">
               <div className="absolute inset-y-0 left-1/2 w-px bg-border" />

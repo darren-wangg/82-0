@@ -1,0 +1,160 @@
+{
+  "home": {
+    "tagline": "Spin for a team and an era, draft 8 players, and chase the perfect <b>82-0</b> season.",
+    "startDraft": "Start Draft",
+    "nav": {
+      "leaderboard": "Leaderboard",
+      "lobbies": "Lobbies",
+      "myTeams": "My Teams"
+    },
+    "tenPlayerMode": "10-Player Mode",
+    "beta": "Beta",
+    "attribution": "Stats derived from the <link>NBA Stats (1947–present)</link> dataset by Sumitro Datta (CC BY-SA 4.0). Not affiliated with the NBA.",
+    "language": "Language"
+  },
+  "howToPlay": {
+    "trigger": "How to play",
+    "title": "How to play",
+    "steps": {
+      "spin": {
+        "title": "Spin",
+        "body": "Spin for a random team and era. The same team-era combo never comes up twice."
+      },
+      "reSpins": {
+        "title": "Re-spins",
+        "body": "{teamSkips} Team re-spin and {eraSkips} Era re-spin. A re-spin rolls only that axis."
+      },
+      "pick": {
+        "title": "Pick",
+        "body": "Tap a player, then one of their positions. Starters need a PG, SG, SF, PF, C. Bench needs a G, a F, and C."
+      },
+      "optimize": {
+        "title": "Optimize",
+        "body": "You can rearrange drafted players between eligible slots any time during the draft."
+      },
+      "simulate": {
+        "title": "Simulate",
+        "body": "Your team is era-adjusted and runs a full season. One weakness can cap your wins."
+      }
+    }
+  },
+  "play": {
+    "pick": "Pick",
+    "countOf": "{current} of {total}",
+    "newDraftAria": "New draft",
+    "progressAria": "Draft progress",
+    "teamRespin": "Team",
+    "eraRespin": "Era",
+    "confirmRetargetLobby": "Start a lobby draft? Your current draft will be scrapped.",
+    "confirmRetargetChallenge": "Start a challenge draft? Your current draft will be scrapped.",
+    "confirmNewGame": "Scrap this draft and start over?",
+    "lobbyDraft": "Lobby draft",
+    "leave": "Leave",
+    "confirmLeave": "Leave lobby {code}? This draft continues as free play; to enter the lobby later you'll need its link and a fresh draft.",
+    "spin": "Spin",
+    "spinning": "SPINNING…"
+  },
+  "sim": {
+    "finalRecordAria": "Final record {wins} and {losses}",
+    "onFire": "🔥 HE'S ON FIRE! 🔥",
+    "toastNameRequired": "Give your team a name (1–40 characters) first.",
+    "toastStaleData": "Player data was updated since this draft — refresh the page and draft again.",
+    "toastLobbyEnterFailed": "Saved! Couldn't enter the lobby right now.",
+    "toastBattleFailed": "Saved! Couldn't run the battle right now — try again from the team page.",
+    "toastSaveUnavailable": "Saving is unavailable right now — your season is safe on this device.",
+    "toastDeviceSaveFailed": "Couldn't save on this device — storage is unavailable.",
+    "confirmReDraft": "Re-draft your team? This uses your one re-draft and scraps this lineup.",
+    "downloadCardAria": "Download the team card image",
+    "saveToDeviceAria": "Save this team to this device",
+    "deviceDialogTitle": "Save to this device",
+    "deviceDialogDescription": "Name your team — it's stored only in this browser, no link, nothing shared.",
+    "savedToDevice": "Saved to this device.",
+    "teamNamePlaceholder": "Name your team",
+    "teamNameAria": "Team name",
+    "save": "Save",
+    "shareTeamAria": "Share this team",
+    "shareTitleLobby": "Submit your team",
+    "shareTitleChallenge": "Battle your rival",
+    "shareTitleDefault": "Share your team",
+    "shareDescLobby": "Add your name and a team name — your entry shows up in lobby {code} instantly.",
+    "shareDescChallenge": "Name your team — sharing runs the best-of-7 against your rival.",
+    "shareDescDefault": "Name your team to get a share link — anyone who opens it sees your squad and record, and can draft their own team to battle yours head-to-head.",
+    "shareLinkReady": "Share link ready!",
+    "copied": "Copied",
+    "copy": "Copy",
+    "saveYourTeam": "Save your team",
+    "playerNamePlaceholder": "Your name (shown in standings)",
+    "playerNameAria": "Your name",
+    "sharing": "Sharing…",
+    "enterLobby": "Enter Lobby",
+    "battle": "Battle",
+    "share": "Share",
+    "gateCapped": "<b>{cat}</b> capped you at {wins} wins.",
+    "nineCatProfile": "9-cat profile",
+    "whatCostYou": "What cost you",
+    "costGatedLost": "The <b>{cat}</b> gate cost you <red>{winsLost, plural, one{# win} other{# wins}}</red>. Biggest culprit: <b>{culprit}</b> <mono>({z} vs era)</mono>.",
+    "costGatedCaps": "The <b>{cat}</b> gate caps you at {winCap} wins. Biggest culprit: <b>{culprit}</b> <mono>({z} vs era)</mono>.",
+    "costWeakLink": "Weakest link: <b>{player}</b> at {slot}{bench, select, yes{ <muted>(bench)</muted>} other{}}{oop, select, yes{ <amber>— playing out of position</amber>} other{}}.",
+    "scoutingReport": "Scouting report",
+    "reDraft": "Re-draft ({left} left)",
+    "submitTeam": "Submit your team",
+    "confirmExitLobby": "Exit lobby {code}? To enter the lobby later you'll need its link and have to re-draft.",
+    "exitLobby": "Exit lobby",
+    "battleRival": "Battle your rival",
+    "runItBack": "Run it back"
+  },
+  "pool": {
+    "searchPlaceholder": "Search for a player",
+    "hideStats": "Hide Stats",
+    "showStats": "Show Stats",
+    "sortBy": "Sort players by stat",
+    "noMatch": "No players match “{query}”"
+  },
+  "roster": {
+    "slotFilled": "{name} at {slot}",
+    "actionSwap": "tap to swap here",
+    "actionSelected": "selected",
+    "actionMove": "tap to move",
+    "placeAt": "Place player at {slot}",
+    "averagesAria": "Team per-game averages"
+  },
+  "lobby": {
+    "namePlaceholder": "The Group Chat",
+    "nameAria": "Lobby name",
+    "teamSize": "Team size",
+    "manCount": "{size}-man",
+    "normal": "Normal",
+    "beta": "Beta",
+    "limitTeams": "Limit teams",
+    "limitHint": "Off = unlimited. You can change this later.",
+    "limitAria": "Limit the number of teams",
+    "maxTeamsAria": "Maximum teams",
+    "maxTeamsHint": "teams max (2–50)",
+    "creating": "Creating…",
+    "createLobby": "Create lobby",
+    "limitError": "Team limit must be a whole number from 2 to 50.",
+    "createError": "Couldn't create the lobby right now — try again in a minute."
+  },
+  "myTeams": {
+    "empty": "No saved teams yet — finish a season and hit Save.",
+    "startDraft": "Start a draft →",
+    "view": "View {name}",
+    "delete": "Delete {name}",
+    "tenMan": "10-man",
+    "eightMan": "8-man",
+    "olderData": "older player data"
+  },
+  "cats": {
+    "friendly": {
+      "pts": "Scoring",
+      "reb": "Rebounding",
+      "ast": "Playmaking",
+      "stl": "Steals",
+      "blk": "Rim protection",
+      "fgPct": "Field-goal shooting",
+      "ftPct": "Free-throw shooting",
+      "tpm": "Three-point shooting",
+      "tov": "Turnovers"
+    }
+  }
+}

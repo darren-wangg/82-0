@@ -1,8 +1,11 @@
+"use client";
+
 /**
  * 9-cat profile bars on a ~±3 era-adjusted z-scale, centered at 0.
  * Higher is always better (negative cats are sign-flipped upstream).
  */
 
+import { useFormatter } from "next-intl";
 import { NINE_CATS, NineCat } from "@/lib/contracts";
 import { CAT_LABELS } from "./prompts";
 import { cn } from "@/lib/utils";
@@ -10,6 +13,7 @@ import { cn } from "@/lib/utils";
 const Z_SCALE = 3;
 
 export function CatBars({ profile }: { profile: Record<NineCat, number> }) {
+  const format = useFormatter();
   return (
     <div className="space-y-1.5">
       {NINE_CATS.map((cat) => {
@@ -31,8 +35,11 @@ export function CatBars({ profile }: { profile: Record<NineCat, number> }) {
               />
             </div>
             <span className="w-10 shrink-0 text-right font-mono tabular-nums">
-              {v >= 0 ? "+" : ""}
-              {v.toFixed(1)}
+              {format.number(v, {
+                minimumFractionDigits: 1,
+                maximumFractionDigits: 1,
+                signDisplay: "always",
+              })}
             </span>
           </div>
         );

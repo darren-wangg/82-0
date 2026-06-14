@@ -2,12 +2,14 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { useTranslations } from "next-intl";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import type { LobbyResponse } from "@/lib/contracts";
 import { cn } from "@/lib/utils";
 
 export function CreateLobbyForm() {
+  const t = useTranslations("lobby");
   const router = useRouter();
   const [name, setName] = useState("");
   const [teamSize, setTeamSize] = useState<8 | 10>(8);
@@ -21,7 +23,7 @@ export function CreateLobbyForm() {
     if (!trimmed) return;
     const parsedLimit = capped ? Number(limit) : null;
     if (capped && (!Number.isInteger(parsedLimit) || parsedLimit! < 2 || parsedLimit! > 50)) {
-      setError("Team limit must be a whole number from 2 to 50.");
+      setError(t("limitError"));
       return;
     }
     setPending(true);
@@ -36,7 +38,7 @@ export function CreateLobbyForm() {
       const lobby: LobbyResponse = await res.json();
       router.push(`/l/${lobby.code}`);
     } catch {
-      setError("Couldn't create the lobby right now — try again in a minute.");
+      setError(t("createError"));
       setPending(false);
     }
   };
@@ -52,16 +54,16 @@ export function CreateLobbyForm() {
       <Input
         value={name}
         maxLength={40}
-        placeholder="The Group Chat"
-        aria-label="Lobby name"
+        placeholder={t("namePlaceholder")}
+        aria-label={t("nameAria")}
         className="h-11 rounded-xl"
         onChange={(e) => setName(e.target.value)}
       />
 
       {/* Team size: 8-man normal (default) vs the 10-player beta. */}
       <div className="rounded-xl border border-border/70 px-3 py-2.5">
-        <p className="mb-2 text-sm font-medium">Team size</p>
-        <div className="grid grid-cols-2 gap-2" role="group" aria-label="Team size">
+        <p className="mb-2 text-sm font-medium">{t("teamSize")}</p>
+        <div className="grid grid-cols-2 gap-2" role="group" aria-label={t("teamSize")}>
           {([8, 10] as const).map((size) => {
             const active = teamSize === size;
             return (
@@ -79,9 +81,9 @@ export function CreateLobbyForm() {
                     : "border-border/70 text-muted-foreground hover:bg-muted/50"
                 )}
               >
-                <span className="font-bold">{size}-man</span>
+                <span className="font-bold">{t("manCount", { size })}</span>
                 <span className="text-[11px]">
-                  {size === 8 ? "Normal" : "Beta"}
+                  {size === 8 ? t("normal") : t("beta")}
                 </span>
               </button>
             );
@@ -92,9 +94,9 @@ export function CreateLobbyForm() {
       <div className="rounded-xl border border-border/70 px-3 py-2.5">
         <label className="flex items-center justify-between gap-3 text-sm">
           <span>
-            <span className="font-medium">Limit teams</span>
+            <span className="font-medium">{t("limitTeams")}</span>
             <span className="block text-xs text-muted-foreground">
-              Off = unlimited. You can change this later.
+              {t("limitHint")}
             </span>
           </span>
           <input
@@ -102,7 +104,7 @@ export function CreateLobbyForm() {
             checked={capped}
             onChange={(e) => setCapped(e.target.checked)}
             className="size-4 accent-primary"
-            aria-label="Limit the number of teams"
+            aria-label={t("limitAria")}
           />
         </label>
         {capped && (
@@ -112,11 +114,11 @@ export function CreateLobbyForm() {
               min={2}
               max={50}
               value={limit}
-              aria-label="Maximum teams"
+              aria-label={t("maxTeamsAria")}
               className="h-9 w-20 rounded-lg"
               onChange={(e) => setLimit(e.target.value)}
             />
-            <span className="text-xs text-muted-foreground">teams max (2–50)</span>
+            <span className="text-xs text-muted-foreground">{t("maxTeamsHint")}</span>
           </div>
         )}
       </div>
@@ -126,7 +128,7 @@ export function CreateLobbyForm() {
         className="h-12 w-full rounded-xl text-base font-bold"
         disabled={pending || name.trim().length === 0}
       >
-        {pending ? "Creating…" : "Create lobby"}
+        {pending ? t("creating") : t("createLobby")}
       </Button>
       {error && <p className="text-sm text-destructive">{error}</p>}
     </form>

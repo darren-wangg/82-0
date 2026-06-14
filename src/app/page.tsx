@@ -1,9 +1,11 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { preload } from "react-dom";
+import { getTranslations } from "next-intl/server";
 import { FlaskConical, Shirt, Trophy, UsersRound } from "lucide-react";
 import { buttonVariants } from "@/components/ui/button";
 import { HowToPlayDialog } from "@/components/game/how-to-play";
+import { LanguageSwitcher } from "@/components/i18n/language-switcher";
 import { cn } from "@/lib/utils";
 
 export const metadata: Metadata = {
@@ -15,27 +17,28 @@ export const metadata: Metadata = {
 const NAV_TILES = [
   {
     href: "/leaderboard",
-    label: "Leaderboard",
+    labelKey: "leaderboard",
     icon: Trophy,
     className:
       "border-amber-400/40 bg-amber-400/10 text-amber-300 hover:bg-amber-400/20",
   },
   {
     href: "/l",
-    label: "Lobbies",
+    labelKey: "lobbies",
     icon: UsersRound,
     className: "border-sky-400/40 bg-sky-400/10 text-sky-300 hover:bg-sky-400/20",
   },
   {
     href: "/teams",
-    label: "My Teams",
+    labelKey: "myTeams",
     icon: Shirt,
     className:
       "border-emerald-400/40 bg-emerald-400/10 text-emerald-300 hover:bg-emerald-400/20",
   },
 ] as const;
 
-export default function Home() {
+export default async function Home() {
+  const t = await getTranslations("home");
   // Warm the draft's data (~1.6 MB snapshot + fallback map, both cached
   // immutably) while the user reads the home screen — tapping Start Draft
   // then loads from the browser cache instead of fetching on /play mount.
@@ -61,9 +64,11 @@ export default function Home() {
             Draft
           </h1>
           <p className="max-w-xs text-base text-balance text-muted-foreground">
-            Spin for a team and an era, draft 8 players, and chase the
-            perfect <span className="font-semibold text-foreground">82-0</span>{" "}
-            season.
+            {t.rich("tagline", {
+              b: (chunks) => (
+                <span className="font-semibold text-foreground">{chunks}</span>
+              ),
+            })}
           </p>
         </div>
 
@@ -75,10 +80,10 @@ export default function Home() {
               "h-14 w-full rounded-2xl font-display text-xl tracking-wide shadow-lg shadow-primary/30 transition-transform active:scale-95"
             )}
           >
-            Start Draft
+            {t("startDraft")}
           </Link>
           <div className="grid w-full grid-cols-3 gap-2">
-            {NAV_TILES.map(({ href, label, icon: Icon, className }) => (
+            {NAV_TILES.map(({ href, labelKey, icon: Icon, className }) => (
               <Link
                 key={href}
                 href={href}
@@ -89,7 +94,7 @@ export default function Home() {
               >
                 <Icon className="size-5" />
                 <span className="px-1 text-[11px] leading-tight font-semibold text-foreground">
-                  {label}
+                  {t(`nav.${labelKey}`)}
                 </span>
               </Link>
             ))}
@@ -102,25 +107,29 @@ export default function Home() {
             className="mt-1 inline-flex items-center gap-1.5 rounded-full border border-violet-400/40 bg-violet-400/10 px-3 py-1.5 text-[11px] font-semibold text-violet-300 transition-transform active:scale-95"
           >
             <FlaskConical className="size-3.5" />
-            10-Player Mode
+            {t("tenPlayerMode")}
             <span className="rounded bg-violet-400/20 px-1 py-px text-[9px] tracking-wider uppercase">
-              Beta
+              {t("beta")}
             </span>
           </Link>
+
+          <LanguageSwitcher className="mt-1" label={t("language")} />
         </div>
 
         {/* CC BY-SA attribution for the source dataset (required by license). */}
         <p className="mt-auto pt-6 text-center text-[10px] leading-relaxed text-muted-foreground/70">
-          Stats derived from the{" "}
-          <a
-            href="https://github.com/sumitrodatta/bball-reference-datasets"
-            className="underline underline-offset-2"
-            target="_blank"
-            rel="noreferrer"
-          >
-            NBA Stats (1947–present)
-          </a>{" "}
-          dataset by Sumitro Datta (CC BY-SA 4.0). Not affiliated with the NBA.
+          {t.rich("attribution", {
+            link: (chunks) => (
+              <a
+                href="https://github.com/sumitrodatta/bball-reference-datasets"
+                className="underline underline-offset-2"
+                target="_blank"
+                rel="noreferrer"
+              >
+                {chunks}
+              </a>
+            ),
+          })}
         </p>
       </main>
     </div>

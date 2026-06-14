@@ -1,5 +1,7 @@
 import type { Metadata } from "next";
 import { Anton, Geist_Mono, Press_Start_2P, Space_Grotesk } from "next/font/google";
+import { NextIntlClientProvider } from "next-intl";
+import { getLocale } from "next-intl/server";
 import { AppMotion } from "@/components/app-motion";
 import "./globals.css";
 import { Analytics } from "@vercel/analytics/next";
@@ -54,18 +56,23 @@ export const metadata: Metadata = {
   },
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  // Cookie-driven locale (no URL prefix); NextIntlClientProvider inherits the
+  // locale + messages from the request config (src/i18n/request.ts).
+  const locale = await getLocale();
   return (
     <html
-      lang="en"
+      lang={locale}
       className={`${spaceGrotesk.variable} ${geistMono.variable} ${anton.variable} ${pressStart.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col">
-        <AppMotion>{children}</AppMotion>
+        <NextIntlClientProvider>
+          <AppMotion>{children}</AppMotion>
+        </NextIntlClientProvider>
         <Analytics />
         <SpeedInsights />
       </body>

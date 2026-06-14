@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { useSearchParams } from "next/navigation";
+import { useTranslations } from "next-intl";
 import { AnimatePresence, motion } from "framer-motion";
 import { RefreshCcw, RotateCcw, Users } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -47,6 +48,7 @@ function PlaySkeleton() {
 }
 
 export function PlayScreen() {
+  const t = useTranslations("play");
   const { state, dispatch, ctx, players, franchiseById } = useGame();
   const allowed = usePhaseGuard(["draft"]);
   const rounds = ctx.mode?.draftRounds ?? DRAFT_ROUNDS;
@@ -70,7 +72,7 @@ export function PlayScreen() {
     if (
       statePicks > 0 &&
       !window.confirm(
-        `Start a ${wantsLobby ? "lobby" : "challenge"} draft? Your current draft will be scrapped.`
+        wantsLobby ? t("confirmRetargetLobby") : t("confirmRetargetChallenge")
       )
     ) {
       return;
@@ -81,7 +83,7 @@ export function PlayScreen() {
       challengeSlug: wantsChallenge ? challengeParam : null,
       lobbyCode: wantsLobby ? lobbyParam : null,
     });
-  }, [stateReady, challengeParam, stateChallenge, lobbyParam, stateLobby, statePicks, dispatch]);
+  }, [stateReady, challengeParam, stateChallenge, lobbyParam, stateLobby, statePicks, dispatch, t]);
 
   // Nonce of the last spin whose reel animation has finished. Every (re)spin —
   // including a restored pending spin on mount — counts as a reel roll: the
@@ -125,7 +127,7 @@ export function PlayScreen() {
   const newGame = () => {
     if (
       state.picks.length > 0 &&
-      !window.confirm("Scrap this draft and start over?")
+      !window.confirm(t("confirmNewGame"))
     ) {
       return;
     }
@@ -139,7 +141,7 @@ export function PlayScreen() {
         <div className="min-w-0">
           <div className="flex items-center gap-1">
             <p className="text-sm font-semibold">
-              Pick{" "}
+              {t("pick")}{" "}
               {/* keyed by round so each pick pops the counter */}
               <motion.span
                 key={state.picks.length}
@@ -148,7 +150,10 @@ export function PlayScreen() {
                 transition={{ type: "spring", stiffness: 400, damping: 16 }}
                 className="inline-block font-mono tabular-nums"
               >
-                {Math.min(state.picks.length + 1, rounds)} of {rounds}
+                {t("countOf", {
+                  current: Math.min(state.picks.length + 1, rounds),
+                  total: rounds,
+                })}
               </motion.span>
             </p>
             {/* Lobby drafts are one-shot — no restarting into a fresh pool. */}
@@ -156,7 +161,7 @@ export function PlayScreen() {
               <Button
                 variant="ghost"
                 size="icon-sm"
-                aria-label="New draft"
+                aria-label={t("newDraftAria")}
                 className="text-muted-foreground"
                 onClick={newGame}
               >
@@ -167,7 +172,7 @@ export function PlayScreen() {
           <Progress
             value={(state.picks.length / rounds) * 100}
             className="mt-1 w-28"
-            aria-label="Draft progress"
+            aria-label={t("progressAria")}
           />
         </div>
         <div className="flex shrink-0 items-center gap-1.5">
@@ -178,7 +183,7 @@ export function PlayScreen() {
             disabled={!skipTeamOk}
             onClick={() => dispatch({ type: "SKIP_TEAM" })}
           >
-            Team <RefreshCcw className="size-3.5" />
+            {t("teamRespin")} <RefreshCcw className="size-3.5" />
           </Button>
           <Button
             variant="outline"
@@ -187,7 +192,7 @@ export function PlayScreen() {
             disabled={!skipEraOk}
             onClick={() => dispatch({ type: "SKIP_ERA" })}
           >
-            Era <RefreshCcw className="size-3.5" />
+            {t("eraRespin")} <RefreshCcw className="size-3.5" />
           </Button>
         </div>
       </div>
@@ -202,7 +207,7 @@ export function PlayScreen() {
           <Users className="size-3.5 shrink-0 text-sky-300" />
           <span className="min-w-0 flex-1">
             <span className="block truncate">
-              Lobby draft —{" "}
+              {t("lobbyDraft")} —{" "}
               <span className="font-mono font-bold tracking-widest text-sky-300">
                 {state.lobbyCode}
               </span>
@@ -212,16 +217,12 @@ export function PlayScreen() {
             type="button"
             className="shrink-0 rounded-md px-2 py-1 text-[11px] font-semibold text-sky-300 underline-offset-2 hover:underline"
             onClick={() => {
-              if (
-                window.confirm(
-                  `Leave lobby ${state.lobbyCode}? This draft continues as free play; to enter the lobby later you'll need its link and a fresh draft.`
-                )
-              ) {
+              if (window.confirm(t("confirmLeave", { code: state.lobbyCode ?? "" }))) {
                 dispatch({ type: "LEAVE_LOBBY" });
               }
             }}
           >
-            Leave
+            {t("leave")}
           </button>
         </motion.div>
       )}
@@ -276,7 +277,7 @@ export function PlayScreen() {
                   className="h-16 w-full rounded-2xl bg-gradient-to-r from-primary via-orange-400 to-primary bg-[length:200%_100%] bg-left font-display text-2xl tracking-wide shadow-xl shadow-primary/30 transition-[transform,background-position] duration-500 hover:bg-right active:scale-95"
                   onClick={() => dispatch({ type: "SPIN" })}
                 >
-                  Spin
+                  {t("spin")}
                 </Button>
               </motion.div>
             </motion.div>
@@ -288,7 +289,7 @@ export function PlayScreen() {
               exit={{ opacity: 0 }}
               className="flex flex-1 items-center justify-center gap-1.5"
             >
-              {"SPINNING…".split("").map((ch, i) => (
+              {t("spinning").split("").map((ch, i) => (
                 <motion.span
                   key={i}
                   animate={{ y: [0, -6, 0], opacity: [0.5, 1, 0.5] }}
