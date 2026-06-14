@@ -1,8 +1,7 @@
 /**
  * /l — group-lobby hub: create a lobby, or join an open one from the global
- * list. The list shows every lobby that's still open and was started within
- * the last 24h (newest first); closed or aged-out lobbies drop off the board
- * automatically to keep it clean.
+ * list. The list shows every lobby that's still open (newest first), no matter
+ * its age; a lobby drops off the board only once its creator closes it.
  */
 
 import type { Metadata } from "next";
