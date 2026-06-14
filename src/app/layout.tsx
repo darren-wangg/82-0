@@ -67,6 +67,12 @@ export default async function RootLayout({
   return (
     <html
       lang={locale}
+      // The language switcher flips `lang` (and all strings) client-side via a
+      // cookie + router.refresh(); the initial document was hydrated with the
+      // previous locale. suppressHydrationWarning covers only <html>'s own
+      // attributes (same pattern as next-themes) — real mismatches in the tree
+      // still surface. A fresh request renders the cookie's locale directly.
+      suppressHydrationWarning
       className={`${spaceGrotesk.variable} ${geistMono.variable} ${anton.variable} ${pressStart.variable} h-full antialiased`}
     >
       {/* Browser extensions (e.g. Grammarly) inject attributes on <body> after
