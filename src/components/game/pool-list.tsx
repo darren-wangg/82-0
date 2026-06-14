@@ -2,7 +2,6 @@
 
 import { useMemo, useState } from "react";
 import { motion } from "framer-motion";
-import { BarChart3 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import type { NineCat, PlayerStatLine } from "@/lib/contracts";
 import { cn } from "@/lib/utils";
@@ -20,6 +19,25 @@ function loadStatsVisible(): boolean {
   } catch {
     return true;
   }
+}
+
+/**
+ * Stats-visibility toggle, lifted so the control can live in the draft header
+ * while the pool below consumes the value. Persisted in sessionStorage so the
+ * choice sticks across spins for the whole tab session.
+ */
+export function useStatsToggle() {
+  const [showStats, setShowStats] = useState(loadStatsVisible);
+  const toggleStats = () =>
+    setShowStats((s) => {
+      try {
+        window.sessionStorage.setItem(STATS_TOGGLE_KEY, s ? "off" : "on");
+      } catch {
+        // storage unavailable — the toggle still works for this session
+      }
+      return !s;
+    });
+  return { showStats, toggleStats };
 }
 
 /** Lowercase + strip diacritics so search ignores both. */
@@ -51,26 +69,16 @@ export function PoolList({
   selectedId,
   isDraftable,
   onSelect,
+  showStats,
 }: {
   pool: PlayerStatLine[];
   selectedId: string | null;
   isDraftable: (id: string) => boolean;
   onSelect: (id: string | null) => void;
+  showStats: boolean;
 }) {
   const [sortCat, setSortCat] = useState<NineCat>("pts");
   const [query, setQuery] = useState("");
-  const [showStats, setShowStats] = useState(loadStatsVisible);
-
-  const toggleStats = () => {
-    setShowStats((s) => {
-      try {
-        window.sessionStorage.setItem(STATS_TOGGLE_KEY, s ? "off" : "on");
-      } catch {
-        // storage unavailable — the toggle still works for this pool
-      }
-      return !s;
-    });
-  };
 
   const sorted = useMemo(() => {
     // Diacritic-insensitive ("jokic" finds Jokić) prefix-anywhere match.
@@ -78,8 +86,10 @@ export function PoolList({
     const matches = q
       ? pool.filter((p) => normalize(p.name).includes(q))
       : pool;
+    // Hiding stats also drops the PPG/RPG ranking — everyone in one flat list.
+    if (!showStats) return matches;
     return [...matches].sort((a, b) => b.stats[sortCat] - a.stats[sortCat]);
-  }, [pool, sortCat, query]);
+  }, [pool, sortCat, query, showStats]);
 
   return (
     <motion.div
@@ -97,30 +107,21 @@ export function PoolList({
           aria-label="Search for a player"
           className="h-8 w-50 rounded-lg border border-border bg-card px-2.5 text-xs text-foreground placeholder:text-muted-foreground/70 focus:outline-none focus-visible:ring-1 focus-visible:ring-ring"
         />
-        <button
-          type="button"
-          aria-label={showStats ? "Hide player stats" : "Show player stats"}
-          aria-pressed={showStats}
-          onClick={toggleStats}
-          className={cn(
-            "ml-auto flex h-8 items-center justify-center rounded-lg border border-border bg-card px-2 transition-colors",
-            showStats ? "text-primary" : "text-muted-foreground/60"
-          )}
-        >
-          <BarChart3 className="size-4" />
-        </button>
-        <select
-          value={sortCat}
-          onChange={(e) => setSortCat(e.target.value as NineCat)}
-          className="h-8 rounded-lg border border-border bg-card px-2 font-mono text-xs font-bold text-foreground"
-          aria-label="Sort players by stat"
-        >
-          {SORT_OPTIONS.map(({ cat, label }) => (
-            <option key={cat} value={cat}>
-              {label}
-            </option>
-          ))}
-        </select>
+        {/* No ranking control when stats are hidden — it's one flat list. */}
+        {showStats && (
+          <select
+            value={sortCat}
+            onChange={(e) => setSortCat(e.target.value as NineCat)}
+            className="ml-auto h-8 rounded-lg border border-border bg-card px-2 font-mono text-xs font-bold text-foreground"
+            aria-label="Sort players by stat"
+          >
+            {SORT_OPTIONS.map(({ cat, label }) => (
+              <option key={cat} value={cat}>
+                {label}
+              </option>
+            ))}
+          </select>
+        )}
       </div>
 
       {sorted.length === 0 && (

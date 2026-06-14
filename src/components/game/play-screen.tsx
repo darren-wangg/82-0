@@ -18,7 +18,7 @@ import {
 import { ChallengeBanner } from "./challenge-banner";
 import { DECADE_COLORS } from "./format";
 import { freshSeed, useGame } from "./game-provider";
-import { PoolList } from "./pool-list";
+import { PoolList, useStatsToggle } from "./pool-list";
 import { RosterBoard } from "./roster-board";
 import { SlotReel } from "./slot-reel";
 import { usePhaseGuard } from "./use-phase-guard";
@@ -50,6 +50,7 @@ export function PlayScreen() {
   const { state, dispatch, ctx, players, franchiseById } = useGame();
   const allowed = usePhaseGuard(["draft"]);
   const rounds = ctx.mode?.draftRounds ?? DRAFT_ROUNDS;
+  const { showStats, toggleStats } = useStatsToggle();
 
   // Arriving via /play?challenge={slug} retargets the draft at that team;
   // /play?lobby={code} starts a draft destined for that lobby. A fresh (or
@@ -170,7 +171,19 @@ export function PlayScreen() {
             aria-label="Draft progress"
           />
         </div>
-        <div className="flex shrink-0 gap-1.5">
+        <div className="flex shrink-0 items-center gap-1.5">
+          <Button
+            variant="ghost"
+            size="sm"
+            aria-pressed={!showStats}
+            className={cn(
+              "h-9 rounded-lg px-2 text-xs font-semibold transition-colors",
+              showStats ? "text-muted-foreground" : "text-primary"
+            )}
+            onClick={toggleStats}
+          >
+            {showStats ? "Hide Stats" : "Show Stats"}
+          </Button>
           <Button
             variant="outline"
             size="sm"
@@ -309,6 +322,7 @@ export function PlayScreen() {
                 selectedId={state.selectedPlayerId}
                 isDraftable={(id) => draftable.has(id)}
                 onSelect={(playerId) => dispatch({ type: "SELECT_PLAYER", playerId })}
+                showStats={showStats}
               />
             </motion.div>
           )}
