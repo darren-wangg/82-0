@@ -118,7 +118,7 @@
     "averagesAria": "Team per-game averages"
   },
   "lobby": {
-    "namePlaceholder": "The Group Chat",
+    "namePlaceholder": "Ex: The Group Chat",
     "nameAria": "Lobby name",
     "teamSize": "Team size",
     "manCount": "{size}-man",

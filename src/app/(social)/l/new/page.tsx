@@ -23,7 +23,7 @@ export default async function NewLobbyPage() {
     <main className="flex flex-1 flex-col justify-center space-y-6">
       <div className="text-center">
         <p className="text-xs font-semibold tracking-widest text-primary uppercase">
-          Lobby
+          Group Lobby
         </p>
         <p className="mx-auto mt-2 max-w-xs text-sm text-muted-foreground">
           Create a lobby and share the link. Everyone drafts a team. Matchups run head-to-head, and the lobby

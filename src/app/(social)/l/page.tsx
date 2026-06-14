@@ -49,7 +49,7 @@ export default async function LobbiesPage() {
         </div>
       </div>
       <p className="mt-1 text-sm text-muted-foreground">
-        Everyone drafts a team, runs head-to-head matchups, and a champion is crowned.
+        Everyone drafts a team, runs matchups head-to-head, and a champion is crowned.
       </p>
 
       <Link
