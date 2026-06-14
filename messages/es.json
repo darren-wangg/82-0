@@ -7,10 +7,9 @@
       "lobbies": "Salas",
       "myTeams": "Mis equipos"
     },
-    "tenPlayerMode": "Modo 10 jugadores",
-    "beta": "Beta",
     "attribution": "Estadísticas derivadas del conjunto de datos <link>NBA Stats (1947–presente)</link> de Sumitro Datta (CC BY-SA 4.0). No afiliado a la NBA.",
-    "language": "Idioma"
+    "language": "Idioma",
+    "teamSize": "Tamaño del equipo"
   },
   "howToPlay": {
     "trigger": "Cómo jugar",
@@ -123,8 +122,6 @@
     "nameAria": "Nombre de la sala",
     "teamSize": "Tamaño del equipo",
     "manCount": "{size} jug.",
-    "normal": "Normal",
-    "beta": "Beta",
     "limitTeams": "Limitar equipos",
     "limitHint": "Desactivado = ilimitado. Puedes cambiarlo más tarde.",
     "limitAria": "Limitar el número de equipos",
@@ -133,15 +130,16 @@
     "creating": "Creando…",
     "createLobby": "Crear sala",
     "limitError": "El límite de equipos debe ser un número entero del 2 al 50.",
-    "createError": "No se pudo crear la sala ahora mismo — inténtalo de nuevo en un minuto."
+    "createError": "No se pudo crear la sala ahora mismo — inténtalo de nuevo en un minuto.",
+    "blurb5": "Titulares",
+    "blurb8": "Clásico",
+    "blurb10": "Banca amplia"
   },
   "myTeams": {
-    "empty": "Aún no hay equipos guardados — termina una temporada y pulsa Guardar.",
+    "empty": "Aún no hay equipos de {size} guardados — termina una temporada y pulsa Guardar.",
     "startDraft": "Empezar un draft →",
     "view": "Ver {name}",
     "delete": "Eliminar {name}",
-    "tenMan": "10 jug.",
-    "eightMan": "8 jug.",
     "olderData": "datos de jugadores antiguos"
   },
   "cats": {

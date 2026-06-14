@@ -7,10 +7,9 @@
       "lobbies": "ロビー",
       "myTeams": "マイチーム"
     },
-    "tenPlayerMode": "10人モード",
-    "beta": "ベータ",
     "attribution": "統計は Sumitro Datta による <link>NBA Stats（1947年〜現在）</link> データセット（CC BY-SA 4.0）に基づきます。NBA とは無関係です。",
-    "language": "言語"
+    "language": "言語",
+    "teamSize": "チーム人数"
   },
   "howToPlay": {
     "trigger": "遊び方",
@@ -123,8 +122,6 @@
     "nameAria": "ロビー名",
     "teamSize": "チーム人数",
     "manCount": "{size} 人",
-    "normal": "ノーマル",
-    "beta": "ベータ",
     "limitTeams": "チーム数を制限",
     "limitHint": "オフ = 無制限。後で変更できます。",
     "limitAria": "チーム数を制限",
@@ -133,15 +130,16 @@
     "creating": "作成中…",
     "createLobby": "ロビーを作成",
     "limitError": "チームの上限は 2 から 50 までの整数で指定してください。",
-    "createError": "今はロビーを作成できませんでした——1分後にもう一度お試しください。"
+    "createError": "今はロビーを作成できませんでした——1分後にもう一度お試しください。",
+    "blurb5": "スターター",
+    "blurb8": "クラシック",
+    "blurb10": "厚いベンチ"
   },
   "myTeams": {
-    "empty": "保存されたチームはまだありません——シーズンを終えて保存を押してください。",
+    "empty": "保存された{size}人のチームはまだありません——シーズンを終えて保存を押してください。",
     "startDraft": "ドラフトを始める →",
     "view": "{name} を見る",
     "delete": "{name} を削除",
-    "tenMan": "10人",
-    "eightMan": "8人",
     "olderData": "古い選手データ"
   },
   "cats": {

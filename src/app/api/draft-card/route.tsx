@@ -11,6 +11,7 @@ import {
   FlexibleRosterSchema,
   RosterError,
   computeTeamOutputs,
+  teamSizeOf,
 } from "@/app/api/_lib/teams";
 import { RATE_LIMITS, rateLimitGate } from "@/app/api/_lib/rate-limit";
 import {
@@ -40,7 +41,7 @@ export async function GET(req: Request) {
     return new Response("Invalid roster.", { status: 400 });
   }
 
-  const defaultName = roster.bench.length >= 5 ? "My Ultimate 10" : "My Ultimate 8";
+  const defaultName = `My Ultimate ${teamSizeOf(roster)}`;
   const teamName =
     (url.searchParams.get("name") ?? "").trim().slice(0, 40) || defaultName;
 

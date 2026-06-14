@@ -5,14 +5,20 @@
  */
 
 import type { Metadata } from "next";
+import { cookies } from "next/headers";
 import { CreateLobbyForm } from "@/components/social/create-lobby-form";
+import { resolveTeamSize, TEAM_SIZE_COOKIE } from "@/lib/team-size";
 
 export const metadata: Metadata = {
   title: "New lobby",
   description: "Start a group lobby and settle who drafts best.",
 };
 
-export default function NewLobbyPage() {
+export default async function NewLobbyPage() {
+  // Default the size picker to the session preference.
+  const teamSize = resolveTeamSize(
+    (await cookies()).get(TEAM_SIZE_COOKIE)?.value
+  );
   return (
     <main className="flex flex-1 flex-col justify-center space-y-6">
       <div className="text-center">
@@ -27,7 +33,7 @@ export default function NewLobbyPage() {
           stays open until you end it and crown the champ.
         </p>
       </div>
-      <CreateLobbyForm />
+      <CreateLobbyForm defaultSize={teamSize} />
     </main>
   );
 }

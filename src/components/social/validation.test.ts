@@ -32,6 +32,19 @@ describe("validateRoster", () => {
     if (!result.ok) expect(result.error).toMatch(/starter at C/);
   });
 
+  it("accepts a 5-man roster (empty bench) when 0 is an allowed count", () => {
+    const roster: Roster = { ...validRoster, bench: [] };
+    const result = validateRoster(roster, players, { benchCounts: [0, 3, 5] });
+    expect(result.ok).toBe(true);
+    if (result.ok) expect(result.playerIds).toHaveLength(5);
+  });
+
+  it("rejects an empty bench under the default (8-man) count", () => {
+    const roster: Roster = { ...validRoster, bench: [] };
+    const result = validateRoster(roster, players);
+    expect(result.ok).toBe(false);
+  });
+
   it("rejects a short bench", () => {
     const roster: Roster = {
       ...validRoster,

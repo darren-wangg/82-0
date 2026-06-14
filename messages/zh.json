@@ -7,10 +7,9 @@
       "lobbies": "房间",
       "myTeams": "我的球队"
     },
-    "tenPlayerMode": "10 人模式",
-    "beta": "测试版",
     "attribution": "数据来自 Sumitro Datta 的 <link>NBA Stats（1947 至今）</link> 数据集（CC BY-SA 4.0）。与 NBA 无关联。",
-    "language": "语言"
+    "language": "语言",
+    "teamSize": "球队人数"
   },
   "howToPlay": {
     "trigger": "玩法说明",
@@ -123,8 +122,6 @@
     "nameAria": "房间名称",
     "teamSize": "球队人数",
     "manCount": "{size} 人",
-    "normal": "普通",
-    "beta": "测试版",
     "limitTeams": "限制球队数量",
     "limitHint": "关闭 = 不限。你可以稍后更改。",
     "limitAria": "限制球队数量",
@@ -133,15 +130,16 @@
     "creating": "创建中…",
     "createLobby": "创建房间",
     "limitError": "球队上限必须是 2 到 50 之间的整数。",
-    "createError": "目前无法创建房间——请一分钟后再试。"
+    "createError": "目前无法创建房间——请一分钟后再试。",
+    "blurb5": "首发",
+    "blurb8": "经典",
+    "blurb10": "深度替补"
   },
   "myTeams": {
-    "empty": "还没有已保存的球队——完成一个赛季并点击保存。",
+    "empty": "还没有已保存的 {size} 人球队——完成一个赛季并点击保存。",
     "startDraft": "开始选秀 →",
     "view": "查看 {name}",
     "delete": "删除 {name}",
-    "tenMan": "10 人",
-    "eightMan": "8 人",
     "olderData": "较旧的球员数据"
   },
   "cats": {

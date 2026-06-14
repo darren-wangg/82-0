@@ -7,21 +7,25 @@
 
 import { LeaderboardResponse } from "@/lib/contracts";
 import { getSnapshot } from "@/lib/snapshot";
+import { resolveTeamSize } from "@/lib/team-size";
 import { loadLeaderboardEntries } from "../_lib/leaderboard";
 import { isDbUnavailable, jsonError } from "../_lib/teams";
 
 export async function GET(request: Request) {
-  const scopeParam = new URL(request.url).searchParams.get("scope") ?? "global";
+  const url = new URL(request.url);
+  const scopeParam = url.searchParams.get("scope") ?? "global";
   if (scopeParam !== "global" && scopeParam !== "weekly") {
     return jsonError(400, "scope must be 'global' or 'weekly'");
   }
   const scope: "global" | "weekly" = scopeParam;
+  // ?size=5|8|10 picks the per-size board (defaults to 8).
+  const teamSize = resolveTeamSize(url.searchParams.get("size"));
 
   try {
     const response: LeaderboardResponse = {
       scope,
       snapshotVersion: getSnapshot().version,
-      entries: await loadLeaderboardEntries(scope),
+      entries: await loadLeaderboardEntries(scope, teamSize),
     };
     return Response.json(response);
   } catch (err) {

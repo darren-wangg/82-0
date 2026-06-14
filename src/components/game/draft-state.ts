@@ -95,7 +95,7 @@ export const CLASSIC_MODE: GameMode = {
 
 export const TEN_MODE: GameMode = {
   id: "ten",
-  label: "10-Player (Beta)",
+  label: "10-Player",
   draftRounds: 10,
   teamSkips: 1,
   eraSkips: 1,
@@ -106,9 +106,25 @@ export const TEN_MODE: GameMode = {
   simPath: "/sim10",
 };
 
+/** 5-man: just the five starters, no bench. The engine handles an empty bench
+ *  (blockAgg falls back to starters-only), so this needs no special-casing. */
+export const FIVE_MODE: GameMode = {
+  id: "five",
+  label: "5-Man",
+  draftRounds: 5,
+  teamSkips: TEAM_SKIPS_PER_GAME,
+  eraSkips: ERA_SKIPS_PER_GAME,
+  benchSlots: [],
+  allSlots: [...POSITIONS],
+  storageKey: "eighty-two-zero/game5/v1",
+  playPath: "/play5",
+  simPath: "/sim5",
+};
+
 export const MODES: Record<string, GameMode> = {
   [CLASSIC_MODE.id]: CLASSIC_MODE,
   [TEN_MODE.id]: TEN_MODE,
+  [FIVE_MODE.id]: FIVE_MODE,
 };
 
 /** Bench-slot defs across every mode, keyed by their (globally unique) key. */

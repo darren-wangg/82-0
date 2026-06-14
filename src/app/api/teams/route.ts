@@ -7,6 +7,7 @@
 
 import { z } from "zod";
 import { SaveTeamResponse } from "@/lib/contracts";
+import { containsProfanity, PROFANITY_ERROR } from "@/lib/profanity";
 import { getSnapshot } from "@/lib/snapshot";
 import { prisma } from "@/lib/db";
 import { getOrCreateAnonId } from "@/lib/auth";
@@ -50,6 +51,10 @@ export async function POST(request: Request) {
     return jsonError(400, parsed.error.issues[0]?.message ?? "Invalid request");
   }
   const { teamName, roster, snapshotVersion } = parsed.data;
+
+  if (containsProfanity(teamName)) {
+    return jsonError(422, PROFANITY_ERROR);
+  }
 
   const snapshot = getSnapshot();
   if (snapshotVersion !== snapshot.version) {

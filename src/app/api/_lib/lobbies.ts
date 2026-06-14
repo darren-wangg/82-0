@@ -17,8 +17,6 @@ export function lobbyIsOpen(lobby: { closedAt: Date | null }): boolean {
   return lobby.closedAt === null;
 }
 
-/** How long an open lobby stays on the public discovery list. */
-const ACTIVE_LOBBY_TTL_MS = 24 * 60 * 60 * 1000;
 const ACTIVE_LOBBY_LIMIT = 50;
 
 /** One row of the global "active lobbies" list. */
@@ -35,15 +33,17 @@ export interface ActiveLobbySummary {
 }
 
 /**
- * Lobbies discoverable on the global list: still open AND opened within the
- * last 24h. Closed or aged-out lobbies simply fall out of this query — their
- * /l/[code] pages stay reachable, they just leave the public board so it stays
- * clean. Newest first.
+ * Lobbies discoverable on the global list: every lobby of the given team size
+ * that's still open (the creator hasn't ended it), regardless of age. Closed
+ * lobbies fall out of this query — their /l/[code] pages stay reachable, they
+ * just leave the public board. Newest first, capped at ACTIVE_LOBBY_LIMIT.
+ * (We'll revisit the age/volume policy if traffic ever warrants it.)
  */
-export async function loadActiveLobbies(): Promise<ActiveLobbySummary[]> {
-  const cutoff = new Date(Date.now() - ACTIVE_LOBBY_TTL_MS);
+export async function loadActiveLobbies(
+  teamSize: number
+): Promise<ActiveLobbySummary[]> {
   const lobbies = await prisma.lobby.findMany({
-    where: { closedAt: null, createdAt: { gt: cutoff } },
+    where: { closedAt: null, teamSize },
     orderBy: { createdAt: "desc" },
     take: ACTIVE_LOBBY_LIMIT,
     select: {

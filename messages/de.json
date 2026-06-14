@@ -7,10 +7,9 @@
       "lobbies": "Lobbys",
       "myTeams": "Meine Teams"
     },
-    "tenPlayerMode": "10-Spieler-Modus",
-    "beta": "Beta",
     "attribution": "Statistiken aus dem Datensatz <link>NBA Stats (1947–heute)</link> von Sumitro Datta (CC BY-SA 4.0). Nicht mit der NBA verbunden.",
-    "language": "Sprache"
+    "language": "Sprache",
+    "teamSize": "Teamgröße"
   },
   "howToPlay": {
     "trigger": "Spielanleitung",
@@ -123,8 +122,6 @@
     "nameAria": "Lobby-Name",
     "teamSize": "Teamgröße",
     "manCount": "{size} Spieler",
-    "normal": "Normal",
-    "beta": "Beta",
     "limitTeams": "Teams begrenzen",
     "limitHint": "Aus = unbegrenzt. Du kannst das später ändern.",
     "limitAria": "Anzahl der Teams begrenzen",
@@ -133,15 +130,16 @@
     "creating": "Wird erstellt…",
     "createLobby": "Lobby erstellen",
     "limitError": "Das Team-Limit muss eine ganze Zahl von 2 bis 50 sein.",
-    "createError": "Lobby konnte gerade nicht erstellt werden — versuch es in einer Minute erneut."
+    "createError": "Lobby konnte gerade nicht erstellt werden — versuch es in einer Minute erneut.",
+    "blurb5": "Starter",
+    "blurb8": "Klassisch",
+    "blurb10": "Tiefe Bank"
   },
   "myTeams": {
-    "empty": "Noch keine gespeicherten Teams — beende eine Saison und tippe auf Speichern.",
+    "empty": "Noch keine gespeicherten {size}-Mann-Teams — beende eine Saison und tippe auf Speichern.",
     "startDraft": "Draft starten →",
     "view": "{name} ansehen",
     "delete": "{name} löschen",
-    "tenMan": "10 Sp.",
-    "eightMan": "8 Sp.",
     "olderData": "ältere Spielerdaten"
   },
   "cats": {

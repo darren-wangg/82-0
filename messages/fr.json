@@ -7,10 +7,9 @@
       "lobbies": "Salons",
       "myTeams": "Mes équipes"
     },
-    "tenPlayerMode": "Mode 10 joueurs",
-    "beta": "Bêta",
     "attribution": "Statistiques issues du jeu de données <link>NBA Stats (1947–présent)</link> de Sumitro Datta (CC BY-SA 4.0). Sans affiliation avec la NBA.",
-    "language": "Langue"
+    "language": "Langue",
+    "teamSize": "Taille de l'équipe"
   },
   "howToPlay": {
     "trigger": "Comment jouer",
@@ -123,8 +122,6 @@
     "nameAria": "Nom du salon",
     "teamSize": "Taille de l'équipe",
     "manCount": "{size} joueurs",
-    "normal": "Normal",
-    "beta": "Bêta",
     "limitTeams": "Limiter les équipes",
     "limitHint": "Désactivé = illimité. Vous pourrez le modifier plus tard.",
     "limitAria": "Limiter le nombre d'équipes",
@@ -133,15 +130,16 @@
     "creating": "Création…",
     "createLobby": "Créer le salon",
     "limitError": "La limite d'équipes doit être un nombre entier de 2 à 50.",
-    "createError": "Impossible de créer le salon pour l'instant — réessayez dans une minute."
+    "createError": "Impossible de créer le salon pour l'instant — réessayez dans une minute.",
+    "blurb5": "Titulaires",
+    "blurb8": "Classique",
+    "blurb10": "Banc profond"
   },
   "myTeams": {
-    "empty": "Aucune équipe enregistrée — terminez une saison et appuyez sur Enregistrer.",
+    "empty": "Aucune équipe à {size} enregistrée — terminez une saison et appuyez sur Enregistrer.",
     "startDraft": "Lancer un draft →",
     "view": "Voir {name}",
     "delete": "Supprimer {name}",
-    "tenMan": "10 j.",
-    "eightMan": "8 j.",
     "olderData": "anciennes données de joueurs"
   },
   "cats": {

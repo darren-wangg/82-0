@@ -7,10 +7,9 @@
       "lobbies": "Sale",
       "myTeams": "Le mie squadre"
     },
-    "tenPlayerMode": "Modalità 10 giocatori",
-    "beta": "Beta",
     "attribution": "Statistiche tratte dal dataset <link>NBA Stats (1947–presente)</link> di Sumitro Datta (CC BY-SA 4.0). Non affiliato alla NBA.",
-    "language": "Lingua"
+    "language": "Lingua",
+    "teamSize": "Dimensione squadra"
   },
   "howToPlay": {
     "trigger": "Come si gioca",
@@ -123,8 +122,6 @@
     "nameAria": "Nome della sala",
     "teamSize": "Dimensione squadra",
     "manCount": "{size} giocatori",
-    "normal": "Normale",
-    "beta": "Beta",
     "limitTeams": "Limita le squadre",
     "limitHint": "Off = illimitato. Puoi cambiarlo più tardi.",
     "limitAria": "Limita il numero di squadre",
@@ -133,15 +130,16 @@
     "creating": "Creazione…",
     "createLobby": "Crea sala",
     "limitError": "Il limite di squadre deve essere un numero intero da 2 a 50.",
-    "createError": "Impossibile creare la sala ora — riprova tra un minuto."
+    "createError": "Impossibile creare la sala ora — riprova tra un minuto.",
+    "blurb5": "Titolari",
+    "blurb8": "Classico",
+    "blurb10": "Panchina lunga"
   },
   "myTeams": {
-    "empty": "Ancora nessuna squadra salvata — completa una stagione e premi Salva.",
+    "empty": "Ancora nessuna squadra da {size} salvata — completa una stagione e premi Salva.",
     "startDraft": "Inizia un draft →",
     "view": "Vedi {name}",
     "delete": "Elimina {name}",
-    "tenMan": "10 g.",
-    "eightMan": "8 g.",
     "olderData": "dati giocatori più vecchi"
   },
   "cats": {

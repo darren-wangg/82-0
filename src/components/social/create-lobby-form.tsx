@@ -6,13 +6,18 @@ import { useTranslations } from "next-intl";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import type { LobbyResponse } from "@/lib/contracts";
+import { DEFAULT_TEAM_SIZE, TEAM_SIZES, type TeamSize } from "@/lib/team-size";
 import { cn } from "@/lib/utils";
 
-export function CreateLobbyForm() {
+export function CreateLobbyForm({
+  defaultSize = DEFAULT_TEAM_SIZE,
+}: {
+  defaultSize?: TeamSize;
+}) {
   const t = useTranslations("lobby");
   const router = useRouter();
   const [name, setName] = useState("");
-  const [teamSize, setTeamSize] = useState<8 | 10>(8);
+  const [teamSize, setTeamSize] = useState<TeamSize>(defaultSize);
   const [capped, setCapped] = useState(false);
   const [limit, setLimit] = useState("8");
   const [pending, setPending] = useState(false);
@@ -60,11 +65,11 @@ export function CreateLobbyForm() {
         onChange={(e) => setName(e.target.value)}
       />
 
-      {/* Team size: 8-man normal (default) vs the 10-player beta. */}
+      {/* Team size: 5 (starters only), 8 (classic, default), or 10 (deep bench). */}
       <div className="rounded-xl border border-border/70 px-3 py-2.5">
         <p className="mb-2 text-sm font-medium">{t("teamSize")}</p>
-        <div className="grid grid-cols-2 gap-2" role="group" aria-label={t("teamSize")}>
-          {([8, 10] as const).map((size) => {
+        <div className="grid grid-cols-3 gap-2" role="group" aria-label={t("teamSize")}>
+          {TEAM_SIZES.map((size) => {
             const active = teamSize === size;
             return (
               <button
@@ -75,16 +80,12 @@ export function CreateLobbyForm() {
                 className={cn(
                   "flex flex-col items-center rounded-lg border px-3 py-2 text-sm transition-colors",
                   active
-                    ? size === 10
-                      ? "border-violet-400/70 bg-violet-400/15 text-violet-200"
-                      : "border-primary/70 bg-primary/15 text-foreground"
+                    ? "border-primary/70 bg-primary/15 text-foreground"
                     : "border-border/70 text-muted-foreground hover:bg-muted/50"
                 )}
               >
                 <span className="font-bold">{t("manCount", { size })}</span>
-                <span className="text-[11px]">
-                  {size === 8 ? t("normal") : t("beta")}
-                </span>
+                <span className="text-[11px]">{t(`blurb${size}`)}</span>
               </button>
             );
           })}

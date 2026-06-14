@@ -7,10 +7,9 @@
       "lobbies": "Lobbies",
       "myTeams": "My Teams"
     },
-    "tenPlayerMode": "10-Player Mode",
-    "beta": "Beta",
     "attribution": "Stats derived from the <link>NBA Stats (1947–present)</link> dataset by Sumitro Datta (CC BY-SA 4.0). Not affiliated with the NBA.",
-    "language": "Language"
+    "language": "Language",
+    "teamSize": "Team size"
   },
   "howToPlay": {
     "trigger": "How to play",
@@ -123,8 +122,6 @@
     "nameAria": "Lobby name",
     "teamSize": "Team size",
     "manCount": "{size}-man",
-    "normal": "Normal",
-    "beta": "Beta",
     "limitTeams": "Limit teams",
     "limitHint": "Off = unlimited. You can change this later.",
     "limitAria": "Limit the number of teams",
@@ -133,15 +130,16 @@
     "creating": "Creating…",
     "createLobby": "Create lobby",
     "limitError": "Team limit must be a whole number from 2 to 50.",
-    "createError": "Couldn't create the lobby right now — try again in a minute."
+    "createError": "Couldn't create the lobby right now — try again in a minute.",
+    "blurb5": "Starters",
+    "blurb8": "Classic",
+    "blurb10": "Deep bench"
   },
   "myTeams": {
-    "empty": "No saved teams yet — finish a season and hit Save.",
+    "empty": "No saved {size}-man teams yet — finish a season and hit Save.",
     "startDraft": "Start a draft →",
     "view": "View {name}",
     "delete": "Delete {name}",
-    "tenMan": "10-man",
-    "eightMan": "8-man",
     "olderData": "older player data"
   },
   "cats": {

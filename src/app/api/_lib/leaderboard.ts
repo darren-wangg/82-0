@@ -29,13 +29,17 @@ interface CachedRow {
 }
 
 const loadRows = unstable_cache(
-  async (scope: "global" | "weekly", snapshotVersion: string): Promise<CachedRow[]> => {
+  async (
+    scope: "global" | "weekly",
+    snapshotVersion: string,
+    teamSize: number
+  ): Promise<CachedRow[]> => {
     const teams = await prisma.team.findMany({
       where: {
         snapshotVersion,
-        // 10-player beta teams compete only in their lobbies, never on the
-        // global/weekly ladder (the deeper bench inflates ratings).
-        teamSize: 8,
+        // Each roster size has its own board (5 / 8 / 10), selected via the
+        // team-size switch — sizes aren't ranked against each other.
+        teamSize,
         ...(scope === "weekly"
           ? { createdAt: { gte: new Date(Date.now() - WEEKLY_WINDOW_MS) } }
           : {}),
@@ -60,12 +64,13 @@ const loadRows = unstable_cache(
 );
 
 export async function loadLeaderboardEntries(
-  scope: "global" | "weekly"
+  scope: "global" | "weekly",
+  teamSize: number
 ): Promise<LeaderboardEntry[]> {
   const snapshotVersion = getSnapshot().version;
   // Read-only cookie check, outside the cached function.
   const anonId = await getAnonIdFromCookie();
-  const rows = await loadRows(scope, snapshotVersion);
+  const rows = await loadRows(scope, snapshotVersion, teamSize);
   // rankLeaderboard maps to the contract shape, dropping anonIdentityId.
   return rankLeaderboard(
     rows.map((r) => ({
