@@ -4,7 +4,7 @@
  * server and `LanguageSwitcher` writes it on the client.
  */
 
-export const LOCALES = ["en", "es"] as const;
+export const LOCALES = ["en", "es", "fr", "de", "it", "pt"] as const;
 export type Locale = (typeof LOCALES)[number];
 
 export const DEFAULT_LOCALE: Locale = "en";
@@ -16,6 +16,10 @@ export const LOCALE_COOKIE = "ud:locale";
 export const LOCALE_NAMES: Record<Locale, string> = {
   en: "English",
   es: "Español",
+  fr: "Français",
+  de: "Deutsch",
+  it: "Italiano",
+  pt: "Português",
 };
 
 export function isLocale(value: string | undefined | null): value is Locale {

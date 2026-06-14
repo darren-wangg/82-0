@@ -1,0 +1,160 @@
+{
+  "home": {
+    "tagline": "Dreh für ein Team und eine Ära, drafte 8 Spieler und jage die perfekte <b>82-0</b>-Saison.",
+    "startDraft": "Draft starten",
+    "nav": {
+      "leaderboard": "Bestenliste",
+      "lobbies": "Lobbys",
+      "myTeams": "Meine Teams"
+    },
+    "tenPlayerMode": "10-Spieler-Modus",
+    "beta": "Beta",
+    "attribution": "Statistiken aus dem Datensatz <link>NBA Stats (1947–heute)</link> von Sumitro Datta (CC BY-SA 4.0). Nicht mit der NBA verbunden.",
+    "language": "Sprache"
+  },
+  "howToPlay": {
+    "trigger": "Spielanleitung",
+    "title": "Spielanleitung",
+    "steps": {
+      "spin": {
+        "title": "Drehen",
+        "body": "Dreh für ein zufälliges Team und eine zufällige Ära. Dieselbe Team-Ära-Kombi kommt nie zweimal vor."
+      },
+      "reSpins": {
+        "title": "Neudrehs",
+        "body": "{teamSkips} Team-Neudreh und {eraSkips} Ära-Neudreh. Ein Neudreh dreht nur diese Achse."
+      },
+      "pick": {
+        "title": "Wählen",
+        "body": "Tippe auf einen Spieler und dann auf eine seiner Positionen. Die Starter brauchen PG, SG, SF, PF, C. Die Bank braucht einen G, einen F und einen C."
+      },
+      "optimize": {
+        "title": "Optimieren",
+        "body": "Du kannst gedraftete Spieler jederzeit während des Drafts zwischen passenden Plätzen umstellen."
+      },
+      "simulate": {
+        "title": "Simulieren",
+        "body": "Dein Team wird an seine Ära angepasst und spielt eine volle Saison. Eine einzige Schwäche kann deine Siege begrenzen."
+      }
+    }
+  },
+  "play": {
+    "pick": "Wahl",
+    "countOf": "{current} von {total}",
+    "newDraftAria": "Neuer Draft",
+    "progressAria": "Draft-Fortschritt",
+    "teamRespin": "Team",
+    "eraRespin": "Ära",
+    "confirmRetargetLobby": "Lobby-Draft starten? Dein aktueller Draft wird verworfen.",
+    "confirmRetargetChallenge": "Challenge-Draft starten? Dein aktueller Draft wird verworfen.",
+    "confirmNewGame": "Diesen Draft verwerfen und neu beginnen?",
+    "lobbyDraft": "Lobby-Draft",
+    "leave": "Verlassen",
+    "confirmLeave": "Lobby {code} verlassen? Dieser Draft läuft als freies Spiel weiter; um der Lobby später beizutreten, brauchst du ihren Link und einen neuen Draft.",
+    "spin": "Drehen",
+    "spinning": "DREHT…"
+  },
+  "sim": {
+    "finalRecordAria": "Endbilanz {wins} zu {losses}",
+    "onFire": "🔥 ER BRENNT! 🔥",
+    "toastNameRequired": "Gib deinem Team zuerst einen Namen (1–40 Zeichen).",
+    "toastStaleData": "Die Spielerdaten wurden seit diesem Draft aktualisiert — lade die Seite neu und drafte erneut.",
+    "toastLobbyEnterFailed": "Gespeichert! Beitritt zur Lobby momentan nicht möglich.",
+    "toastBattleFailed": "Gespeichert! Das Duell konnte gerade nicht ausgeführt werden — versuch es erneut über die Team-Seite.",
+    "toastSaveUnavailable": "Speichern ist momentan nicht verfügbar — deine Saison ist auf diesem Gerät sicher.",
+    "toastDeviceSaveFailed": "Konnte nicht auf diesem Gerät speichern — der Speicher ist nicht verfügbar.",
+    "confirmReDraft": "Dein Team neu draften? Das verbraucht deinen einzigen Neudraft und verwirft diese Aufstellung.",
+    "downloadCardAria": "Team-Kartenbild herunterladen",
+    "saveToDeviceAria": "Dieses Team auf diesem Gerät speichern",
+    "deviceDialogTitle": "Auf diesem Gerät speichern",
+    "deviceDialogDescription": "Benenne dein Team — es wird nur in diesem Browser gespeichert, kein Link, nichts wird geteilt.",
+    "savedToDevice": "Auf diesem Gerät gespeichert.",
+    "teamNamePlaceholder": "Benenne dein Team",
+    "teamNameAria": "Teamname",
+    "save": "Speichern",
+    "shareTeamAria": "Dieses Team teilen",
+    "shareTitleLobby": "Team einreichen",
+    "shareTitleChallenge": "Fordere deinen Rivalen heraus",
+    "shareTitleDefault": "Team teilen",
+    "shareDescLobby": "Füge deinen Namen und einen Teamnamen hinzu — dein Eintrag erscheint sofort in Lobby {code}.",
+    "shareDescChallenge": "Benenne dein Team — beim Teilen wird das Best-of-7 gegen deinen Rivalen ausgetragen.",
+    "shareDescDefault": "Benenne dein Team, um einen Teilen-Link zu erhalten — wer ihn öffnet, sieht deinen Kader und deine Bilanz und kann ein eigenes Team draften, um gegen deins anzutreten.",
+    "shareLinkReady": "Teilen-Link bereit!",
+    "copied": "Kopiert",
+    "copy": "Kopieren",
+    "saveYourTeam": "Speichere dein Team",
+    "playerNamePlaceholder": "Dein Name (in der Rangliste sichtbar)",
+    "playerNameAria": "Dein Name",
+    "sharing": "Wird geteilt…",
+    "enterLobby": "Lobby beitreten",
+    "battle": "Duell",
+    "share": "Teilen",
+    "gateCapped": "<b>{cat}</b> hat dich auf {wins} Siege begrenzt.",
+    "nineCatProfile": "9-Kategorien-Profil",
+    "whatCostYou": "Was dich gekostet hat",
+    "costGatedLost": "Das <b>{cat}</b>-Limit hat dich <red>{winsLost, plural, one{# Sieg} other{# Siege}}</red> gekostet. Hauptverursacher: <b>{culprit}</b> <mono>({z} vs Ära)</mono>.",
+    "costGatedCaps": "Das <b>{cat}</b>-Limit begrenzt dich auf {winCap} Siege. Hauptverursacher: <b>{culprit}</b> <mono>({z} vs Ära)</mono>.",
+    "costWeakLink": "Schwächstes Glied: <b>{player}</b> auf {slot}{bench, select, yes{ <muted>(Bank)</muted>} other{}}{oop, select, yes{ <amber>— spielt außerhalb der Position</amber>} other{}}.",
+    "scoutingReport": "Scouting-Bericht",
+    "reDraft": "Neu draften (noch {left})",
+    "submitTeam": "Team einreichen",
+    "confirmExitLobby": "Lobby {code} verlassen? Um der Lobby später beizutreten, brauchst du ihren Link und musst neu draften.",
+    "exitLobby": "Lobby verlassen",
+    "battleRival": "Fordere deinen Rivalen heraus",
+    "runItBack": "Nochmal"
+  },
+  "pool": {
+    "searchPlaceholder": "Spieler suchen",
+    "hideStats": "Stats ausblenden",
+    "showStats": "Stats anzeigen",
+    "sortBy": "Spieler nach Statistik sortieren",
+    "noMatch": "Kein Spieler passt zu „{query}“"
+  },
+  "roster": {
+    "slotFilled": "{name} auf {slot}",
+    "actionSwap": "tippen zum Tauschen",
+    "actionSelected": "ausgewählt",
+    "actionMove": "tippen zum Verschieben",
+    "placeAt": "Spieler auf {slot} setzen",
+    "averagesAria": "Team-Durchschnitt pro Spiel"
+  },
+  "lobby": {
+    "namePlaceholder": "Der Gruppenchat",
+    "nameAria": "Lobby-Name",
+    "teamSize": "Teamgröße",
+    "manCount": "{size} Spieler",
+    "normal": "Normal",
+    "beta": "Beta",
+    "limitTeams": "Teams begrenzen",
+    "limitHint": "Aus = unbegrenzt. Du kannst das später ändern.",
+    "limitAria": "Anzahl der Teams begrenzen",
+    "maxTeamsAria": "Maximale Teams",
+    "maxTeamsHint": "Teams max. (2–50)",
+    "creating": "Wird erstellt…",
+    "createLobby": "Lobby erstellen",
+    "limitError": "Das Team-Limit muss eine ganze Zahl von 2 bis 50 sein.",
+    "createError": "Lobby konnte gerade nicht erstellt werden — versuch es in einer Minute erneut."
+  },
+  "myTeams": {
+    "empty": "Noch keine gespeicherten Teams — beende eine Saison und tippe auf Speichern.",
+    "startDraft": "Draft starten →",
+    "view": "{name} ansehen",
+    "delete": "{name} löschen",
+    "tenMan": "10 Sp.",
+    "eightMan": "8 Sp.",
+    "olderData": "ältere Spielerdaten"
+  },
+  "cats": {
+    "friendly": {
+      "pts": "Punkte",
+      "reb": "Rebounds",
+      "ast": "Spielgestaltung",
+      "stl": "Ballgewinne",
+      "blk": "Korbverteidigung",
+      "fgPct": "Wurfquote",
+      "ftPct": "Freiwurfquote",
+      "tpm": "Dreierwurf",
+      "tov": "Ballverluste"
+    }
+  }
+}

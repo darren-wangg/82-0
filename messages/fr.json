@@ -1,0 +1,160 @@
+{
+  "home": {
+    "tagline": "Tournez pour une équipe et une ère, draftez 8 joueurs et visez la saison parfaite à <b>82-0</b>.",
+    "startDraft": "Lancer le draft",
+    "nav": {
+      "leaderboard": "Classement",
+      "lobbies": "Salons",
+      "myTeams": "Mes équipes"
+    },
+    "tenPlayerMode": "Mode 10 joueurs",
+    "beta": "Bêta",
+    "attribution": "Statistiques issues du jeu de données <link>NBA Stats (1947–présent)</link> de Sumitro Datta (CC BY-SA 4.0). Sans affiliation avec la NBA.",
+    "language": "Langue"
+  },
+  "howToPlay": {
+    "trigger": "Comment jouer",
+    "title": "Comment jouer",
+    "steps": {
+      "spin": {
+        "title": "Tourner",
+        "body": "Tournez pour une équipe et une ère au hasard. La même combinaison équipe-ère ne sort jamais deux fois."
+      },
+      "reSpins": {
+        "title": "Relances",
+        "body": "{teamSkips} relance d'équipe et {eraSkips} relance d'ère. Une relance ne change que cet axe."
+      },
+      "pick": {
+        "title": "Choisir",
+        "body": "Touchez un joueur, puis l'une de ses positions. Les titulaires ont besoin d'un PG, SG, SF, PF, C. Le banc a besoin d'un G, d'un F et d'un C."
+      },
+      "optimize": {
+        "title": "Optimiser",
+        "body": "Vous pouvez réorganiser les joueurs draftés entre les postes éligibles à tout moment du draft."
+      },
+      "simulate": {
+        "title": "Simuler",
+        "body": "Votre équipe est ajustée à son ère et dispute une saison complète. Une seule faiblesse peut limiter vos victoires."
+      }
+    }
+  },
+  "play": {
+    "pick": "Choix",
+    "countOf": "{current} sur {total}",
+    "newDraftAria": "Nouveau draft",
+    "progressAria": "Progression du draft",
+    "teamRespin": "Équipe",
+    "eraRespin": "Ère",
+    "confirmRetargetLobby": "Lancer un draft de salon ? Votre draft actuel sera abandonné.",
+    "confirmRetargetChallenge": "Lancer un draft de défi ? Votre draft actuel sera abandonné.",
+    "confirmNewGame": "Abandonner ce draft et recommencer ?",
+    "lobbyDraft": "Draft de salon",
+    "leave": "Quitter",
+    "confirmLeave": "Quitter le salon {code} ? Ce draft continue en jeu libre ; pour rejoindre le salon plus tard, il vous faudra son lien et un nouveau draft.",
+    "spin": "Tourner",
+    "spinning": "ROTATION…"
+  },
+  "sim": {
+    "finalRecordAria": "Bilan final {wins} à {losses}",
+    "onFire": "🔥 IL EST EN FEU ! 🔥",
+    "toastNameRequired": "Donnez d'abord un nom à votre équipe (1 à 40 caractères).",
+    "toastStaleData": "Les données des joueurs ont été mises à jour depuis ce draft — actualisez la page et recommencez.",
+    "toastLobbyEnterFailed": "Enregistré ! Impossible de rejoindre le salon pour l'instant.",
+    "toastBattleFailed": "Enregistré ! Impossible de lancer le duel pour l'instant — réessayez depuis la page de l'équipe.",
+    "toastSaveUnavailable": "L'enregistrement est indisponible pour l'instant — votre saison est sauvegardée sur cet appareil.",
+    "toastDeviceSaveFailed": "Impossible d'enregistrer sur cet appareil — le stockage est indisponible.",
+    "confirmReDraft": "Re-drafter votre équipe ? Cela utilise votre unique re-draft et abandonne cette composition.",
+    "downloadCardAria": "Télécharger l'image de la carte d'équipe",
+    "saveToDeviceAria": "Enregistrer cette équipe sur cet appareil",
+    "deviceDialogTitle": "Enregistrer sur cet appareil",
+    "deviceDialogDescription": "Nommez votre équipe — elle est stockée uniquement dans ce navigateur, sans lien, rien n'est partagé.",
+    "savedToDevice": "Enregistré sur cet appareil.",
+    "teamNamePlaceholder": "Nommez votre équipe",
+    "teamNameAria": "Nom de l'équipe",
+    "save": "Enregistrer",
+    "shareTeamAria": "Partager cette équipe",
+    "shareTitleLobby": "Soumettre votre équipe",
+    "shareTitleChallenge": "Affronter votre rival",
+    "shareTitleDefault": "Partager votre équipe",
+    "shareDescLobby": "Ajoutez votre nom et un nom d'équipe — votre participation apparaît instantanément dans le salon {code}.",
+    "shareDescChallenge": "Nommez votre équipe — le partage lance le meilleur des 7 contre votre rival.",
+    "shareDescDefault": "Nommez votre équipe pour obtenir un lien de partage — quiconque l'ouvre voit votre effectif et votre bilan, et peut drafter sa propre équipe pour vous affronter.",
+    "shareLinkReady": "Lien de partage prêt !",
+    "copied": "Copié",
+    "copy": "Copier",
+    "saveYourTeam": "Enregistrez votre équipe",
+    "playerNamePlaceholder": "Votre nom (affiché au classement)",
+    "playerNameAria": "Votre nom",
+    "sharing": "Partage…",
+    "enterLobby": "Rejoindre le salon",
+    "battle": "Affronter",
+    "share": "Partager",
+    "gateCapped": "<b>{cat}</b> vous a limité à {wins} victoires.",
+    "nineCatProfile": "Profil 9 catégories",
+    "whatCostYou": "Ce qui vous a coûté",
+    "costGatedLost": "La limite de <b>{cat}</b> vous a coûté <red>{winsLost, plural, one{# victoire} other{# victoires}}</red>. Principal responsable : <b>{culprit}</b> <mono>({z} vs ère)</mono>.",
+    "costGatedCaps": "La limite de <b>{cat}</b> vous limite à {winCap} victoires. Principal responsable : <b>{culprit}</b> <mono>({z} vs ère)</mono>.",
+    "costWeakLink": "Maillon faible : <b>{player}</b> au poste {slot}{bench, select, yes{ <muted>(banc)</muted>} other{}}{oop, select, yes{ <amber>— hors de position</amber>} other{}}.",
+    "scoutingReport": "Rapport de scouting",
+    "reDraft": "Re-drafter ({left} restant)",
+    "submitTeam": "Soumettre votre équipe",
+    "confirmExitLobby": "Quitter le salon {code} ? Pour rejoindre le salon plus tard, il vous faudra son lien et un nouveau draft.",
+    "exitLobby": "Quitter le salon",
+    "battleRival": "Affronter votre rival",
+    "runItBack": "On remet ça"
+  },
+  "pool": {
+    "searchPlaceholder": "Rechercher un joueur",
+    "hideStats": "Masquer les stats",
+    "showStats": "Afficher les stats",
+    "sortBy": "Trier les joueurs par statistique",
+    "noMatch": "Aucun joueur ne correspond à « {query} »"
+  },
+  "roster": {
+    "slotFilled": "{name} au poste {slot}",
+    "actionSwap": "touchez pour échanger ici",
+    "actionSelected": "sélectionné",
+    "actionMove": "touchez pour déplacer",
+    "placeAt": "Placer le joueur au poste {slot}",
+    "averagesAria": "Moyennes par match de l'équipe"
+  },
+  "lobby": {
+    "namePlaceholder": "Le groupe de discussion",
+    "nameAria": "Nom du salon",
+    "teamSize": "Taille de l'équipe",
+    "manCount": "{size} joueurs",
+    "normal": "Normal",
+    "beta": "Bêta",
+    "limitTeams": "Limiter les équipes",
+    "limitHint": "Désactivé = illimité. Vous pourrez le modifier plus tard.",
+    "limitAria": "Limiter le nombre d'équipes",
+    "maxTeamsAria": "Équipes maximum",
+    "maxTeamsHint": "équipes max (2 à 50)",
+    "creating": "Création…",
+    "createLobby": "Créer le salon",
+    "limitError": "La limite d'équipes doit être un nombre entier de 2 à 50.",
+    "createError": "Impossible de créer le salon pour l'instant — réessayez dans une minute."
+  },
+  "myTeams": {
+    "empty": "Aucune équipe enregistrée — terminez une saison et appuyez sur Enregistrer.",
+    "startDraft": "Lancer un draft →",
+    "view": "Voir {name}",
+    "delete": "Supprimer {name}",
+    "tenMan": "10 j.",
+    "eightMan": "8 j.",
+    "olderData": "anciennes données de joueurs"
+  },
+  "cats": {
+    "friendly": {
+      "pts": "Marquage",
+      "reb": "Rebonds",
+      "ast": "Création de jeu",
+      "stl": "Interceptions",
+      "blk": "Protection du cercle",
+      "fgPct": "Réussite aux tirs",
+      "ftPct": "Réussite aux lancers francs",
+      "tpm": "Tir à trois points",
+      "tov": "Pertes de balle"
+    }
+  }
+}
