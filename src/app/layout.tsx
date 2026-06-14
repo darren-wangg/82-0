@@ -69,7 +69,9 @@ export default async function RootLayout({
       lang={locale}
       className={`${spaceGrotesk.variable} ${geistMono.variable} ${anton.variable} ${pressStart.variable} h-full antialiased`}
     >
-      <body className="min-h-full flex flex-col">
+      {/* Browser extensions (e.g. Grammarly) inject attributes on <body> after
+          SSR; suppress the resulting one-level hydration warning. */}
+      <body className="min-h-full flex flex-col" suppressHydrationWarning>
         <NextIntlClientProvider>
           <AppMotion>{children}</AppMotion>
         </NextIntlClientProvider>
