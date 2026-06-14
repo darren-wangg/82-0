@@ -1,0 +1,160 @@
+{
+  "home": {
+    "tagline": "转动选出一支球队和一个年代，选秀 8 名球员，冲击完美的 <b>82-0</b> 赛季。",
+    "startDraft": "开始选秀",
+    "nav": {
+      "leaderboard": "排行榜",
+      "lobbies": "房间",
+      "myTeams": "我的球队"
+    },
+    "tenPlayerMode": "10 人模式",
+    "beta": "测试版",
+    "attribution": "数据来自 Sumitro Datta 的 <link>NBA Stats（1947 至今）</link> 数据集（CC BY-SA 4.0）。与 NBA 无关联。",
+    "language": "语言"
+  },
+  "howToPlay": {
+    "trigger": "玩法说明",
+    "title": "玩法说明",
+    "steps": {
+      "spin": {
+        "title": "转动",
+        "body": "随机转出一支球队和一个年代。同一组球队-年代组合绝不会出现两次。"
+      },
+      "reSpins": {
+        "title": "重转",
+        "body": "{teamSkips} 次球队重转和 {eraSkips} 次年代重转。重转只会改变该轴。"
+      },
+      "pick": {
+        "title": "选择",
+        "body": "点击一名球员，然后选择他的一个位置。首发需要 PG、SG、SF、PF、C。替补需要一名 G、一名 F 和一名 C。"
+      },
+      "optimize": {
+        "title": "优化",
+        "body": "在选秀过程中，你可以随时在合适的位置之间重新调整已选球员。"
+      },
+      "simulate": {
+        "title": "模拟",
+        "body": "你的球队会根据年代进行调整，并打完整个赛季。一个弱点就可能限制你的胜场。"
+      }
+    }
+  },
+  "play": {
+    "pick": "选择",
+    "countOf": "{current} / {total}",
+    "newDraftAria": "新选秀",
+    "progressAria": "选秀进度",
+    "teamRespin": "球队",
+    "eraRespin": "年代",
+    "confirmRetargetLobby": "开始一个房间选秀吗？你当前的选秀将被放弃。",
+    "confirmRetargetChallenge": "开始一个挑战选秀吗？你当前的选秀将被放弃。",
+    "confirmNewGame": "放弃这次选秀并重新开始吗？",
+    "lobbyDraft": "房间选秀",
+    "leave": "离开",
+    "confirmLeave": "离开房间 {code} 吗？此选秀将作为自由游戏继续；若想稍后加入房间，你需要它的链接并重新选秀。",
+    "spin": "转动",
+    "spinning": "转动中…"
+  },
+  "sim": {
+    "finalRecordAria": "最终战绩 {wins} 比 {losses}",
+    "onFire": "🔥 他火力全开！🔥",
+    "toastNameRequired": "请先给你的球队起个名字（1–40 个字符）。",
+    "toastStaleData": "自这次选秀以来球员数据已更新——请刷新页面并重新选秀。",
+    "toastLobbyEnterFailed": "已保存！暂时无法加入房间。",
+    "toastBattleFailed": "已保存！暂时无法进行对战——请从球队页面再试。",
+    "toastSaveUnavailable": "目前无法保存——你的赛季已安全保存在此设备上。",
+    "toastDeviceSaveFailed": "无法保存到此设备——存储不可用。",
+    "confirmReDraft": "重新选秀你的球队吗？这将用掉你唯一的一次重选并放弃此阵容。",
+    "downloadCardAria": "下载球队卡片图片",
+    "saveToDeviceAria": "将此球队保存到此设备",
+    "deviceDialogTitle": "保存到此设备",
+    "deviceDialogDescription": "给你的球队起个名字——它只保存在此浏览器中，没有链接，不会分享任何内容。",
+    "savedToDevice": "已保存到此设备。",
+    "teamNamePlaceholder": "给你的球队起名",
+    "teamNameAria": "球队名称",
+    "save": "保存",
+    "shareTeamAria": "分享此球队",
+    "shareTitleLobby": "提交你的球队",
+    "shareTitleChallenge": "挑战你的对手",
+    "shareTitleDefault": "分享你的球队",
+    "shareDescLobby": "添加你的名字和球队名称——你的参赛会立即显示在房间 {code} 中。",
+    "shareDescChallenge": "给你的球队起名——分享会与你的对手进行七战四胜。",
+    "shareDescDefault": "给你的球队起名以获得分享链接——任何打开它的人都能看到你的阵容和战绩，并可以选出自己的球队与你正面对决。",
+    "shareLinkReady": "分享链接已就绪！",
+    "copied": "已复制",
+    "copy": "复制",
+    "saveYourTeam": "保存你的球队",
+    "playerNamePlaceholder": "你的名字（显示在排行榜中）",
+    "playerNameAria": "你的名字",
+    "sharing": "分享中…",
+    "enterLobby": "加入房间",
+    "battle": "对战",
+    "share": "分享",
+    "gateCapped": "<b>{cat}</b> 将你限制在 {wins} 胜。",
+    "nineCatProfile": "九项数据概览",
+    "whatCostYou": "你输在哪里",
+    "costGatedLost": "<b>{cat}</b> 上限让你损失了 <red>{winsLost, plural, other{# 胜}}</red>。最大问题：<b>{culprit}</b> <mono>（{z} 对比同年代）</mono>。",
+    "costGatedCaps": "<b>{cat}</b> 上限将你限制在 {winCap} 胜。最大问题：<b>{culprit}</b> <mono>（{z} 对比同年代）</mono>。",
+    "costWeakLink": "最弱环节：<b>{player}</b> 位于 {slot}{bench, select, yes{ <muted>（替补）</muted>} other{}}{oop, select, yes{ <amber>——位置不符</amber>} other{}}。",
+    "scoutingReport": "球探报告",
+    "reDraft": "重新选秀（剩余 {left} 次）",
+    "submitTeam": "提交你的球队",
+    "confirmExitLobby": "退出房间 {code} 吗？若想稍后加入房间，你需要它的链接并重新选秀。",
+    "exitLobby": "退出房间",
+    "battleRival": "挑战你的对手",
+    "runItBack": "再来一次"
+  },
+  "pool": {
+    "searchPlaceholder": "搜索球员",
+    "hideStats": "隐藏数据",
+    "showStats": "显示数据",
+    "sortBy": "按数据排序球员",
+    "noMatch": "没有匹配“{query}”的球员"
+  },
+  "roster": {
+    "slotFilled": "{name} 位于 {slot}",
+    "actionSwap": "点击在此交换",
+    "actionSelected": "已选中",
+    "actionMove": "点击移动",
+    "placeAt": "将球员放在 {slot}",
+    "averagesAria": "球队场均数据"
+  },
+  "lobby": {
+    "namePlaceholder": "群聊",
+    "nameAria": "房间名称",
+    "teamSize": "球队人数",
+    "manCount": "{size} 人",
+    "normal": "普通",
+    "beta": "测试版",
+    "limitTeams": "限制球队数量",
+    "limitHint": "关闭 = 不限。你可以稍后更改。",
+    "limitAria": "限制球队数量",
+    "maxTeamsAria": "最大球队数",
+    "maxTeamsHint": "最多球队（2–50）",
+    "creating": "创建中…",
+    "createLobby": "创建房间",
+    "limitError": "球队上限必须是 2 到 50 之间的整数。",
+    "createError": "目前无法创建房间——请一分钟后再试。"
+  },
+  "myTeams": {
+    "empty": "还没有已保存的球队——完成一个赛季并点击保存。",
+    "startDraft": "开始选秀 →",
+    "view": "查看 {name}",
+    "delete": "删除 {name}",
+    "tenMan": "10 人",
+    "eightMan": "8 人",
+    "olderData": "较旧的球员数据"
+  },
+  "cats": {
+    "friendly": {
+      "pts": "得分",
+      "reb": "篮板",
+      "ast": "组织",
+      "stl": "抢断",
+      "blk": "护框",
+      "fgPct": "投篮命中",
+      "ftPct": "罚球命中",
+      "tpm": "三分球",
+      "tov": "失误"
+    }
+  }
+}
