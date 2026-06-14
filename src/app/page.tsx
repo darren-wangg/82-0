@@ -74,9 +74,9 @@ export default async function Home() {
           </p>
         </div>
 
-        <div className="flex w-full animate-in flex-col items-center gap-3 pt-2 delay-150 duration-700 fade-in slide-in-from-bottom-4 fill-mode-both">
+        <div className="flex w-full animate-in flex-col items-center gap-4 pt-2 delay-150 duration-700 fade-in slide-in-from-bottom-4 fill-mode-both">
           <div className="flex items-center gap-2">
-            <span className="text-xs font-semibold tracking-wide text-muted-foreground uppercase">
+            <span className="text-md font-semibold tracking-wide text-muted-foreground uppercase">
               Team size
             </span>
             <TeamSizeSwitch value={teamSize} />
