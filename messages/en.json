@@ -136,7 +136,7 @@
     "blurb10": "Deep bench"
   },
   "myTeams": {
-    "empty": "No saved {size}-man teams yet — finish a season and hit Save.",
+    "empty": "No saved {size}-man teams yet — draft a team and hit Save.",
     "startDraft": "Start a draft →",
     "view": "View {name}",
     "delete": "Delete {name}",

@@ -7,6 +7,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { cookies } from "next/headers";
+import { getTranslations } from "next-intl/server";
 import { Plus, UsersRound } from "lucide-react";
 import { loadActiveLobbies, type ActiveLobbySummary } from "@/app/api/_lib/lobbies";
 import { buttonVariants } from "@/components/ui/button";
@@ -24,6 +25,7 @@ export const metadata: Metadata = {
 export const dynamic = "force-dynamic";
 
 export default async function LobbiesPage() {
+  const t = await getTranslations("home");
   const teamSize = resolveTeamSize(
     (await cookies()).get(TEAM_SIZE_COOKIE)?.value
   );
@@ -39,10 +41,15 @@ export default async function LobbiesPage() {
     <main className="flex flex-1 flex-col">
       <div className="flex items-start justify-between gap-3">
         <h1 className="font-display text-3xl tracking-wide">Lobbies</h1>
-        <TeamSizeSwitch value={teamSize} className="mt-1" />
+        <div className="flex items-center gap-2">
+          <span className="text-sm font-semibold tracking-wide text-muted-foreground uppercase">
+            {t("teamSize")}
+          </span>
+          <TeamSizeSwitch value={teamSize} />
+        </div>
       </div>
       <p className="mt-1 text-sm text-muted-foreground">
-        Everyone drafts a team, every matchup runs head-to-head, and a champion is crowned.
+        Everyone drafts a team, runs head-to-head matchups, and a champion is crowned.
       </p>
 
       <Link
@@ -52,7 +59,7 @@ export default async function LobbiesPage() {
           "mt-4 h-12 w-full rounded-xl font-bold"
         )}
       >
-        <Plus className="size-5" /> Create a lobby
+        Create a lobby <Plus className="size-5" />
       </Link>
 
       <h2 className="mt-7 mb-2 text-xs font-semibold tracking-widest text-muted-foreground uppercase">

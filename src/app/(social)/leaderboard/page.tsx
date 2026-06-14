@@ -6,6 +6,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { cookies } from "next/headers";
+import { getTranslations } from "next-intl/server";
 import { LeaderboardEntry } from "@/lib/contracts";
 import { loadLeaderboardEntries } from "@/app/api/_lib/leaderboard";
 import { Badge } from "@/components/ui/badge";
@@ -25,6 +26,7 @@ export default async function LeaderboardPage({
 }: PageProps<"/leaderboard">) {
   const params = await searchParams;
   const scope = params.scope === "weekly" ? "weekly" : "global";
+  const t = await getTranslations("home");
   const teamSize = resolveTeamSize(
     (await cookies()).get(TEAM_SIZE_COOKIE)?.value
   );
@@ -40,7 +42,12 @@ export default async function LeaderboardPage({
     <main className="flex flex-1 flex-col">
       <div className="flex items-start justify-between gap-3">
         <h1 className="font-display text-3xl tracking-wide">Leaderboard</h1>
-        <TeamSizeSwitch value={teamSize} className="mt-1" />
+        <div className="flex items-center gap-2">
+          <span className="text-sm font-semibold tracking-wide text-muted-foreground uppercase">
+            {t("teamSize")}
+          </span>
+          <TeamSizeSwitch value={teamSize} />
+        </div>
       </div>
 
       <div className="mt-4 grid grid-cols-2 gap-1 rounded-xl bg-muted/60 p-1 text-center text-sm font-semibold">

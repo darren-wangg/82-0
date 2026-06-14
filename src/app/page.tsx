@@ -82,7 +82,7 @@ export default async function Home() {
 
         <div className="flex w-full animate-in flex-col items-center gap-5 pt-2 delay-150 duration-700 fade-in slide-in-from-bottom-4 fill-mode-both">
           <div className="flex items-center gap-2">
-            <span className="text-md font-semibold tracking-wide text-muted-foreground uppercase">
+            <span className="text-sm font-semibold tracking-wide text-muted-foreground uppercase">
               {t("teamSize")}
             </span>
             <TeamSizeSwitch value={teamSize} />

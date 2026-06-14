@@ -23,14 +23,11 @@ export default async function NewLobbyPage() {
     <main className="flex flex-1 flex-col justify-center space-y-6">
       <div className="text-center">
         <p className="text-xs font-semibold tracking-widest text-primary uppercase">
-          Group lobby
+          Lobby
         </p>
-        <h1 className="mt-2 font-display text-3xl tracking-wide">
-          Settle it as a group
-        </h1>
         <p className="mx-auto mt-2 max-w-xs text-sm text-muted-foreground">
-          Create a lobby and share the link. Everyone drafts a team. Every matchup runs head-to-head, and the lobby
-          stays open until you end it and crown the champ.
+          Create a lobby and share the link. Everyone drafts a team. Matchups run head-to-head, and the lobby
+          stays open until you crown the champ.
         </p>
       </div>
       <CreateLobbyForm defaultSize={teamSize} />

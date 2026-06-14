@@ -85,7 +85,6 @@ export function CreateLobbyForm({
                 )}
               >
                 <span className="font-bold">{t("manCount", { size })}</span>
-                <span className="text-[11px]">{t(`blurb${size}`)}</span>
               </button>
             );
           })}

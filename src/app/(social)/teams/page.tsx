@@ -5,6 +5,7 @@
 
 import type { Metadata } from "next";
 import { cookies } from "next/headers";
+import { getTranslations } from "next-intl/server";
 import { getSnapshot } from "@/lib/snapshot";
 import { MyTeams } from "@/components/social/my-teams";
 import { TeamSizeSwitch } from "@/components/team-size-switch";
@@ -16,6 +17,7 @@ export const metadata: Metadata = {
 };
 
 export default async function TeamsPage() {
+  const t = await getTranslations("home");
   const teamSize = resolveTeamSize(
     (await cookies()).get(TEAM_SIZE_COOKIE)?.value
   );
@@ -23,7 +25,12 @@ export default async function TeamsPage() {
     <main className="flex flex-1 flex-col">
       <div className="flex items-start justify-between gap-3">
         <h1 className="font-display text-3xl tracking-wide">My teams</h1>
-        <TeamSizeSwitch value={teamSize} className="mt-1" />
+        <div className="flex items-center gap-2">
+          <span className="text-sm font-semibold tracking-wide text-muted-foreground uppercase">
+            {t("teamSize")}
+          </span>
+          <TeamSizeSwitch value={teamSize} />
+        </div>
       </div>
       <p className="mt-1 text-sm text-muted-foreground">
         Saved on this device only.

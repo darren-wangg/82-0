@@ -23,8 +23,7 @@ export default function RootError({
       <div>
         <h1 className="text-lg font-bold">Something went wrong</h1>
         <p className="mt-1 text-sm text-muted-foreground">
-          An unexpected error interrupted the play. Your draft is safe on this
-          device.
+          An error interrupted the play. Your draft is still safe on this device.
         </p>
       </div>
       <div className="flex items-center gap-2">
