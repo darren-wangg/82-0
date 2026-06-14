@@ -104,6 +104,7 @@
   },
   "pool": {
     "searchPlaceholder": "Search for a player",
+    "closeSearch": "Close search",
     "hideStats": "Hide Stats",
     "showStats": "Show Stats",
     "sortBy": "Sort players by stat",

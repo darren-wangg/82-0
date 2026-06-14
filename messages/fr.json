@@ -104,6 +104,7 @@
   },
   "pool": {
     "searchPlaceholder": "Rechercher un joueur",
+    "closeSearch": "Fermer la recherche",
     "hideStats": "Masquer les stats",
     "showStats": "Afficher les stats",
     "sortBy": "Trier les joueurs par statistique",

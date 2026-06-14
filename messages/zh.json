@@ -104,6 +104,7 @@
   },
   "pool": {
     "searchPlaceholder": "搜索球员",
+    "closeSearch": "关闭搜索",
     "hideStats": "隐藏数据",
     "showStats": "显示数据",
     "sortBy": "按数据排序球员",

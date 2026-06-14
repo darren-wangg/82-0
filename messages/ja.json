@@ -104,6 +104,7 @@
   },
   "pool": {
     "searchPlaceholder": "選手を検索",
+    "closeSearch": "検索を閉じる",
     "hideStats": "スタッツを隠す",
     "showStats": "スタッツを表示",
     "sortBy": "スタッツで選手を並べ替え",

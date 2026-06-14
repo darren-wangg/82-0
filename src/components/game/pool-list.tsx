@@ -3,7 +3,7 @@
 import { useMemo, useRef, useState } from "react";
 import { motion } from "framer-motion";
 import { useFormatter, useTranslations } from "next-intl";
-import { Search } from "lucide-react";
+import { Search, X } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import type { NineCat, PlayerStatLine } from "@/lib/contracts";
 import { cn } from "@/lib/utils";
@@ -110,6 +110,18 @@ export function PoolList({
     }
   };
 
+  // Collapse back to the icon and drop any active filter, so the hidden search
+  // never silently narrows the pool.
+  const collapseSearch = () => {
+    setSearchExpanded(false);
+    setQuery("");
+    try {
+      window.sessionStorage.setItem(SEARCH_EXPANDED_KEY, "off");
+    } catch {
+      // storage unavailable — still collapses for this view
+    }
+  };
+
   const sorted = useMemo(() => {
     // Diacritic-insensitive ("jokic" finds Jokić) prefix-anywhere match.
     const q = normalize(query.trim());
@@ -156,6 +168,16 @@ export function PoolList({
             searchExpanded ? "min-w-0 flex-1" : "sr-only"
           )}
         />
+        {searchExpanded && (
+          <button
+            type="button"
+            onClick={collapseSearch}
+            aria-label={t("closeSearch")}
+            className="flex size-8 shrink-0 items-center justify-center rounded-lg border border-border bg-card text-muted-foreground transition-colors active:scale-[0.97]"
+          >
+            <X className="size-4" />
+          </button>
+        )}
         <button
           type="button"
           aria-pressed={!showStats}

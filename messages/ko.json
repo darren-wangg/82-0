@@ -104,6 +104,7 @@
   },
   "pool": {
     "searchPlaceholder": "선수 검색",
+    "closeSearch": "검색 닫기",
     "hideStats": "스탯 숨기기",
     "showStats": "스탯 표시",
     "sortBy": "스탯으로 선수 정렬",
