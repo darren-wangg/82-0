@@ -173,7 +173,10 @@ export function RosterBoard({ className }: { className?: string }) {
             size={starterSize}
           />
         ))}
-        <div className="mx-0.5 h-10 w-px shrink-0 self-center bg-border" />
+        {/* No bench divider in 5-man (starters only). */}
+        {benchSlots.length > 0 && (
+          <div className="mx-0.5 h-10 w-px shrink-0 self-center bg-border" />
+        )}
         {benchSlots.map(({ key }) => (
           <SlotCircle
             key={key}

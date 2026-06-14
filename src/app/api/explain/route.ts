@@ -59,7 +59,7 @@ const DraftExplainSchema = z.object({
   kind: z.literal("draft"),
   roster: z.object({
     starters: z.record(z.enum(POSITIONS), z.string()),
-    bench: z.array(z.string()).min(3).max(5),
+    bench: z.array(z.string()).min(0).max(5),
   }),
   snapshotVersion: z.string(),
 });
@@ -147,7 +147,7 @@ export async function POST(request: Request) {
       }
       const players = getPlayerMap();
       const roster = draftReq.roster as Roster;
-      const valid = validateRoster(roster, players, { benchCounts: [3, 5] });
+      const valid = validateRoster(roster, players, { benchCounts: [0, 3, 5] });
       if (!valid.ok) return jsonError(422, valid.error);
       const rating = getEngine().teamRating(roster, players, getBaselines());
       kind = "team";

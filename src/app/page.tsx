@@ -1,9 +1,12 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { cookies } from "next/headers";
 import { preload } from "react-dom";
-import { FlaskConical, Shirt, Trophy, UsersRound } from "lucide-react";
+import { Shirt, Trophy, UsersRound } from "lucide-react";
 import { buttonVariants } from "@/components/ui/button";
 import { HowToPlayDialog } from "@/components/game/how-to-play";
+import { TeamSizeSwitch } from "@/components/team-size-switch";
+import { PLAY_PATH, resolveTeamSize, TEAM_SIZE_COOKIE } from "@/lib/team-size";
 import { cn } from "@/lib/utils";
 
 export const metadata: Metadata = {
@@ -35,12 +38,16 @@ const NAV_TILES = [
   },
 ] as const;
 
-export default function Home() {
+export default async function Home() {
   // Warm the draft's data (~1.6 MB snapshot + fallback map, both cached
   // immutably) while the user reads the home screen — tapping Start Draft
   // then loads from the browser cache instead of fetching on /play mount.
   preload("/data/snapshot-v1.json", { as: "fetch" });
   preload("/data/headshot-fallbacks-v1.json", { as: "fetch" });
+  // Session team-size preference drives where Start Draft goes (5/8/10).
+  const teamSize = resolveTeamSize(
+    (await cookies()).get(TEAM_SIZE_COOKIE)?.value
+  );
   return (
     <div className="dark relative flex min-h-dvh flex-1 flex-col overflow-hidden bg-background text-foreground">
       {/* ambient court glow — pure CSS, decorative only */}
@@ -67,9 +74,15 @@ export default function Home() {
           </p>
         </div>
 
-        <div className="flex w-full animate-in flex-col items-center gap-3 pt-2 delay-150 duration-700 fade-in slide-in-from-bottom-4 fill-mode-both">
+        <div className="flex w-full animate-in flex-col items-center gap-4 pt-2 delay-150 duration-700 fade-in slide-in-from-bottom-4 fill-mode-both">
+          <div className="flex items-center gap-2">
+            <span className="text-md font-semibold tracking-wide text-muted-foreground uppercase">
+              Team size
+            </span>
+            <TeamSizeSwitch value={teamSize} />
+          </div>
           <Link
-            href="/play"
+            href={PLAY_PATH[teamSize]}
             className={cn(
               buttonVariants({ size: "lg" }),
               "h-14 w-full rounded-2xl font-display text-xl tracking-wide shadow-lg shadow-primary/30 transition-transform active:scale-95"
@@ -95,18 +108,6 @@ export default function Home() {
             ))}
           </div>
           <HowToPlayDialog />
-
-          {/* Beta: a longer 10-player draft, walled off from the main flow. */}
-          <Link
-            href="/play10"
-            className="mt-1 inline-flex items-center gap-1.5 rounded-full border border-violet-400/40 bg-violet-400/10 px-3 py-1.5 text-[11px] font-semibold text-violet-300 transition-transform active:scale-95"
-          >
-            <FlaskConical className="size-3.5" />
-            10-Player Mode
-            <span className="rounded bg-violet-400/20 px-1 py-px text-[9px] tracking-wider uppercase">
-              Beta
-            </span>
-          </Link>
         </div>
 
         {/* CC BY-SA attribution for the source dataset (required by license). */}
