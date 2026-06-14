@@ -5,6 +5,8 @@
 
 import type { Metadata } from "next";
 import Link from "next/link";
+import { cookies } from "next/headers";
+import { PLAY_PATH, resolveTeamSize, TEAM_SIZE_COOKIE } from "@/lib/team-size";
 
 export const metadata: Metadata = {
   title: { default: "Ultimate Draft", template: "%s — Ultimate Draft" },
@@ -12,7 +14,11 @@ export const metadata: Metadata = {
     "Draft an 8-player all-time NBA roster and see how close to 82-0 it gets.",
 };
 
-export default function SocialLayout({ children }: { children: React.ReactNode }) {
+export default async function SocialLayout({ children }: { children: React.ReactNode }) {
+  // Route Play to the draft for the selected team size, not always the 8-man flow.
+  const teamSize = resolveTeamSize(
+    (await cookies()).get(TEAM_SIZE_COOKIE)?.value
+  );
   return (
     <div className="dark flex w-full flex-1 flex-col items-center bg-background font-sans text-foreground">
       <div className="flex w-full max-w-md flex-1 flex-col px-4 pb-12 pt-5">
@@ -22,7 +28,7 @@ export default function SocialLayout({ children }: { children: React.ReactNode }
             <span className="text-foreground">Draft</span>
           </Link>
           <Link
-            href="/play"
+            href={PLAY_PATH[teamSize]}
             className="text-xs font-semibold text-primary hover:underline"
           >
             Play →
