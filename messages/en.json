@@ -1,6 +1,6 @@
 {
   "home": {
-    "tagline": "Spin for a team and an era, draft 8 players, and chase the perfect <b>82-0</b> season.",
+    "tagline": "Spin for a team and an era, draft {size} players, and chase the perfect <b>82-0</b> season.",
     "startDraft": "Start Draft",
     "nav": {
       "leaderboard": "Leaderboard",

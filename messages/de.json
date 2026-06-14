@@ -1,6 +1,6 @@
 {
   "home": {
-    "tagline": "Dreh für ein Team und eine Ära, drafte 8 Spieler und jage die perfekte <b>82-0</b>-Saison.",
+    "tagline": "Dreh für ein Team und eine Ära, drafte {size} Spieler und jage die perfekte <b>82-0</b>-Saison.",
     "startDraft": "Draft starten",
     "nav": {
       "leaderboard": "Bestenliste",

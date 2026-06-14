@@ -1,6 +1,6 @@
 {
   "home": {
-    "tagline": "Tournez pour une équipe et une ère, draftez 8 joueurs et visez la saison parfaite à <b>82-0</b>.",
+    "tagline": "Tournez pour une équipe et une ère, draftez {size} joueurs et visez la saison parfaite à <b>82-0</b>.",
     "startDraft": "Lancer le draft",
     "nav": {
       "leaderboard": "Classement",

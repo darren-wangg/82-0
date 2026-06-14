@@ -180,7 +180,7 @@ export interface CardSlot {
 }
 
 /** Roster → display slots: 5 starters then the bench. The 8-man bench is
- *  G/F/C; the 10-player beta's 5 bench slots are a second PG/SG/SF/PF/C. */
+ *  G/F/C; 10-man's 5 bench slots are a second PG/SG/SF/PF/C. */
 export function rosterSlots(
   roster: Roster,
   playerMap: Map<string, PlayerStatLine>

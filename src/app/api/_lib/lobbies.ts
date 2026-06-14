@@ -27,7 +27,7 @@ export interface ActiveLobbySummary {
   entrantCount: number;
   /** Max teams allowed; null = unlimited. */
   teamLimit: number | null;
-  /** Roster size: 8 (normal) or 10 (10-player beta). */
+  /** Roster size: 5 (starters only), 8 (classic), or 10. */
   teamSize: number;
   createdAt: string;
 }

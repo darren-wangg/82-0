@@ -3,11 +3,11 @@ import { GameProvider } from "@/components/game/game-provider";
 import { TEN_MODE } from "@/components/game/draft-state";
 
 /**
- * 10-player beta. A second, independent GameProvider instance — its own mode
- * (5 starters + a PG/SG/SF/PF/C bench, 10 rounds, 2 team + 2 era skips) and
- * its own localStorage key — so a beta draft never touches the live game.
+ * 10-man mode: five starters + a PG/SG/SF/PF/C bench (10 rounds, 2 team + 2 era
+ * skips). An independent GameProvider instance with its own mode and
+ * localStorage key, so a 10-man draft never touches the other games.
  */
-export default function BetaGameLayout({ children }: { children: ReactNode }) {
+export default function TenGameLayout({ children }: { children: ReactNode }) {
   return (
     <div className="dark flex min-h-dvh flex-1 flex-col bg-background text-foreground">
       <GameProvider mode={TEN_MODE}>

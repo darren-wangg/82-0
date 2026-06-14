@@ -72,6 +72,7 @@ export default async function Home() {
           </h1>
           <p className="max-w-xs text-base text-balance text-muted-foreground">
             {t.rich("tagline", {
+              size: teamSize,
               b: (chunks) => (
                 <span className="font-semibold text-foreground">{chunks}</span>
               ),

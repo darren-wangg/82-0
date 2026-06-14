@@ -1,6 +1,6 @@
 {
   "home": {
-    "tagline": "Gira para un equipo y una era, ficha 8 jugadores y persigue la temporada perfecta de <b>82-0</b>.",
+    "tagline": "Gira para un equipo y una era, ficha {size} jugadores y persigue la temporada perfecta de <b>82-0</b>.",
     "startDraft": "Empezar draft",
     "nav": {
       "leaderboard": "Clasificación",

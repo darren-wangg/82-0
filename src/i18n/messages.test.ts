@@ -32,6 +32,7 @@ const tags = {
 /** The messages with non-trivial ICU (placeholders, plural, select, tags),
  *  with sample values, exercised in every locale. */
 const RICH_CASES: { key: string; values: Record<string, unknown> }[] = [
+  { key: "home.tagline", values: { size: 8, ...tags } },
   { key: "home.attribution", values: { ...tags } },
   { key: "play.countOf", values: { current: 1, total: 8 } },
   { key: "sim.gateCapped", values: { cat: "X", wins: 74, ...tags } },

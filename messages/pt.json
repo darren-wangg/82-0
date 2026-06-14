@@ -1,6 +1,6 @@
 {
   "home": {
-    "tagline": "Gire por um time e uma era, escale 8 jogadores e busque a temporada perfeita de <b>82-0</b>.",
+    "tagline": "Gire por um time e uma era, escale {size} jogadores e busque a temporada perfeita de <b>82-0</b>.",
     "startDraft": "Iniciar draft",
     "nav": {
       "leaderboard": "Classificação",

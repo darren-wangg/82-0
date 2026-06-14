@@ -165,7 +165,7 @@ export function RosterBoard({ className }: { className?: string }) {
 
   const benchSlots = ctx.mode?.benchSlots ?? [];
   // 5 starters + a 3-slot bench fits at the default size; the 10-player
-  // beta's 5-slot bench needs tighter circles to stay on one row.
+  // 10-man's 5-slot bench needs tighter circles to stay on one row.
   const compact = benchSlots.length > 3;
   const starterSize = compact ? "size-9" : "size-10";
   const benchSize = compact ? "size-8" : "size-9";

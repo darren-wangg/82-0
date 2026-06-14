@@ -27,8 +27,8 @@ import { RATE_LIMITS, rateLimitGate } from "../_lib/rate-limit";
 
 const SLUG_ATTEMPTS = 5;
 
-/** Save-team body. Mirrors the frozen SaveTeamRequestSchema but accepts the
- *  10-player beta's deeper bench (3–5) via the flexible roster parser. */
+/** Save-team body. Mirrors the frozen SaveTeamRequestSchema but accepts every
+ *  size's bench (0–5) via the flexible roster parser. */
 const SaveTeamBodySchema = z.object({
   teamName: z.string().min(1).max(40),
   roster: FlexibleRosterSchema,
