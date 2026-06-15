@@ -3,7 +3,7 @@ import Link from "next/link";
 import { cookies } from "next/headers";
 import { preload } from "react-dom";
 import { getTranslations } from "next-intl/server";
-import { Shirt, Trophy, UsersRound } from "lucide-react";
+import { MessageSquarePlus, Shirt, Trophy, UsersRound } from "lucide-react";
 import { buttonVariants } from "@/components/ui/button";
 import { HowToPlayDialog } from "@/components/game/how-to-play";
 import { LanguageSwitcher } from "@/components/i18n/language-switcher";
@@ -51,6 +51,9 @@ export default async function Home() {
   const teamSize = resolveTeamSize(
     (await cookies()).get(TEAM_SIZE_COOKIE)?.value
   );
+  // Optional hosted feedback form (Tally/Formspree/etc.). The button only
+  // shows when a URL is configured, so there's no dead link in dev/preview.
+  const feedbackUrl = process.env.NEXT_PUBLIC_FEEDBACK_URL;
   return (
     <div className="dark relative flex min-h-dvh flex-1 flex-col overflow-hidden bg-background text-foreground">
       {/* ambient court glow — pure CSS, decorative only */}
@@ -114,6 +117,18 @@ export default async function Home() {
             ))}
           </div>
           <HowToPlayDialog />
+
+          {feedbackUrl && (
+            <a
+              href={feedbackUrl}
+              target="_blank"
+              rel="noreferrer"
+              className="inline-flex items-center gap-1.5 text-[11px] font-semibold text-muted-foreground transition-colors hover:text-foreground"
+            >
+              <MessageSquarePlus aria-hidden className="size-3.5" />
+              {t("feedback")}
+            </a>
+          )}
 
           <LanguageSwitcher className="mt-1" label={t("language")} />
         </div>

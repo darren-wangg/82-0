@@ -9,7 +9,8 @@
     },
     "attribution": "Statistiques issues du jeu de données <link>NBA Stats (1947–présent)</link> de Sumitro Datta (CC BY-SA 4.0). Sans affiliation avec la NBA.",
     "language": "Langue",
-    "teamSize": "Taille de l'équipe"
+    "teamSize": "Taille de l'équipe",
+    "feedback": "Envoyer un commentaire"
   },
   "howToPlay": {
     "trigger": "Comment jouer",

@@ -9,7 +9,8 @@
     },
     "attribution": "統計は Sumitro Datta による <link>NBA Stats（1947年〜現在）</link> データセット（CC BY-SA 4.0）に基づきます。NBA とは無関係です。",
     "language": "言語",
-    "teamSize": "チーム人数"
+    "teamSize": "チーム人数",
+    "feedback": "フィードバックを送る"
   },
   "howToPlay": {
     "trigger": "遊び方",

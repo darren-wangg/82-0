@@ -9,7 +9,8 @@
     },
     "attribution": "통계는 Sumitro Datta의 <link>NBA Stats(1947년~현재)</link> 데이터셋(CC BY-SA 4.0)에서 가져왔습니다. NBA와 무관합니다.",
     "language": "언어",
-    "teamSize": "팀 인원"
+    "teamSize": "팀 인원",
+    "feedback": "피드백 보내기"
   },
   "howToPlay": {
     "trigger": "게임 방법",

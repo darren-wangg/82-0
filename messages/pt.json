@@ -9,7 +9,8 @@
     },
     "attribution": "Estatísticas derivadas do conjunto de dados <link>NBA Stats (1947–presente)</link> de Sumitro Datta (CC BY-SA 4.0). Sem afiliação com a NBA.",
     "language": "Idioma",
-    "teamSize": "Tamanho do time"
+    "teamSize": "Tamanho do time",
+    "feedback": "Enviar feedback"
   },
   "howToPlay": {
     "trigger": "Como jogar",
