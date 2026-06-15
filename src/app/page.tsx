@@ -118,23 +118,27 @@ export default async function Home() {
           </div>
           <HowToPlayDialog />
 
-          {feedbackUrl && (
-            <a
-              href={feedbackUrl}
-              target="_blank"
-              rel="noreferrer"
-              className="inline-flex items-center gap-1.5 text-[11px] font-semibold text-muted-foreground transition-colors hover:text-foreground"
-            >
-              <MessageSquarePlus aria-hidden className="size-3.5" />
-              {t("feedback")}
-            </a>
-          )}
-
           <LanguageSwitcher className="mt-1" label={t("language")} />
         </div>
 
-        {/* CC BY-SA attribution for the source dataset (required by license). */}
-        <p className="mt-auto pt-6 text-center text-[10px] leading-relaxed text-muted-foreground/70">
+        {/* Bottom-anchored footer: feedback (bottom-right) above the disclaimer. */}
+        <div className="mt-auto w-full pt-6">
+          {feedbackUrl && (
+            <div className="flex w-full justify-end">
+              <a
+                href={feedbackUrl}
+                target="_blank"
+                rel="noreferrer"
+                className="inline-flex items-center gap-1.5 text-[11px] font-semibold text-muted-foreground transition-colors hover:text-foreground"
+              >
+                <MessageSquarePlus aria-hidden className="size-3.5" />
+                {t("feedback")}
+              </a>
+            </div>
+          )}
+
+          {/* CC BY-SA attribution for the source dataset (required by license). */}
+          <p className="pt-4 text-center text-[10px] leading-relaxed text-muted-foreground/70">
           {t.rich("attribution", {
             link: (chunks) => (
               <a
@@ -147,7 +151,8 @@ export default async function Home() {
               </a>
             ),
           })}
-        </p>
+          </p>
+        </div>
       </main>
     </div>
   );
