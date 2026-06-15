@@ -14,8 +14,9 @@ import {
   SeasonResult,
   TeamRating,
 } from "@/lib/contracts";
+import { displayCatValue } from "@/lib/cat-display";
 
-export const PROMPT_VERSION = "v10";
+export const PROMPT_VERSION = "v11";
 /** Cheapest tier — explanations are short, structured-input blurbs. */
 export const EXPLAIN_MODEL = "claude-haiku-4-5-20251001";
 
@@ -59,8 +60,11 @@ const SYSTEM_PROMPT =
   "If you name a guy, say the concrete basketball thing — what he actually " +
   "scores, guards, spaces, rebounds, or can't do — not how he feels. " +
   "Ground every take in the numbers you're given: category values are " +
-  "era-adjusted z-scores (higher is always better; turnovers are " +
-  "sign-flipped). Never invent stats. Plain text only, no markdown, no " +
+  "era-adjusted z-scores (higher is always better). Turnovers are sign-flipped " +
+  "AND baselined to a title contender, so ~0 is normal ball security for a " +
+  "star roster — only call out turnovers when the number is clearly negative, " +
+  "never treat a slightly-below-zero tov as a flaw. Never invent stats. Plain " +
+  "text only, no markdown, no " +
   "headings, no bullet points. Hard limit: ONE punchy sentence (two only if " +
   "the second is just as short), ~30 words max, no exceptions — like a bar, " +
   "not a paragraph: no filler, no warm-up, no stacked clauses. Get in, land " +
@@ -75,7 +79,7 @@ export function buildTeamPrompt(payload: TeamExplainPayload): string {
   const starters = players.filter((p) => !p.bench);
   const bench = players.filter((p) => p.bench);
   const cats = (Object.entries(rating.catProfile) as [NineCat, number][])
-    .map(([cat, v]) => `${CAT_LABELS[cat]}: ${v.toFixed(2)}`)
+    .map(([cat, v]) => `${CAT_LABELS[cat]}: ${displayCatValue(cat, v).toFixed(2)}`)
     .join(", ");
 
   const perfect = season.wins === SEASON_GAMES;
@@ -118,7 +122,9 @@ export function buildMatchupPrompt(payload: MatchupExplainPayload): string {
   const breakdown = result.catBreakdown
     .map(
       (e) =>
-        `${CAT_LABELS[e.cat]}: ${teamA.teamName} ${e.teamA.toFixed(2)} vs ${teamB.teamName} ${e.teamB.toFixed(2)} (edge ${e.edge >= 0 ? "+" : ""}${e.edge.toFixed(2)} to ${e.edge >= 0 ? teamA.teamName : teamB.teamName})`
+        // Baseline tov the same way the team report does (the edge itself is
+        // unchanged — the offset cancels in the difference).
+        `${CAT_LABELS[e.cat]}: ${teamA.teamName} ${displayCatValue(e.cat, e.teamA).toFixed(2)} vs ${teamB.teamName} ${displayCatValue(e.cat, e.teamB).toFixed(2)} (edge ${e.edge >= 0 ? "+" : ""}${e.edge.toFixed(2)} to ${e.edge >= 0 ? teamA.teamName : teamB.teamName})`
     )
     .join("\n");
 

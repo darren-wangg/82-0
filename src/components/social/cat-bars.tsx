@@ -7,6 +7,7 @@
 
 import { useFormatter } from "next-intl";
 import { NINE_CATS, NineCat } from "@/lib/contracts";
+import { displayCatValue } from "@/lib/cat-display";
 import { CAT_LABELS } from "./prompts";
 import { cn } from "@/lib/utils";
 
@@ -17,7 +18,7 @@ export function CatBars({ profile }: { profile: Record<NineCat, number> }) {
   return (
     <div className="space-y-1.5">
       {NINE_CATS.map((cat) => {
-        const v = profile[cat] ?? 0;
+        const v = displayCatValue(cat, profile[cat] ?? 0);
         const half = Math.min(Math.abs(v) / Z_SCALE, 1) * 50;
         return (
           <div key={cat} className="flex items-center gap-2 text-xs">

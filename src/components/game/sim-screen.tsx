@@ -44,6 +44,7 @@ import {
   type SaveTeamResponse,
   type SeasonResult,
 } from "@/lib/contracts";
+import { displayCatValue } from "@/lib/cat-display";
 import { getEngine } from "@/lib/engine-provider";
 import { getBaselines } from "@/lib/snapshot-client";
 import { cn } from "@/lib/utils";
@@ -888,7 +889,7 @@ export function SimScreen() {
           <CatBar
             key={cat}
             cat={cat}
-            value={rating.catProfile[cat]}
+            value={displayCatValue(cat, rating.catProfile[cat])}
             delay={COUNT_UP_SECONDS * 0.4 + i * 0.06}
           />
         ))}
