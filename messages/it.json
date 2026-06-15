@@ -63,6 +63,7 @@
     "toastBattleFailed": "Salvato! Impossibile avviare la sfida ora — riprova dalla pagina della squadra.",
     "toastSaveUnavailable": "Il salvataggio non è disponibile ora — la tua stagione è al sicuro su questo dispositivo.",
     "toastDeviceSaveFailed": "Impossibile salvare su questo dispositivo — l'archiviazione non è disponibile.",
+    "nameRejected": "Scegli un nome senza linguaggio esplicito.",
     "confirmReDraft": "Rifare il draft della tua squadra? Questo usa il tuo unico re-draft e scarta questa formazione.",
     "downloadCardAria": "Scarica l'immagine della card della squadra",
     "saveToDeviceAria": "Salva questa squadra su questo dispositivo",
@@ -142,7 +143,14 @@
     "startDraft": "Inizia un draft →",
     "view": "Vedi {name}",
     "delete": "Elimina {name}",
-    "olderData": "dati giocatori più vecchi"
+    "olderData": "dati giocatori più vecchi",
+    "submit": "Aggiungi {name} alla classifica",
+    "submitting": "Aggiunta di {name} alla classifica",
+    "onLeaderboard": "{name} è in classifica — visualizza",
+    "submittedToast": "Aggiunto alla classifica!",
+    "submitFailed": "Impossibile aggiungere alla classifica. Riprova.",
+    "staleCantSubmit": "Questa squadra usa dati più vecchi — rifai il draft per aggiungerla alla classifica.",
+    "nameRejected": "Scegli un nome senza linguaggio esplicito."
   },
   "cats": {
     "friendly": {

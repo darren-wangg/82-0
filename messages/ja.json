@@ -63,6 +63,7 @@
     "toastBattleFailed": "保存しました！今は対戦を実行できませんでした——チームページからもう一度お試しください。",
     "toastSaveUnavailable": "現在保存できません——あなたのシーズンはこの端末に安全に保存されています。",
     "toastDeviceSaveFailed": "この端末に保存できませんでした——ストレージが利用できません。",
+    "nameRejected": "不適切な言葉を含まない名前を選んでください。",
     "confirmReDraft": "チームを再ドラフトしますか？これは唯一の再ドラフトを消費し、この編成を破棄します。",
     "downloadCardAria": "チームカード画像をダウンロード",
     "saveToDeviceAria": "このチームをこの端末に保存",
@@ -142,7 +143,14 @@
     "startDraft": "ドラフトを始める →",
     "view": "{name} を見る",
     "delete": "{name} を削除",
-    "olderData": "古い選手データ"
+    "olderData": "古い選手データ",
+    "submit": "{name}をリーダーボードに追加",
+    "submitting": "{name}をリーダーボードに追加中",
+    "onLeaderboard": "{name}はリーダーボードに掲載中——表示",
+    "submittedToast": "リーダーボードに追加しました！",
+    "submitFailed": "リーダーボードに追加できませんでした。もう一度お試しください。",
+    "staleCantSubmit": "このチームは古いデータを使用しています——再ドラフトして追加してください。",
+    "nameRejected": "不適切な言葉を含まない名前を選んでください。"
   },
   "cats": {
     "friendly": {

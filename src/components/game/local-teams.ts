@@ -18,6 +18,8 @@ export interface LocalTeam {
   losses: number;
   ovr: number;
   savedAt: string;
+  /** Set once the team has been pushed to the public leaderboard (its slug). */
+  submittedSlug?: string;
 }
 
 export function loadLocalTeams(): LocalTeam[] {
@@ -59,6 +61,20 @@ export function saveLocalTeam(team: {
 export function removeLocalTeam(id: string): boolean {
   try {
     const list = loadLocalTeams().filter((t) => t.id !== id);
+    window.localStorage.setItem(LOCAL_TEAMS_KEY, JSON.stringify(list));
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+/** Record the leaderboard slug for a team after a successful submit, so the
+ *  row can link to it and the submit action can't be repeated. */
+export function markLocalTeamSubmitted(id: string, slug: string): boolean {
+  try {
+    const list = loadLocalTeams().map((t) =>
+      t.id === id ? { ...t, submittedSlug: slug } : t
+    );
     window.localStorage.setItem(LOCAL_TEAMS_KEY, JSON.stringify(list));
     return true;
   } catch {

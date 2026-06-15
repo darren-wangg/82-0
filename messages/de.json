@@ -63,6 +63,7 @@
     "toastBattleFailed": "Gespeichert! Das Duell konnte gerade nicht ausgeführt werden — versuch es erneut über die Team-Seite.",
     "toastSaveUnavailable": "Speichern ist momentan nicht verfügbar — deine Saison ist auf diesem Gerät sicher.",
     "toastDeviceSaveFailed": "Konnte nicht auf diesem Gerät speichern — der Speicher ist nicht verfügbar.",
+    "nameRejected": "Bitte wähle einen Namen ohne anstößige Sprache.",
     "confirmReDraft": "Dein Team neu draften? Das verbraucht deinen einzigen Neudraft und verwirft diese Aufstellung.",
     "downloadCardAria": "Team-Kartenbild herunterladen",
     "saveToDeviceAria": "Dieses Team auf diesem Gerät speichern",
@@ -142,7 +143,14 @@
     "startDraft": "Draft starten →",
     "view": "{name} ansehen",
     "delete": "{name} löschen",
-    "olderData": "ältere Spielerdaten"
+    "olderData": "ältere Spielerdaten",
+    "submit": "{name} zur Bestenliste hinzufügen",
+    "submitting": "{name} wird zur Bestenliste hinzugefügt",
+    "onLeaderboard": "{name} steht auf der Bestenliste — ansehen",
+    "submittedToast": "Zur Bestenliste hinzugefügt!",
+    "submitFailed": "Konnte nicht zur Bestenliste hinzugefügt werden. Versuche es erneut.",
+    "staleCantSubmit": "Dieses Team nutzt ältere Daten — drafte neu, um es zur Bestenliste hinzuzufügen.",
+    "nameRejected": "Bitte wähle einen Namen ohne anstößige Sprache."
   },
   "cats": {
     "friendly": {

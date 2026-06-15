@@ -16,7 +16,6 @@ import {
   MatchupResult,
   POSITIONS,
   Roster,
-  RosterSchema,
   TeamRating,
 } from "@/lib/contracts";
 import { prisma } from "@/lib/db";
@@ -35,6 +34,7 @@ import {
   TeamExplainPayload,
 } from "@/components/social/prompts";
 import {
+  FlexibleRosterSchema,
   isDbUnavailable,
   jsonError,
   findTeamBySlug,
@@ -95,9 +95,12 @@ function payloadFromRoster(
 }
 
 function buildTeamPayload(team: TeamWithOwner): TeamExplainPayload {
+  // Flexible parse: saved teams can be 5-man (0 bench) or 10-man (5 bench), not
+  // just the frozen RosterSchema's 8-man (3 bench). The engine and the prompt
+  // builder are both bench-count agnostic.
   return payloadFromRoster(
     team.teamName,
-    RosterSchema.parse(team.roster),
+    FlexibleRosterSchema.parse(team.roster),
     ratingFromRow(team)
   );
 }

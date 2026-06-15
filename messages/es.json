@@ -63,6 +63,7 @@
     "toastBattleFailed": "¡Guardado! No se pudo disputar la batalla ahora — inténtalo de nuevo desde la página del equipo.",
     "toastSaveUnavailable": "Guardar no está disponible ahora — tu temporada está a salvo en este dispositivo.",
     "toastDeviceSaveFailed": "No se pudo guardar en este dispositivo — el almacenamiento no está disponible.",
+    "nameRejected": "Elige un nombre sin lenguaje explícito.",
     "confirmReDraft": "¿Volver a draftear tu equipo? Esto usa tu único re-draft y descarta esta alineación.",
     "downloadCardAria": "Descargar la imagen de la tarjeta del equipo",
     "saveToDeviceAria": "Guardar este equipo en este dispositivo",
@@ -142,7 +143,14 @@
     "startDraft": "Empezar un draft →",
     "view": "Ver {name}",
     "delete": "Eliminar {name}",
-    "olderData": "datos de jugadores antiguos"
+    "olderData": "datos de jugadores antiguos",
+    "submit": "Añadir {name} a la clasificación",
+    "submitting": "Añadiendo {name} a la clasificación",
+    "onLeaderboard": "{name} está en la clasificación — verlo",
+    "submittedToast": "¡Añadido a la clasificación!",
+    "submitFailed": "No se pudo añadir a la clasificación. Inténtalo de nuevo.",
+    "staleCantSubmit": "Este equipo usa datos antiguos — vuelve a draftear para añadirlo a la clasificación.",
+    "nameRejected": "Elige un nombre sin lenguaje explícito."
   },
   "cats": {
     "friendly": {

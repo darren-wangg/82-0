@@ -63,6 +63,7 @@
     "toastBattleFailed": "Salvo! Não foi possível rodar a batalha agora — tente novamente pela página do time.",
     "toastSaveUnavailable": "Salvar está indisponível no momento — sua temporada está segura neste dispositivo.",
     "toastDeviceSaveFailed": "Não foi possível salvar neste dispositivo — o armazenamento está indisponível.",
+    "nameRejected": "Escolha um nome sem linguagem explícita.",
     "confirmReDraft": "Refazer o draft do seu time? Isso usa seu único re-draft e descarta esta escalação.",
     "downloadCardAria": "Baixar a imagem do card do time",
     "saveToDeviceAria": "Salvar este time neste dispositivo",
@@ -142,7 +143,14 @@
     "startDraft": "Iniciar um draft →",
     "view": "Ver {name}",
     "delete": "Excluir {name}",
-    "olderData": "dados de jogadores antigos"
+    "olderData": "dados de jogadores antigos",
+    "submit": "Adicionar {name} ao ranking",
+    "submitting": "Adicionando {name} ao ranking",
+    "onLeaderboard": "{name} está no ranking — ver",
+    "submittedToast": "Adicionado ao ranking!",
+    "submitFailed": "Não foi possível adicionar ao ranking. Tente novamente.",
+    "staleCantSubmit": "Este time usa dados antigos — refaça o draft para adicioná-lo ao ranking.",
+    "nameRejected": "Escolha um nome sem linguagem explícita."
   },
   "cats": {
     "friendly": {

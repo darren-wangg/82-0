@@ -7,8 +7,13 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { cookies } from "next/headers";
 import { getTranslations } from "next-intl/server";
+import { ChevronLeft, ChevronRight } from "lucide-react";
 import { LeaderboardEntry } from "@/lib/contracts";
-import { loadLeaderboardEntries } from "@/app/api/_lib/leaderboard";
+import {
+  loadLeaderboardCount,
+  loadLeaderboardEntries,
+} from "@/app/api/_lib/leaderboard";
+import { PAGE_SIZE } from "@/components/social/leaderboard";
 import { Badge } from "@/components/ui/badge";
 import { ClaimTeamButton } from "@/components/social/claim-team";
 import { Unavailable } from "@/components/social/unavailable";
@@ -31,12 +36,30 @@ export default async function LeaderboardPage({
     (await cookies()).get(TEAM_SIZE_COOKIE)?.value
   );
 
+  // 1-based page in the URL; clamped to the real range after we know the count.
+  const pageParam = Array.isArray(params.page) ? params.page[0] : params.page;
+  const requestedPage = Math.max(1, Number.parseInt(pageParam ?? "1", 10) || 1);
+
   let entries: LeaderboardEntry[];
+  let totalPages: number;
+  let page: number;
   try {
-    entries = await loadLeaderboardEntries(scope, teamSize);
+    const total = await loadLeaderboardCount(scope, teamSize);
+    totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE));
+    page = Math.min(requestedPage, totalPages);
+    entries = await loadLeaderboardEntries(scope, teamSize, page - 1);
   } catch {
     return <Unavailable what="the leaderboard" />;
   }
+
+  // Preserve scope across page links; omit defaults for clean URLs.
+  const pageHref = (p: number) => {
+    const sp = new URLSearchParams();
+    if (scope === "weekly") sp.set("scope", "weekly");
+    if (p > 1) sp.set("page", String(p));
+    const qs = sp.toString();
+    return qs ? `/leaderboard?${qs}` : "/leaderboard";
+  };
 
   return (
     <main className="flex flex-1 flex-col">
@@ -145,6 +168,45 @@ export default async function LeaderboardPage({
             </li>
           ))}
         </ol>
+      )}
+
+      {totalPages > 1 && (
+        <nav
+          aria-label="Leaderboard pages"
+          className="mt-5 flex items-center justify-center gap-4 text-sm font-semibold"
+        >
+          {page > 1 ? (
+            <Link
+              href={pageHref(page - 1)}
+              rel="prev"
+              aria-label="Previous page"
+              className="flex size-9 items-center justify-center rounded-lg border border-border/80 text-foreground transition-colors hover:bg-muted"
+            >
+              <ChevronLeft className="size-4" />
+            </Link>
+          ) : (
+            <span className="flex size-9 items-center justify-center rounded-lg border border-border/40 text-muted-foreground/40">
+              <ChevronLeft className="size-4" />
+            </span>
+          )}
+          <span className="tabular-nums text-muted-foreground">
+            {page} / {totalPages}
+          </span>
+          {page < totalPages ? (
+            <Link
+              href={pageHref(page + 1)}
+              rel="next"
+              aria-label="Next page"
+              className="flex size-9 items-center justify-center rounded-lg border border-border/80 text-foreground transition-colors hover:bg-muted"
+            >
+              <ChevronRight className="size-4" />
+            </Link>
+          ) : (
+            <span className="flex size-9 items-center justify-center rounded-lg border border-border/40 text-muted-foreground/40">
+              <ChevronRight className="size-4" />
+            </span>
+          )}
+        </nav>
       )}
     </main>
   );

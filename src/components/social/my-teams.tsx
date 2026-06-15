@@ -8,12 +8,15 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useFormatter, useTranslations } from "next-intl";
-import { Trash2 } from "lucide-react";
+import { AnimatePresence, motion } from "framer-motion";
+import { Loader2, Trash2, Trophy, Upload } from "lucide-react";
 import {
   LocalTeam,
   loadLocalTeams,
+  markLocalTeamSubmitted,
   removeLocalTeam,
 } from "@/components/game/local-teams";
+import type { SaveTeamResponse } from "@/lib/contracts";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { PLAY_PATH, type TeamSize } from "@/lib/team-size";
@@ -50,6 +53,8 @@ export function MyTeams({
     });
   // null until mounted — localStorage is unavailable on the server.
   const [teams, setTeams] = useState<LocalTeam[] | null>(null);
+  const [submittingId, setSubmittingId] = useState<string | null>(null);
+  const [toast, setToast] = useState<string | null>(null);
 
   useEffect(() => {
     // eslint-disable-next-line react-hooks/set-state-in-effect
@@ -57,6 +62,54 @@ export function MyTeams({
       [...loadLocalTeams()].sort((a, b) => b.savedAt.localeCompare(a.savedAt))
     );
   }, []);
+
+  // Auto-dismiss the toast.
+  useEffect(() => {
+    if (!toast) return;
+    const id = window.setTimeout(() => setToast(null), 3500);
+    return () => window.clearTimeout(id);
+  }, [toast]);
+
+  // Push a locally saved team to the public leaderboard. The server re-runs the
+  // engine and mints a slug; we record it so the row links there and can't be
+  // resubmitted (creating a duplicate board entry).
+  const submit = async (team: LocalTeam) => {
+    if (submittingId) return;
+    setSubmittingId(team.id);
+    try {
+      const res = await fetch("/api/teams", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          teamName: team.name,
+          roster: team.roster,
+          snapshotVersion: team.snapshotVersion,
+        }),
+      });
+      if (res.status === 409) {
+        setToast(tr("staleCantSubmit"));
+        return;
+      }
+      if (res.status === 422) {
+        setToast(tr("nameRejected"));
+        return;
+      }
+      if (!res.ok) throw new Error(`submit failed: ${res.status}`);
+      const data: SaveTeamResponse = await res.json();
+      markLocalTeamSubmitted(team.id, data.team.slug);
+      setTeams(
+        (prev) =>
+          prev?.map((x) =>
+            x.id === team.id ? { ...x, submittedSlug: data.team.slug } : x
+          ) ?? null
+      );
+      setToast(tr("submittedToast"));
+    } catch {
+      setToast(tr("submitFailed"));
+    } finally {
+      setSubmittingId(null);
+    }
+  };
 
   if (!teams) {
     return (
@@ -90,7 +143,8 @@ export function MyTeams({
   const bestId = shown.reduce((a, b) => (compareRecords(b, a) > 0 ? b : a)).id;
 
   return (
-    <ul className="mt-4 space-y-1.5">
+    <>
+      <ul className="mt-4 space-y-1.5">
       {shown.map((t) => (
         // Stretched-link row: the <Link> overlays the card, the delete button
         // sits above it on its own z-layer (no button-inside-anchor).
@@ -130,6 +184,34 @@ export function MyTeams({
           <span className="w-12 shrink-0 text-right font-mono text-xs text-muted-foreground tabular-nums">
             {Math.round(t.ovr)} OVR
           </span>
+          {/* Submit-to-leaderboard: a link once it's on the board, an upload
+              button otherwise. Disabled for older-data teams (the server would
+              reject them with a 409 — the row already shows why). */}
+          {t.submittedSlug ? (
+            <Link
+              href={`/t/${t.submittedSlug}`}
+              aria-label={tr("onLeaderboard", { name: t.name })}
+              className="relative z-10 shrink-0 rounded-md p-1 text-amber-400 transition-colors hover:bg-muted"
+            >
+              <Trophy className="size-3.5" />
+            </Link>
+          ) : (
+            <button
+              type="button"
+              disabled={
+                submittingId === t.id || t.snapshotVersion !== snapshotVersion
+              }
+              aria-label={tr("submit", { name: t.name })}
+              onClick={() => submit(t)}
+              className="relative z-10 shrink-0 rounded-md p-1 text-muted-foreground/60 transition-colors hover:bg-muted hover:text-primary disabled:pointer-events-none disabled:opacity-40"
+            >
+              {submittingId === t.id ? (
+                <Loader2 className="size-3.5 animate-spin" />
+              ) : (
+                <Upload className="size-3.5" />
+              )}
+            </button>
+          )}
           <button
             type="button"
             aria-label={tr("delete", { name: t.name })}
@@ -143,6 +225,21 @@ export function MyTeams({
           </button>
         </li>
       ))}
-    </ul>
+      </ul>
+
+      <AnimatePresence>
+        {toast && (
+          <motion.div
+            initial={{ opacity: 0, y: 16 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: 16 }}
+            role="status"
+            className="fixed inset-x-4 bottom-24 z-50 mx-auto max-w-md rounded-xl border border-border bg-popover px-4 py-3 text-sm text-popover-foreground shadow-lg"
+          >
+            {toast}
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </>
   );
 }

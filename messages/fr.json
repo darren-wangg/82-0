@@ -63,6 +63,7 @@
     "toastBattleFailed": "Enregistré ! Impossible de lancer le duel pour l'instant — réessayez depuis la page de l'équipe.",
     "toastSaveUnavailable": "L'enregistrement est indisponible pour l'instant — votre saison est sauvegardée sur cet appareil.",
     "toastDeviceSaveFailed": "Impossible d'enregistrer sur cet appareil — le stockage est indisponible.",
+    "nameRejected": "Choisissez un nom sans langage explicite.",
     "confirmReDraft": "Re-drafter votre équipe ? Cela utilise votre unique re-draft et abandonne cette composition.",
     "downloadCardAria": "Télécharger l'image de la carte d'équipe",
     "saveToDeviceAria": "Enregistrer cette équipe sur cet appareil",
@@ -142,7 +143,14 @@
     "startDraft": "Lancer un draft →",
     "view": "Voir {name}",
     "delete": "Supprimer {name}",
-    "olderData": "anciennes données de joueurs"
+    "olderData": "anciennes données de joueurs",
+    "submit": "Ajouter {name} au classement",
+    "submitting": "Ajout de {name} au classement",
+    "onLeaderboard": "{name} est au classement — voir",
+    "submittedToast": "Ajouté au classement !",
+    "submitFailed": "Impossible d’ajouter au classement. Réessayez.",
+    "staleCantSubmit": "Cette équipe utilise d’anciennes données — refaites un draft pour l’ajouter au classement.",
+    "nameRejected": "Choisissez un nom sans langage explicite."
   },
   "cats": {
     "friendly": {

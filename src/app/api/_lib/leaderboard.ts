@@ -11,11 +11,28 @@ import { getAnonIdFromCookie } from "@/lib/auth";
 import { prisma } from "@/lib/db";
 import { getSnapshot } from "@/lib/snapshot";
 import {
-  LEADERBOARD_SIZE,
+  PAGE_SIZE,
   rankLeaderboard,
   WEEKLY_WINDOW_MS,
 } from "@/components/social/leaderboard";
 import { ownerDisplayName, teamInclude } from "./teams";
+
+/** Per-size, snapshot-scoped board filter (shared by the page query + count). */
+function boardWhere(
+  scope: "global" | "weekly",
+  snapshotVersion: string,
+  teamSize: number
+) {
+  return {
+    snapshotVersion,
+    // Each roster size has its own board (5 / 8 / 10), selected via the
+    // team-size switch — sizes aren't ranked against each other.
+    teamSize,
+    ...(scope === "weekly"
+      ? { createdAt: { gte: new Date(Date.now() - WEEKLY_WINDOW_MS) } }
+      : {}),
+  };
+}
 
 interface CachedRow {
   teamSlug: string;
@@ -32,20 +49,14 @@ const loadRows = unstable_cache(
   async (
     scope: "global" | "weekly",
     snapshotVersion: string,
-    teamSize: number
+    teamSize: number,
+    page: number
   ): Promise<CachedRow[]> => {
     const teams = await prisma.team.findMany({
-      where: {
-        snapshotVersion,
-        // Each roster size has its own board (5 / 8 / 10), selected via the
-        // team-size switch — sizes aren't ranked against each other.
-        teamSize,
-        ...(scope === "weekly"
-          ? { createdAt: { gte: new Date(Date.now() - WEEKLY_WINDOW_MS) } }
-          : {}),
-      },
+      where: boardWhere(scope, snapshotVersion, teamSize),
       orderBy: [{ wins: "desc" }, { ovr: "desc" }],
-      take: LEADERBOARD_SIZE,
+      skip: page * PAGE_SIZE,
+      take: PAGE_SIZE,
       include: teamInclude,
     });
     return teams.map((t) => ({
@@ -63,19 +74,42 @@ const loadRows = unstable_cache(
   { revalidate: 60, tags: ["leaderboard-rows"] }
 );
 
+const countRows = unstable_cache(
+  async (
+    scope: "global" | "weekly",
+    snapshotVersion: string,
+    teamSize: number
+  ): Promise<number> =>
+    prisma.team.count({ where: boardWhere(scope, snapshotVersion, teamSize) }),
+  ["leaderboard-count"],
+  { revalidate: 60, tags: ["leaderboard-rows"] }
+);
+
 export async function loadLeaderboardEntries(
   scope: "global" | "weekly",
-  teamSize: number
+  teamSize: number,
+  page = 0
 ): Promise<LeaderboardEntry[]> {
   const snapshotVersion = getSnapshot().version;
   // Read-only cookie check, outside the cached function.
   const anonId = await getAnonIdFromCookie();
-  const rows = await loadRows(scope, snapshotVersion, teamSize);
+  const rows = await loadRows(scope, snapshotVersion, teamSize, page);
   // rankLeaderboard maps to the contract shape, dropping anonIdentityId.
+  // Ranks continue across pages (page 1 → 51-100, etc.).
   return rankLeaderboard(
     rows.map((r) => ({
       ...r,
       viewer: anonId !== null && r.anonIdentityId === anonId,
-    }))
+    })),
+    PAGE_SIZE,
+    page * PAGE_SIZE
   );
+}
+
+/** Total board size for the current snapshot/size — drives the page count. */
+export async function loadLeaderboardCount(
+  scope: "global" | "weekly",
+  teamSize: number
+): Promise<number> {
+  return countRows(scope, getSnapshot().version, teamSize);
 }

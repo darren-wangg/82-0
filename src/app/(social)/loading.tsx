@@ -1,20 +1,20 @@
 import { Skeleton } from "@/components/ui/skeleton";
 
 /**
- * Shared loading state for the social surfaces (/t, /m, /l, /leaderboard) —
- * they all fetch from the database server-side, so navigation would otherwise
- * sit on a blank column.
+ * Neutral fallback loading state for social routes without a more specific
+ * `loading.tsx` (e.g. /l/new, /teams — both of which also render their own
+ * in-component skeleton once mounted). Route-specific skeletons live alongside
+ * their pages (leaderboard, /t, /m, /l/[code]).
  */
 export default function SocialLoading() {
   return (
-    <main className="flex flex-1 flex-col gap-5" aria-busy>
-      <div className="flex flex-col items-center gap-2">
-        <Skeleton className="h-8 w-48" />
-        <Skeleton className="h-4 w-32" />
+    <main className="flex flex-1 flex-col gap-4" aria-busy>
+      <Skeleton className="h-8 w-40" />
+      <div className="space-y-1.5">
+        {[0, 1, 2, 3].map((i) => (
+          <Skeleton key={i} className="h-14 w-full rounded-xl" />
+        ))}
       </div>
-      <Skeleton className="h-40 w-full rounded-xl" />
-      <Skeleton className="h-64 w-full rounded-xl" />
-      <Skeleton className="h-11 w-full rounded-xl" />
     </main>
   );
 }

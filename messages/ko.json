@@ -63,6 +63,7 @@
     "toastBattleFailed": "저장됨! 지금은 대결을 진행할 수 없습니다 — 팀 페이지에서 다시 시도하세요.",
     "toastSaveUnavailable": "지금은 저장할 수 없습니다 — 당신의 시즌은 이 기기에 안전하게 저장되어 있습니다.",
     "toastDeviceSaveFailed": "이 기기에 저장할 수 없습니다 — 저장소를 사용할 수 없습니다.",
+    "nameRejected": "비속어가 없는 이름을 선택해 주세요.",
     "confirmReDraft": "팀을 다시 드래프트할까요? 단 한 번뿐인 재드래프트를 사용하고 이 라인업을 폐기합니다.",
     "downloadCardAria": "팀 카드 이미지 다운로드",
     "saveToDeviceAria": "이 팀을 이 기기에 저장",
@@ -142,7 +143,14 @@
     "startDraft": "드래프트 시작 →",
     "view": "{name} 보기",
     "delete": "{name} 삭제",
-    "olderData": "이전 선수 데이터"
+    "olderData": "이전 선수 데이터",
+    "submit": "{name}을(를) 리더보드에 추가",
+    "submitting": "{name}을(를) 리더보드에 추가하는 중",
+    "onLeaderboard": "{name}이(가) 리더보드에 있습니다 — 보기",
+    "submittedToast": "리더보드에 추가했습니다!",
+    "submitFailed": "리더보드에 추가하지 못했습니다. 다시 시도해 주세요.",
+    "staleCantSubmit": "이 팀은 오래된 데이터를 사용합니다 — 다시 드래프트하여 추가하세요.",
+    "nameRejected": "비속어가 없는 이름을 선택해 주세요."
   },
   "cats": {
     "friendly": {

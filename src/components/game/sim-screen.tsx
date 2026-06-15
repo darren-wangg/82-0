@@ -45,6 +45,7 @@ import {
   type SeasonResult,
 } from "@/lib/contracts";
 import { displayCatValue } from "@/lib/cat-display";
+import { containsProfanity } from "@/lib/profanity";
 import { getEngine } from "@/lib/engine-provider";
 import { getBaselines } from "@/lib/snapshot-client";
 import { cn } from "@/lib/utils";
@@ -404,10 +405,20 @@ function TeamView({
 
 function SimSkeleton() {
   return (
-    <div className="flex flex-1 flex-col gap-4 px-4 py-4">
-      <Skeleton className="mx-auto h-24 w-56" />
-      <Skeleton className="h-36 w-full rounded-xl" />
-      <Skeleton className="h-64 w-full rounded-xl" />
+    <div className="flex flex-1 flex-col gap-4 px-4 py-4" aria-busy>
+      {/* top-right action icons (download / save / share) */}
+      <div className="flex justify-end gap-2">
+        <Skeleton className="size-9 rounded-full" />
+        <Skeleton className="size-9 rounded-full" />
+        <Skeleton className="size-9 rounded-full" />
+      </div>
+      {/* record reveal */}
+      <Skeleton className="mx-auto h-20 w-56" />
+      {/* roster */}
+      <Skeleton className="h-44 w-full rounded-xl" />
+      {/* 9-cat profile */}
+      <Skeleton className="h-56 w-full rounded-xl" />
+      {/* primary action */}
       <Skeleton className="mt-auto h-14 w-full rounded-2xl" />
     </div>
   );
@@ -434,10 +445,14 @@ export function SimScreen() {
   const [toast, setToast] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
   const [shareOpen, setShareOpen] = useState(false);
+  // Inline (in-dialog) errors. A toast renders behind the modal overlay, so
+  // name rejections have to surface inside the dialog to be seen.
+  const [shareError, setShareError] = useState<string | null>(null);
   // Save-to-device dialog (separate from sharing; nothing leaves the browser).
   const [localOpen, setLocalOpen] = useState(false);
   const [localName, setLocalName] = useState("");
   const [localSaved, setLocalSaved] = useState(false);
+  const [deviceError, setDeviceError] = useState<string | null>(null);
   // Lobby re-draft: one per device per lobby, tracked in localStorage so it
   // survives the NEW_GAME state reset and page reloads. null until read.
   const [lobbyRetriesUsed, setLobbyRetriesUsed] = useState<number | null>(null);
@@ -508,9 +523,16 @@ export function SimScreen() {
     if (savingRef.current) return;
     const name = teamName.trim();
     if (name.length === 0 || name.length > 40) {
-      setToast(t("toastNameRequired"));
+      setShareError(t("toastNameRequired"));
       return;
     }
+    // Same blocklist the server enforces — catch it here so the error shows
+    // inside the dialog instead of as a server 422 behind the overlay.
+    if (containsProfanity(name)) {
+      setShareError(t("nameRejected"));
+      return;
+    }
+    setShareError(null);
     savingRef.current = true;
     setSave({ phase: "saving" });
     const body: SaveTeamRequest = {
@@ -528,6 +550,13 @@ export function SimScreen() {
       if (res.status === 409) {
         setSave({ phase: "error" });
         setToast(t("toastStaleData"));
+        return;
+      }
+      // The save route's only 422 is a rejected (profane) team name. Surface it
+      // inline in the dialog so the user can fix the name and retry.
+      if (res.status === 422) {
+        setSave({ phase: "idle" });
+        setShareError(t("nameRejected"));
         return;
       }
       if (!res.ok) throw new Error(`save failed: ${res.status}`);
@@ -618,9 +647,16 @@ export function SimScreen() {
   const saveToDevice = () => {
     const name = localName.trim();
     if (name.length === 0 || name.length > 40) {
-      setToast(t("toastNameRequired"));
+      setDeviceError(t("toastNameRequired"));
       return;
     }
+    // Apply the blocklist to device saves too — otherwise a profane name slips
+    // straight into My Teams (the server check only guards the share path).
+    if (containsProfanity(name)) {
+      setDeviceError(t("nameRejected"));
+      return;
+    }
+    setDeviceError(null);
     const ok = saveLocalTeam({
       name,
       roster,
@@ -691,7 +727,10 @@ export function SimScreen() {
           open={localOpen}
           onOpenChange={(open) => {
             setLocalOpen(open);
-            if (!open) setLocalSaved(false);
+            if (!open) {
+              setLocalSaved(false);
+              setDeviceError(null);
+            }
           }}
         >
           <DialogTrigger
@@ -725,8 +764,16 @@ export function SimScreen() {
                   placeholder={t("teamNamePlaceholder")}
                   aria-label={t("teamNameAria")}
                   className="h-11 rounded-xl"
-                  onChange={(e) => setLocalName(e.target.value)}
+                  onChange={(e) => {
+                    setLocalName(e.target.value);
+                    if (deviceError) setDeviceError(null);
+                  }}
                 />
+                {deviceError && (
+                  <p role="alert" className="text-sm font-medium text-destructive">
+                    {deviceError}
+                  </p>
+                )}
                 <Button
                   className="h-12 w-full rounded-xl text-base font-bold"
                   disabled={localName.trim().length === 0}
@@ -739,7 +786,13 @@ export function SimScreen() {
           </DialogContent>
         </Dialog>
 
-        <Dialog open={shareOpen} onOpenChange={setShareOpen}>
+        <Dialog
+          open={shareOpen}
+          onOpenChange={(open) => {
+            setShareOpen(open);
+            if (!open) setShareError(null);
+          }}
+        >
           <DialogTrigger
             render={
               <Button
@@ -810,8 +863,16 @@ export function SimScreen() {
                   placeholder={t("teamNamePlaceholder")}
                   aria-label={t("teamNameAria")}
                   className="h-11 rounded-xl"
-                  onChange={(e) => setTeamName(e.target.value)}
+                  onChange={(e) => {
+                    setTeamName(e.target.value);
+                    if (shareError) setShareError(null);
+                  }}
                 />
+                {shareError && (
+                  <p role="alert" className="text-sm font-medium text-destructive">
+                    {shareError}
+                  </p>
+                )}
                 <Button
                   className="h-12 w-full rounded-xl text-base font-bold"
                   disabled={

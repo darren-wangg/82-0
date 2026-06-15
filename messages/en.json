@@ -63,6 +63,7 @@
     "toastBattleFailed": "Saved! Couldn't run the battle right now — try again from the team page.",
     "toastSaveUnavailable": "Saving is unavailable right now — your season is safe on this device.",
     "toastDeviceSaveFailed": "Couldn't save on this device — storage is unavailable.",
+    "nameRejected": "Please choose a name without explicit language.",
     "confirmReDraft": "Re-draft your team? This uses your one re-draft and scraps this lineup.",
     "downloadCardAria": "Download the team card image",
     "saveToDeviceAria": "Save this team to this device",
@@ -142,7 +143,14 @@
     "startDraft": "Start a draft →",
     "view": "View {name}",
     "delete": "Delete {name}",
-    "olderData": "older player data"
+    "olderData": "older player data",
+    "submit": "Add {name} to the leaderboard",
+    "submitting": "Adding {name} to the leaderboard",
+    "onLeaderboard": "{name} is on the leaderboard — view it",
+    "submittedToast": "Added to the leaderboard!",
+    "submitFailed": "Couldn’t add to the leaderboard. Try again.",
+    "staleCantSubmit": "This team uses older data — redraft to add it to the leaderboard.",
+    "nameRejected": "Please choose a name without explicit language."
   },
   "cats": {
     "friendly": {

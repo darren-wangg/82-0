@@ -106,9 +106,23 @@ export function LocalTeamView() {
   if (state.phase === "loading") {
     return (
       <div className="mt-4 space-y-4" aria-busy>
-        <Skeleton className="mx-auto h-20 w-48" />
-        <Skeleton className="h-64 w-full rounded-xl" />
-        <Skeleton className="h-40 w-full rounded-xl" />
+        {/* record hero: big W–L + stat tiles */}
+        <div className="space-y-3">
+          <Skeleton className="mx-auto h-12 w-36" />
+          <div className="flex gap-2">
+            {[0, 1, 2].map((i) => (
+              <Skeleton key={i} className="h-12 flex-1 rounded-xl" />
+            ))}
+          </div>
+        </div>
+        {/* roster grid */}
+        <div className="grid grid-cols-3 gap-2">
+          {[0, 1, 2, 3, 4, 5].map((i) => (
+            <Skeleton key={i} className="aspect-[13/10] w-full rounded-xl" />
+          ))}
+        </div>
+        {/* category profile */}
+        <Skeleton className="h-44 w-full rounded-xl" />
       </div>
     );
   }

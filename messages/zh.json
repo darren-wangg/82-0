@@ -63,6 +63,7 @@
     "toastBattleFailed": "已保存！暂时无法进行对战——请从球队页面再试。",
     "toastSaveUnavailable": "目前无法保存——你的赛季已安全保存在此设备上。",
     "toastDeviceSaveFailed": "无法保存到此设备——存储不可用。",
+    "nameRejected": "请选择一个不含不当用语的名字。",
     "confirmReDraft": "重新选秀你的球队吗？这将用掉你唯一的一次重选并放弃此阵容。",
     "downloadCardAria": "下载球队卡片图片",
     "saveToDeviceAria": "将此球队保存到此设备",
@@ -142,7 +143,14 @@
     "startDraft": "开始选秀 →",
     "view": "查看 {name}",
     "delete": "删除 {name}",
-    "olderData": "较旧的球员数据"
+    "olderData": "较旧的球员数据",
+    "submit": "将{name}加入排行榜",
+    "submitting": "正在将{name}加入排行榜",
+    "onLeaderboard": "{name}已在排行榜上——查看",
+    "submittedToast": "已加入排行榜！",
+    "submitFailed": "无法加入排行榜，请重试。",
+    "staleCantSubmit": "该球队使用了旧数据——请重新选秀后再加入排行榜。",
+    "nameRejected": "请选择一个不含不当用语的名字。"
   },
   "cats": {
     "friendly": {
