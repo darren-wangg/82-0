@@ -877,8 +877,7 @@ export function SimScreen() {
                   className="h-12 w-full rounded-xl text-base font-bold"
                   disabled={
                     save.phase === "saving" ||
-                    teamName.trim().length === 0 ||
-                    (state.lobbyCode !== null && playerName.trim().length === 0)
+                    teamName.trim().length === 0
                   }
                   onClick={saveTeam}
                 >
