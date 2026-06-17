@@ -66,12 +66,22 @@ export function StandingsTable({
                 >
                   {s.teamName}
                 </Link>
-                <span className="block truncate text-xs text-muted-foreground">
-                  {s.displayName ?? "anonymous GM"}
-                  {yours && (
-                    <span className="ml-1 font-semibold text-primary">· You</span>
-                  )}
-                </span>
+                {(s.displayName || yours) && (
+                  <span className="block truncate text-xs text-muted-foreground">
+                    {s.displayName}
+                    {yours && (
+                      <span
+                        className={
+                          s.displayName
+                            ? "ml-1 font-semibold text-primary"
+                            : "font-semibold text-primary"
+                        }
+                      >
+                        {s.displayName ? "· You" : "You"}
+                      </span>
+                    )}
+                  </span>
+                )}
               </td>
               <td className="py-2 pr-2 text-right font-mono tabular-nums">
                 {s.wins}–{s.losses}

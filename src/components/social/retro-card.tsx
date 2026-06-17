@@ -533,19 +533,21 @@ function PodiumColumn({
         justifyContent: "flex-end",
       }}
     >
-      <div
-        style={{
-          display: "flex",
-          fontFamily: "Press Start 2P",
-          fontSize: 13,
-          color: "rgba(255,255,255,0.88)",
-          maxWidth: 300,
-          whiteSpace: "nowrap",
-          overflow: "hidden",
-        }}
-      >
-        {(standing.displayName ?? "ANONYMOUS GM").toUpperCase()}
-      </div>
+      {standing.displayName && (
+        <div
+          style={{
+            display: "flex",
+            fontFamily: "Press Start 2P",
+            fontSize: 13,
+            color: "rgba(255,255,255,0.88)",
+            maxWidth: 300,
+            whiteSpace: "nowrap",
+            overflow: "hidden",
+          }}
+        >
+          {standing.displayName.toUpperCase()}
+        </div>
+      )}
       <div
         style={{
           display: "flex",
@@ -754,15 +756,17 @@ export function LobbyCard({ lobbyName, standings, rosters, playerMap }: LobbyCar
                   }}
                 >
                   {standing.teamName.toUpperCase()}
-                  <span
-                    style={{
-                      marginLeft: 14,
-                      color: "rgba(255,255,255,0.72)",
-                      fontSize: 22,
-                    }}
-                  >
-                    {(standing.displayName ?? "ANONYMOUS GM").toUpperCase()}
-                  </span>
+                  {standing.displayName && (
+                    <span
+                      style={{
+                        marginLeft: 14,
+                        color: "rgba(255,255,255,0.72)",
+                        fontSize: 22,
+                      }}
+                    >
+                      {standing.displayName.toUpperCase()}
+                    </span>
+                  )}
                 </div>
                 <div
                   style={{
