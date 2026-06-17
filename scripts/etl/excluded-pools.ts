@@ -27,4 +27,7 @@ export const EXCLUDED_POOLS: ReadonlySet<string> = new Set([
   "IND|1980s", // Pacers — post-ABA wilderness years (best: Mickey Johnson)
   "MIL|1990s", // Bucks — mid-90s lottery stretch (best: Vin Baker)
   "DAL|1990s", // Mavericks — pre-Nowitzki collapse (best: Roy Tarpley)
+  "CHI|1960s", // Bulls — expansion infancy, entered 1966 (best: Guy Rodgers)
+  "UTA|1970s", // Jazz — New Orleans expansion years (best: Rich Kelley)
+  "PHX|1960s", // Suns — entered 1968 (best: Jim Fox)
 ]);
