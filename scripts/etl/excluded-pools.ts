@@ -2,7 +2,7 @@
  * Franchise×decade combos that are NOT draftable — removed from the snapshot so
  * the slot machine can never land on them.
  *
- * These are the 10 weakest combos by the strength of the best player you could
+ * These are the weakest combos by the strength of the best player you could
  * draft from them (era-adjusted composite, the same score the engine uses).
  * They're mostly expansion teams' first partial decade (Heat/Hornets entered
  * 1988, Raptors/Grizzlies 1995, ABA-era Nets) or a team's barren stretch —
@@ -24,4 +24,7 @@ export const EXCLUDED_POOLS: ReadonlySet<string> = new Set([
   "MIL|1960s", // Bucks — entered 1968 (best: Jon McGlocklin)
   "LAC|1990s", // Clippers — perennial cellar (best: Charles Smith)
   "PHX|2010s", // Suns — post-Nash collapse (best: Amar'e Stoudemire)
+  "IND|1980s", // Pacers — post-ABA wilderness years (best: Mickey Johnson)
+  "MIL|1990s", // Bucks — mid-90s lottery stretch (best: Vin Baker)
+  "DAL|1990s", // Mavericks — pre-Nowitzki collapse (best: Roy Tarpley)
 ]);
