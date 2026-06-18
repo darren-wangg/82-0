@@ -45,6 +45,13 @@ Shared (frozen in Wave 1): `src/lib/*`, `prisma/schema.prisma`, `fixtures/*`.
   Neon/local Postgres exists — social routes should be written but can't be
   integration-tested against a DB yet.
 
+## Agent tooling
+
+Project-scoped Claude Code config lives in `.claude/` (see `.claude/README.md`):
+a PreToolUse hook that blocks edits to the frozen `src/lib/contracts.ts`, a
+PostToolUse hook that lints changed files, the `/verify-all`, `/sync-i18n`, and
+`/etl-rebuild` skills, and a read-only `contracts-guard` review agent.
+
 ## Data notes
 
 - Player data: one-time ETL from open Basketball-Reference-derived dataset
