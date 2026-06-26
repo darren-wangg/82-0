@@ -5,6 +5,7 @@ import { prisma } from "@/lib/db";
 import { getAnonIdFromCookie } from "@/lib/auth";
 import { getEngine } from "@/lib/engine-provider";
 import { computeStandings } from "@/components/social/standings";
+import { type LobbyPhase } from "@/lib/live-lobby";
 import {
   FlexibleRosterSchema,
   ownerDisplayName,
@@ -15,6 +16,25 @@ import {
 /** Open means entries are still accepted: the creator hasn't ended it. */
 export function lobbyIsOpen(lobby: { closedAt: Date | null }): boolean {
   return lobby.closedAt === null;
+}
+
+/**
+ * Derives the live-lobby phase from stored timestamps.
+ * - waiting  : isLive, not yet started (startedAt = null)
+ * - drafting : isLive + started, or any async lobby (closedAt = null)
+ * - results  : closedAt is set
+ *
+ * For non-live lobbies the distinction between waiting/drafting is meaningless;
+ * this helper returns "drafting" for them (open) or "results" (closed).
+ */
+export function lobbyPhase(lobby: {
+  isLive: boolean;
+  startedAt: Date | null;
+  closedAt: Date | null;
+}): LobbyPhase {
+  if (lobby.closedAt !== null) return "results";
+  if (lobby.isLive && lobby.startedAt === null) return "waiting";
+  return "drafting";
 }
 
 const ACTIVE_LOBBY_LIMIT = 50;
@@ -122,17 +142,27 @@ export async function loadLobbyViewer(code: string): Promise<{
   entryTeamSlug: string | null;
   teamLimit: number | null;
   teamSize: number;
+  /** True when the lobby was created with isLive=true. */
+  isLive: boolean;
+  /** True when this device has joined as a LobbyParticipant (live lobbies). */
+  isParticipant: boolean;
 }> {
   const anonId = await getAnonIdFromCookie();
-  const [lobby, entry] = await Promise.all([
+  const [lobby, entry, participant] = await Promise.all([
     prisma.lobby.findUnique({
       where: { code },
-      select: { creatorAnonId: true, teamLimit: true, teamSize: true },
+      select: { creatorAnonId: true, teamLimit: true, teamSize: true, isLive: true },
     }),
     anonId
       ? prisma.lobbyEntry.findFirst({
           where: { lobbyCode: code, anonIdentityId: anonId },
           select: { teamSlug: true },
+        })
+      : null,
+    anonId
+      ? prisma.lobbyParticipant.findFirst({
+          where: { lobbyCode: code, anonIdentityId: anonId },
+          select: { id: true },
         })
       : null,
   ]);
@@ -141,5 +171,7 @@ export async function loadLobbyViewer(code: string): Promise<{
     entryTeamSlug: entry?.teamSlug ?? null,
     teamLimit: lobby?.teamLimit ?? null,
     teamSize: lobby?.teamSize ?? 8,
+    isLive: lobby?.isLive ?? false,
+    isParticipant: participant !== null,
   };
 }
