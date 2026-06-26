@@ -6,15 +6,27 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { POSITIONS, type PlayerStatLine, type Roster } from "@/lib/contracts";
 import { MatchupResponse } from "@/lib/contracts";
 import { loadMatchupResponse } from "@/app/api/_lib/matchups";
+import { getPlayerMap, getSnapshot } from "@/lib/snapshot";
+import { FAMOUS_TEAM_BY_SLUG, famousTeamFranchise } from "@/lib/famous-teams";
 import { buttonVariants } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
 import { EdgeBars } from "@/components/social/edge-bars";
 import { ExplainStream } from "@/components/social/explain-stream";
+import { MatchupScoreboard } from "@/components/social/matchup-scoreboard";
+import { MatchupRosters } from "@/components/social/matchup-rosters";
 import { ShareButton } from "@/components/social/share-button";
 import { Unavailable } from "@/components/social/unavailable";
+
+/** Franchise tricode for a side, only when it's a famous preset team (so the
+ *  budget opponent shows a logo; a user's mixed-franchise team shows none). */
+function franchiseForSlug(slug: string): string | null {
+  const ft = FAMOUS_TEAM_BY_SLUG.get(slug);
+  return ft ? famousTeamFranchise(ft) : null;
+}
 
 /** Rendered per request: the cookie-driven locale (read in the root layout)
  *  forces dynamic rendering, so this can't be ISR-cached (same as /t/[slug]).
@@ -37,40 +49,13 @@ export async function generateMetadata({
   }
 }
 
-function TeamSide({
-  name,
-  slug,
-  ovr,
-  won,
-  align,
-}: {
-  name: string;
-  slug: string;
-  ovr: number;
-  won: boolean;
-  align: "left" | "right";
-}) {
-  return (
-    <div
-      className={cn(
-        "flex min-w-0 flex-1 flex-col",
-        align === "right" ? "items-end text-right" : "items-start text-left"
-      )}
-    >
-      {won && (
-        <span className="text-[10px] font-bold tracking-widest text-emerald-400 uppercase">
-          Winner
-        </span>
-      )}
-      <Link
-        href={`/t/${slug}`}
-        className="w-full truncate text-sm font-bold hover:underline"
-      >
-        {name}
-      </Link>
-      <span className="text-xs text-muted-foreground">OVR {Math.round(ovr)}</span>
-    </div>
-  );
+/** Resolve a stored roster (ids) to players in starter-then-bench order. */
+function resolveRoster(
+  roster: Roster,
+  playerMap: Map<string, PlayerStatLine>
+): PlayerStatLine[] {
+  const ids = [...POSITIONS.map((p) => roster.starters[p]), ...roster.bench];
+  return ids.flatMap((id) => playerMap.get(id) ?? []);
 }
 
 export default async function MatchupPage({ params }: PageProps<"/m/[id]">) {
@@ -87,6 +72,10 @@ export default async function MatchupPage({ params }: PageProps<"/m/[id]">) {
   const { teamA, teamB, result } = matchup;
   const [aWins, bWins] = result.seriesScore;
 
+  const playerMap = getPlayerMap(getSnapshot());
+  const teamAPlayers = resolveRoster(teamA.roster, playerMap);
+  const teamBPlayers = resolveRoster(teamB.roster, playerMap);
+
   return (
     <main className="space-y-5">
       <div className="text-center">
@@ -98,33 +87,34 @@ export default async function MatchupPage({ params }: PageProps<"/m/[id]">) {
         </h1>
       </div>
 
-      <div className="flex items-center gap-3">
-        <TeamSide
-          name={teamA.teamName}
-          slug={teamA.slug}
-          ovr={teamA.rating.ovr}
-          won={result.winner === "A"}
-          align="left"
-        />
-        <div className="shrink-0 text-center">
-          <p className="text-5xl font-black tracking-tight tabular-nums">
-            {aWins}
-            <span className="text-muted-foreground">–</span>
-            {bWins}
-          </p>
-          <p className="mt-0.5 text-[10px] text-muted-foreground">
-            {(result.pGameA * 100).toFixed(0)}% per-game edge to{" "}
-            {result.pGameA >= 0.5 ? teamA.teamName : teamB.teamName}
-          </p>
-        </div>
-        <TeamSide
-          name={teamB.teamName}
-          slug={teamB.slug}
-          ovr={teamB.rating.ovr}
-          won={result.winner === "B"}
-          align="right"
-        />
-      </div>
+      <MatchupScoreboard
+        teamAName={teamA.teamName}
+        teamASlug={teamA.slug}
+        teamAOvr={teamA.rating.ovr}
+        teamAFranchise={franchiseForSlug(teamA.slug)}
+        teamBName={teamB.teamName}
+        teamBSlug={teamB.slug}
+        teamBOvr={teamB.rating.ovr}
+        teamBFranchise={franchiseForSlug(teamB.slug)}
+        aWins={aWins}
+        bWins={bWins}
+        pGameA={result.pGameA}
+        winner={result.winner}
+      />
+
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-sm">Rosters</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <MatchupRosters
+            teamAName={teamA.teamName}
+            teamAPlayers={teamAPlayers}
+            teamBName={teamB.teamName}
+            teamBPlayers={teamBPlayers}
+          />
+        </CardContent>
+      </Card>
 
       <Card>
         <CardHeader>

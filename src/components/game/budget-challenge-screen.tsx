@@ -20,7 +20,8 @@ import type { MatchupResponse } from "@/lib/contracts";
 import { getEngine } from "@/lib/engine-provider";
 import { getBaselines, getPlayerMap } from "@/lib/snapshot-client";
 import { cn } from "@/lib/utils";
-import { FAMOUS_TEAMS, type FamousTeam } from "@/lib/famous-teams";
+import { FAMOUS_TEAMS, famousTeamFranchise, type FamousTeam } from "@/lib/famous-teams";
+import { TeamLogo } from "@/components/social/team-logo";
 
 export function BudgetChallengeScreen() {
   const t = useTranslations("budget");
@@ -113,6 +114,10 @@ export function BudgetChallengeScreen() {
                   loading && "cursor-wait"
                 )}
               >
+                <TeamLogo
+                  franchiseId={famousTeamFranchise(team)}
+                  className="size-9"
+                />
                 <div className="min-w-0 flex-1">
                   <div className="flex items-center gap-2">
                     <p className="truncate text-sm font-bold">{team.name}</p>

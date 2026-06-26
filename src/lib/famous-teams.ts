@@ -452,3 +452,12 @@ export const FAMOUS_TEAMS: FamousTeam[] = [
 export const FAMOUS_TEAM_BY_SLUG = new Map(
   FAMOUS_TEAMS.map((t) => [t.slug, t])
 );
+
+/**
+ * The franchise behind a famous team (every preset is a single franchise×decade
+ * composite). Parsed from a roster id (`{bbref}-{franchiseId}-{decade}`) so the
+ * team logo can be looked up without an extra field on every entry.
+ */
+export function famousTeamFranchise(team: FamousTeam): string {
+  return team.roster.starters.C.split("-")[1];
+}

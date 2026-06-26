@@ -314,7 +314,10 @@ export function BudgetSimScreen() {
           maxLength={40}
           placeholder={tSim("teamNamePlaceholder")}
           aria-label={tSim("teamNameAria")}
-          className="h-11 rounded-xl"
+          // Solid surface: the footer sits over the scrolling reveal, so the
+          // input's default translucent fill let content bleed through and made
+          // typed text unreadable. Force an opaque card background.
+          className="h-11 rounded-xl border-border bg-card dark:bg-card"
           onChange={(e) => {
             setTeamName(e.target.value);
             if (error) setError(null);

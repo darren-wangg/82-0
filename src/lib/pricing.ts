@@ -12,7 +12,8 @@
  *     nearest $5 so UI reads cleanly.
  */
 
-import type { EraBaselines, PlayerStatLine, Snapshot } from "./contracts";
+import { POSITIONS } from "./contracts";
+import type { EraBaselines, PlayerStatLine, Position, Snapshot } from "./contracts";
 import { baselinesOf, playerMapOf } from "./snapshot-core";
 import { engine } from "@/engine";
 
@@ -38,39 +39,89 @@ export function snapPrice(raw: number): number {
   return Math.max(PRICE_MIN, Math.min(PRICE_MAX, tier));
 }
 
+/** Era-adjusted composite score for a player — the basis for pricing. */
+export function scoreOf(player: PlayerStatLine, baselines: EraBaselines): number {
+  return engine.playerScore(engine.eraAdjust(player, baselines));
+}
+
 /**
- * Compute the budget price for a single player given pre-computed baselines.
- * Exposed for unit tests and the client-side price display.
+ * Map a composite score to a snapped $5 tier via the global price ramp.
+ * Linear between the floor and ceiling, clamped so anything at/above
+ * PRICE_HI_SCORE lands at $50, then snapped to the nearest $5.
  */
-export function priceOf(
-  player: PlayerStatLine,
-  baselines: EraBaselines
-): number {
-  const adj = engine.eraAdjust(player, baselines);
-  const score = engine.playerScore(adj);
-  // Linear interpolation between floor and ceiling, clamped to [0,1] so
-  // players above PRICE_HI_SCORE all land at $50, then snap to $5 tier.
+export function priceFromScore(score: number): number {
   const t = Math.min(1, Math.max(0, (score - PRICE_LO_SCORE) / (PRICE_HI_SCORE - PRICE_LO_SCORE)));
   const raw = PRICE_MIN + t * (PRICE_MAX - PRICE_MIN);
   return snapPrice(raw);
+}
+
+/**
+ * Compute the budget price for a single player given pre-computed baselines.
+ * Exposed for unit tests and the client-side price display.
+ *
+ * `scoreOffset` shifts the composite before the ramp. priceMapOf passes a
+ * per-position offset (see positionPriceOffsets) so no slot — notably C, which
+ * the composite over-rewards for rebounds/blocks/FG% — is systematically
+ * pricier than the others. The single-arg form (offset 0) is the raw ramp.
+ */
+export function priceOf(
+  player: PlayerStatLine,
+  baselines: EraBaselines,
+  scoreOffset = 0
+): number {
+  return priceFromScore(scoreOf(player, baselines) - scoreOffset);
+}
+
+/**
+ * Per-position score offset = (position's mean composite − league mean).
+ * Subtracting it before the ramp equalizes the *average* price across the five
+ * starting slots, removing the structural center premium (centers averaged
+ * ~$13 vs ~$8–10 elsewhere) while preserving merit *within* a position: elite
+ * bigs still clamp to $50, replacement-level players still floor at $5.
+ */
+export function positionPriceOffsets(
+  players: Map<string, PlayerStatLine>,
+  baselines: EraBaselines
+): Record<Position, number> {
+  const sum = {} as Record<Position, number>;
+  const count = {} as Record<Position, number>;
+  for (const pos of POSITIONS) {
+    sum[pos] = 0;
+    count[pos] = 0;
+  }
+  let total = 0;
+  for (const player of players.values()) {
+    const score = scoreOf(player, baselines);
+    sum[player.position] += score;
+    count[player.position] += 1;
+    total += score;
+  }
+  const leagueMean = total / players.size;
+  const offsets = {} as Record<Position, number>;
+  for (const pos of POSITIONS) {
+    offsets[pos] = count[pos] > 0 ? sum[pos] / count[pos] - leagueMean : 0;
+  }
+  return offsets;
 }
 
 // Memoize per snapshot object (same WeakMap pattern as snapshot-core).
 const priceMaps = new WeakMap<Snapshot, Map<string, number>>();
 
 /**
- * Return a Map<playerId, price> for every player in the snapshot.
- * Memoized per snapshot object — the first call does O(n) work; subsequent
- * calls with the same snapshot are O(1).
+ * Return a Map<playerId, price> for every player in the snapshot, priced with
+ * the per-position normalization so each starting slot costs roughly the same
+ * on average. Memoized per snapshot object — the first call does O(n) work;
+ * subsequent calls with the same snapshot are O(1).
  */
 export function priceMapOf(snapshot: Snapshot): Map<string, number> {
   let map = priceMaps.get(snapshot);
   if (!map) {
     const players = playerMapOf(snapshot);
     const baselines = baselinesOf(snapshot);
+    const offsets = positionPriceOffsets(players, baselines);
     map = new Map();
     for (const [id, player] of players) {
-      map.set(id, priceOf(player, baselines));
+      map.set(id, priceOf(player, baselines, offsets[player.position]));
     }
     priceMaps.set(snapshot, map);
   }

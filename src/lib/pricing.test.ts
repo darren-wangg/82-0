@@ -7,7 +7,17 @@
 
 import { describe, it, expect } from "vitest";
 import { getBaselines, getPlayerMap, getSnapshot } from "./snapshot";
-import { priceOf, priceMapOf, snapPrice, PRICE_MIN, PRICE_MAX, PRICE_STEP } from "./pricing";
+import {
+  priceOf,
+  priceMapOf,
+  positionPriceOffsets,
+  scoreOf,
+  snapPrice,
+  PRICE_MIN,
+  PRICE_MAX,
+  PRICE_STEP,
+} from "./pricing";
+import { POSITIONS, type Position } from "./contracts";
 import { engine } from "@/engine";
 
 const snapshot = getSnapshot();
@@ -120,5 +130,56 @@ describe("priceMapOf", () => {
       expect(price).toBeGreaterThanOrEqual(PRICE_MIN);
       expect(price).toBeLessThanOrEqual(PRICE_MAX);
     }
+  });
+
+  it("still prices the all-timers (Jordan, Wilt) at $50 after normalization", () => {
+    const map = priceMapOf(snapshot);
+    expect(map.get("jordami01-CHI-1990s")).toBe(50);
+    expect(map.get("chambwi01-GSW-1960s")).toBe(50);
+  });
+
+  it("equalizes mean price across the five starting slots (no center premium)", () => {
+    const map = priceMapOf(snapshot);
+    const sum = {} as Record<Position, number>;
+    const count = {} as Record<Position, number>;
+    for (const pos of POSITIONS) {
+      sum[pos] = 0;
+      count[pos] = 0;
+    }
+    for (const p of players.values()) {
+      sum[p.position] += map.get(p.id)!;
+      count[p.position] += 1;
+    }
+    const means = POSITIONS.map((pos) => sum[pos] / count[pos]);
+    const spread = Math.max(...means) - Math.min(...means);
+    // Before normalization C averaged ~$13 vs ~$8 at SG (a ~$5 gap); the
+    // per-position offset closes it to a tight band.
+    expect(spread).toBeLessThanOrEqual(2);
+  });
+
+  it("is monotonic in score *within* each position", () => {
+    const map = priceMapOf(snapshot);
+    for (const pos of POSITIONS) {
+      const scored = [...players.values()]
+        .filter((p) => p.position === pos)
+        .map((p) => ({ score: scoreOf(p, baselines), price: map.get(p.id)! }))
+        .sort((a, b) => a.score - b.score);
+      for (let i = 1; i < scored.length; i++) {
+        if (scored[i].score > scored[i - 1].score) {
+          expect(scored[i].price).toBeGreaterThanOrEqual(scored[i - 1].price);
+        }
+      }
+    }
+  });
+});
+
+describe("positionPriceOffsets", () => {
+  it("offsets centers up (composite over-rewards them) and guards down", () => {
+    const offsets = positionPriceOffsets(players, baselines);
+    // C carries the highest mean composite → largest positive offset (priced
+    // down); SG the lowest → negative offset (priced up).
+    expect(offsets.C).toBeGreaterThan(0);
+    expect(offsets.SG).toBeLessThan(0);
+    expect(offsets.C).toBeGreaterThan(offsets.SG);
   });
 });
