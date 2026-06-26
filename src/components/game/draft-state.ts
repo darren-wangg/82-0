@@ -121,10 +121,30 @@ export const FIVE_MODE: GameMode = {
   simPath: "/sim5",
 };
 
+/**
+ * Budget mode: same 8-man roster as classic, but routes to /budget/* paths so
+ * the phase guard navigates between the budget draft and budget sim screens.
+ * The salary cap is NOT part of the GameMode — it is tracked separately in
+ * BudgetContext from the ?difficulty= URL param.
+ */
+export const BUDGET_MODE: GameMode = {
+  id: "budget",
+  label: "Budget",
+  draftRounds: DRAFT_ROUNDS,
+  teamSkips: TEAM_SKIPS_PER_GAME,
+  eraSkips: ERA_SKIPS_PER_GAME,
+  benchSlots: CLASSIC_BENCH,
+  allSlots: [...POSITIONS, ...CLASSIC_BENCH.map((b) => b.key)],
+  storageKey: "eighty-two-zero/budget/v1",
+  playPath: "/budget/play",
+  simPath: "/budget/sim",
+};
+
 export const MODES: Record<string, GameMode> = {
   [CLASSIC_MODE.id]: CLASSIC_MODE,
   [TEN_MODE.id]: TEN_MODE,
   [FIVE_MODE.id]: FIVE_MODE,
+  [BUDGET_MODE.id]: BUDGET_MODE,
 };
 
 /** Bench-slot defs across every mode, keyed by their (globally unique) key. */
