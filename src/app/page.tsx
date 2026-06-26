@@ -119,20 +119,16 @@ export default async function Home() {
           </div>
           <HowToPlayDialog />
 
-          {/* Budget Draft — Beta entry, placed beneath the primary modes */}
+          {/* Budget Draft — compact Beta chip, beneath the primary modes */}
           <Link
             href="/budget"
-            className={cn(
-              "flex w-full items-center justify-between rounded-xl border border-violet-400/40 bg-violet-400/10 px-4 py-3 text-violet-300 transition-[transform,background-color] active:scale-95 hover:bg-violet-400/20"
-            )}
+            className="inline-flex items-center gap-1.5 rounded-full border border-violet-400/40 bg-violet-400/10 px-3 py-1.5 text-xs font-semibold text-violet-300 transition-[transform,background-color] active:scale-95 hover:bg-violet-400/20"
           >
-            <div className="flex items-center gap-3">
-              <DollarSign className="size-5 shrink-0" />
-              <span className="text-sm font-semibold">{t("nav.budget")}</span>
-            </div>
+            <DollarSign className="size-3.5 shrink-0" />
+            {t("nav.budget")}
             <Badge
               variant="outline"
-              className="border-violet-400/60 bg-violet-400/10 text-[10px] font-bold text-violet-300"
+              className="border-violet-400/60 bg-violet-400/10 px-1 py-0 text-[9px] font-bold text-violet-300"
             >
               Beta
             </Badge>

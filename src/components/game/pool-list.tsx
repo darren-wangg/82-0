@@ -96,7 +96,8 @@ export function PoolList({
   /** Optional: budget-mode price map. When provided, shows $price per player. */
   priceMap?: Map<string, number> | null;
   /** Optional: remaining cap in budget mode. Players whose price exceeds this
-   *  are visually flagged (still selectable — server validates on save). */
+   *  get a red price badge; the caller also marks them non-draftable so the
+   *  cap is a hard limit. */
   remainingBudget?: number;
 }) {
   const t = useTranslations("pool");

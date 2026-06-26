@@ -5,8 +5,9 @@
  * infrastructure as the classic PlayScreen, with three additions:
  *   1. A budget meter under the progress bar (Spent $X / $CAP).
  *   2. Per-player $price badges in the pool list.
- *   3. Client-side over-cap guard before PLACE — shows a browser confirm()
- *      so users can still place (and get a 422 on save) or cancel.
+ *   3. A hard cap: players you can't afford are non-draftable (greyed out),
+ *      so the running total can never exceed the cap. The server re-validates
+ *      the cap on save as a backstop.
  *
  * Spin/reels/slots/roster board are reused wholesale from the classic path.
  */
@@ -284,7 +285,12 @@ export function BudgetPlayScreen() {
               <PoolList
                 pool={pool}
                 selectedId={state.selectedPlayerId}
-                isDraftable={(id) => draftable.has(id)}
+                // Hard cap: a player you can't afford isn't draftable. Combined
+                // with the server-side cap check on save, you can never exceed
+                // the budget.
+                isDraftable={(id) =>
+                  draftable.has(id) && (priceMap?.get(id) ?? 0) <= remaining
+                }
                 onSelect={(playerId) => dispatch({ type: "SELECT_PLAYER", playerId })}
                 priceMap={priceMap}
                 remainingBudget={remaining}
