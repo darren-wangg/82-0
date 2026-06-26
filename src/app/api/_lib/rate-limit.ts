@@ -44,6 +44,10 @@ export const RATE_LIMITS = {
   matchupRun: { scope: "matchups-post", limit: 20, windowSeconds: 600 },
   lobbyCreate: { scope: "lobby-create", limit: 10, windowSeconds: 3600 },
   lobbyEnter: { scope: "lobby-enter", limit: 20, windowSeconds: 600 },
+  lobbyJoin: { scope: "lobby-join", limit: 20, windowSeconds: 600 },
+  lobbyStart: { scope: "lobby-start", limit: 10, windowSeconds: 600 },
+  lobbyProgress: { scope: "lobby-progress", limit: 120, windowSeconds: 60 },
+  lobbyFinish: { scope: "lobby-finish", limit: 20, windowSeconds: 600 },
 } as const satisfies Record<string, RateLimitRule>;
 
 /** Identity a caller for bucketing. Falls back to one shared bucket when the
