@@ -5,7 +5,8 @@
     "nav": {
       "leaderboard": "排行榜",
       "lobbies": "房间",
-      "myTeams": "我的球队"
+      "myTeams": "我的球队",
+      "budget": "预算选秀"
     },
     "attribution": "数据来自 Sumitro Datta 的 <link>NBA Stats（1947 至今）</link> 数据集（CC BY-SA 4.0）。与 NBA 无关联。",
     "language": "语言",
@@ -164,5 +165,31 @@
       "tpm": "三分球",
       "tov": "失误"
     }
+  },
+  "budget": {
+    "title": "预算选秀",
+    "subtitle": "在薪资帽下选秀",
+    "intro": "选择难度，在薪资帽内选出8名球员，然后挑战史上最伟大的球队之一。",
+    "backHome": "返回首页",
+    "difficulty": {
+      "easy": "简单",
+      "normal": "普通",
+      "hard": "困难"
+    },
+    "difficultyHint": {
+      "easy": "$130帽 — 空间充裕",
+      "normal": "$100帽 — 均衡",
+      "hard": "$75帽 — 仅顶级效率"
+    },
+    "howPricing": "价格反映时代调整后的表现（$5–$50）。",
+    "budgetLabel": "预算",
+    "challengeCta": "挑战历史名队",
+    "redraft": "重新选秀",
+    "pickOpponent": "选择对手",
+    "totalSpend": "球队费用：${spend}（{difficulty}帽）",
+    "budgetExceeded": "超出预算 — 服务器拒绝了该阵容。",
+    "challengeFailed": "挑战失败 — 请重试。",
+    "viewLeaderboard": "预算排行榜",
+    "allDifficulties": "全部"
   }
 }

@@ -5,7 +5,8 @@
     "nav": {
       "leaderboard": "Classificação",
       "lobbies": "Salas",
-      "myTeams": "Meus times"
+      "myTeams": "Meus times",
+      "budget": "Draft Orçamento"
     },
     "attribution": "Estatísticas derivadas do conjunto de dados <link>NBA Stats (1947–presente)</link> de Sumitro Datta (CC BY-SA 4.0). Sem afiliação com a NBA.",
     "language": "Idioma",
@@ -164,5 +165,31 @@
       "tpm": "Arremessos de três",
       "tov": "Turnovers"
     }
+  },
+  "budget": {
+    "title": "Draft Orçamento",
+    "subtitle": "Drafe sob o limite salarial",
+    "intro": "Escolha a dificuldade, drafe 8 jogadores dentro do limite, depois desafie uma das melhores equipes da história.",
+    "backHome": "Voltar ao início",
+    "difficulty": {
+      "easy": "Fácil",
+      "normal": "Normal",
+      "hard": "Difícil"
+    },
+    "difficultyHint": {
+      "easy": "Limite $130 — bastante espaço",
+      "normal": "Limite $100 — equilibrado",
+      "hard": "Limite $75 — apenas eficiência de elite"
+    },
+    "howPricing": "Os preços refletem o desempenho ajustado por era ($5–$50).",
+    "budgetLabel": "Orçamento",
+    "challengeCta": "Desafiar uma equipe famosa",
+    "redraft": "Redesenhar",
+    "pickOpponent": "Escolha seu adversário",
+    "totalSpend": "Custo do time: ${spend} (limite {difficulty})",
+    "budgetExceeded": "Orçamento excedido — o servidor rejeitou esta equipe.",
+    "challengeFailed": "Desafio falhou — tente novamente.",
+    "viewLeaderboard": "Classificação Orçamento",
+    "allDifficulties": "Todos"
   }
 }

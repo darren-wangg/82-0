@@ -5,7 +5,8 @@
     "nav": {
       "leaderboard": "Bestenliste",
       "lobbies": "Lobbys",
-      "myTeams": "Meine Teams"
+      "myTeams": "Meine Teams",
+      "budget": "Budget Draft"
     },
     "attribution": "Statistiken aus dem Datensatz <link>NBA Stats (1947–heute)</link> von Sumitro Datta (CC BY-SA 4.0). Nicht mit der NBA verbunden.",
     "language": "Sprache",
@@ -164,5 +165,31 @@
       "tpm": "Dreierwurf",
       "tov": "Ballverluste"
     }
+  },
+  "budget": {
+    "title": "Budget Draft",
+    "subtitle": "Unter dem Gehaltsdeckel draften",
+    "intro": "Wähle eine Schwierigkeit, drafe 8 Spieler unter der Gehaltsgrenze und fordere eines der besten Teams der Geschichte heraus.",
+    "backHome": "Zurück zur Startseite",
+    "difficulty": {
+      "easy": "Einfach",
+      "normal": "Normal",
+      "hard": "Schwer"
+    },
+    "difficultyHint": {
+      "easy": "$130 Deckel — viel Spielraum",
+      "normal": "$100 Deckel — ausgewogen",
+      "hard": "$75 Deckel — nur Elite-Effizienz"
+    },
+    "howPricing": "Preise spiegeln die eraangepasste Leistung wider ($5–$50).",
+    "budgetLabel": "Budget",
+    "challengeCta": "Ein berühmtes Team herausfordern",
+    "redraft": "Neu draften",
+    "pickOpponent": "Wähle deinen Gegner",
+    "totalSpend": "Teamkosten: ${spend} ({difficulty} Deckel)",
+    "budgetExceeded": "Budget überschritten — der Server hat dieses Team abgelehnt.",
+    "challengeFailed": "Herausforderung fehlgeschlagen — erneut versuchen.",
+    "viewLeaderboard": "Budget-Bestenliste",
+    "allDifficulties": "Alle"
   }
 }

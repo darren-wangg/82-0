@@ -1,6 +1,9 @@
 /**
  * /leaderboard — top 50 teams (global or weekly), wins desc then OVR desc,
  * scoped to the current snapshot version. Rows link to the team pages.
+ *
+ * Budget tab: ?mode=budget filters to budget-drafted teams; additionally
+ * ?difficulty=easy|normal|hard sub-filters by cap tier.
  */
 
 import type { Metadata } from "next";
@@ -19,6 +22,7 @@ import { ClaimTeamButton } from "@/components/social/claim-team";
 import { Unavailable } from "@/components/social/unavailable";
 import { TeamSizeSwitch } from "@/components/team-size-switch";
 import { resolveTeamSize, TEAM_SIZE_COOKIE } from "@/lib/team-size";
+import { BUDGET_DIFFICULTIES, type BudgetDifficulty } from "@/lib/budget";
 import { cn } from "@/lib/utils";
 
 export const metadata: Metadata = {
@@ -31,7 +35,14 @@ export default async function LeaderboardPage({
 }: PageProps<"/leaderboard">) {
   const params = await searchParams;
   const scope = params.scope === "weekly" ? "weekly" : "global";
+  const modeParm = params.mode === "budget" ? "budget" : undefined;
+  const difficultyParam = BUDGET_DIFFICULTIES.includes(
+    params.difficulty as BudgetDifficulty
+  )
+    ? (params.difficulty as BudgetDifficulty)
+    : undefined;
   const t = await getTranslations("home");
+  const tBudget = await getTranslations("budget");
   const teamSize = resolveTeamSize(
     (await cookies()).get(TEAM_SIZE_COOKIE)?.value
   );
@@ -44,22 +55,38 @@ export default async function LeaderboardPage({
   let totalPages: number;
   let page: number;
   try {
-    const total = await loadLeaderboardCount(scope, teamSize);
+    const total = await loadLeaderboardCount(
+      scope,
+      teamSize,
+      modeParm,
+      difficultyParam
+    );
     totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE));
     page = Math.min(requestedPage, totalPages);
-    entries = await loadLeaderboardEntries(scope, teamSize, page - 1);
+    entries = await loadLeaderboardEntries(
+      scope,
+      teamSize,
+      page - 1,
+      modeParm,
+      difficultyParam
+    );
   } catch {
     return <Unavailable what="the leaderboard" />;
   }
 
-  // Preserve scope across page links; omit defaults for clean URLs.
-  const pageHref = (p: number) => {
+  /** Build a leaderboard href preserving active params. */
+  const boardHref = (overrides: Record<string, string | undefined>) => {
     const sp = new URLSearchParams();
-    if (scope === "weekly") sp.set("scope", "weekly");
-    if (p > 1) sp.set("page", String(p));
+    const merged = { scope, mode: modeParm, difficulty: difficultyParam, ...overrides };
+    if (merged.scope === "weekly") sp.set("scope", "weekly");
+    if (merged.mode === "budget") sp.set("mode", "budget");
+    if (merged.difficulty) sp.set("difficulty", merged.difficulty);
+    if (overrides.page && overrides.page !== "1") sp.set("page", overrides.page);
     const qs = sp.toString();
     return qs ? `/leaderboard?${qs}` : "/leaderboard";
   };
+
+  const pageHref = (p: number) => boardHref({ page: String(p) });
 
   return (
     <main className="flex flex-1 flex-col">
@@ -73,36 +100,96 @@ export default async function LeaderboardPage({
         </div>
       </div>
 
+      {/* Mode tab: Classic vs Budget */}
       <div className="mt-4 grid grid-cols-2 gap-1 rounded-xl bg-muted/60 p-1 text-center text-sm font-semibold">
-        {(["global", "weekly"] as const).map((s) => (
+        <Link
+          href={boardHref({ mode: undefined, difficulty: undefined, page: "1" })}
+          className={cn(
+            "rounded-lg py-1.5",
+            !modeParm
+              ? "bg-primary text-primary-foreground"
+              : "text-muted-foreground"
+          )}
+        >
+          Classic
+        </Link>
+        <Link
+          href={boardHref({ mode: "budget", difficulty: undefined, page: "1" })}
+          className={cn(
+            "rounded-lg py-1.5",
+            modeParm === "budget"
+              ? "bg-primary text-primary-foreground"
+              : "text-muted-foreground"
+          )}
+        >
+          Budget
+        </Link>
+      </div>
+
+      {/* Budget difficulty sub-filter */}
+      {modeParm === "budget" && (
+        <div className="mt-2 grid grid-cols-4 gap-1 rounded-xl bg-muted/40 p-1 text-center text-xs font-semibold">
           <Link
-            key={s}
-            href={s === "global" ? "/leaderboard" : "/leaderboard?scope=weekly"}
+            href={boardHref({ mode: "budget", difficulty: undefined, page: "1" })}
             className={cn(
-              "rounded-lg py-1.5 capitalize",
-              scope === s
-                ? "bg-primary text-primary-foreground"
-                : "text-muted-foreground"
+              "rounded-lg py-1",
+              !difficultyParam ? "bg-card text-foreground" : "text-muted-foreground"
             )}
           >
-            {s === "weekly" ? "This week" : "All time"}
+            {tBudget("allDifficulties")}
           </Link>
-        ))}
-      </div>
+          {BUDGET_DIFFICULTIES.map((d) => (
+            <Link
+              key={d}
+              href={boardHref({ mode: "budget", difficulty: d, page: "1" })}
+              className={cn(
+                "rounded-lg py-1 capitalize",
+                difficultyParam === d ? "bg-card text-foreground" : "text-muted-foreground"
+              )}
+            >
+              {tBudget(`difficulty.${d}`)}
+            </Link>
+          ))}
+        </div>
+      )}
+
+      {/* Scope tab (Global / This week) — shown below mode tabs */}
+      {!modeParm && (
+        <div className="mt-2 grid grid-cols-2 gap-1 rounded-xl bg-muted/40 p-1 text-center text-xs font-semibold">
+          {(["global", "weekly"] as const).map((s) => (
+            <Link
+              key={s}
+              href={boardHref({ scope: s, page: "1" })}
+              className={cn(
+                "rounded-lg py-1 capitalize",
+                scope === s ? "bg-card text-foreground" : "text-muted-foreground"
+              )}
+            >
+              {s === "weekly" ? "This week" : "All time"}
+            </Link>
+          ))}
+        </div>
+      )}
 
       {entries.length === 0 ? (
         <div className="mt-10 text-center text-sm text-muted-foreground">
           <p>No teams on the board yet.</p>
-          <Link href="/play" className="mt-2 inline-block font-semibold text-primary">
-            Be the first →
-          </Link>
+          {modeParm === "budget" ? (
+            <Link
+              href="/budget"
+              className="mt-2 inline-block font-semibold text-primary"
+            >
+              Draft a budget team →
+            </Link>
+          ) : (
+            <Link href="/play" className="mt-2 inline-block font-semibold text-primary">
+              Be the first →
+            </Link>
+          )}
         </div>
       ) : (
         <ol className="mt-4 space-y-1.5">
           {entries.map((e) => (
-            // Stretched-link row: the <Link> overlays the whole card, and the
-            // claim button (when shown) sits above it on its own z-layer — a
-            // button nested inside an anchor would be invalid HTML.
             <li
               key={e.teamSlug}
               className={cn(
@@ -140,8 +227,6 @@ export default async function LeaderboardPage({
                     </Badge>
                   )}
                 </span>
-                {/* GM line only when a name was supplied; the viewer's own
-                    unnamed entries offer the claim flow instead. */}
                 {e.displayName ? (
                   <span className="block truncate text-[11px] text-muted-foreground">
                     {e.displayName}
