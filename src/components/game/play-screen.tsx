@@ -18,12 +18,14 @@ import {
 } from "./draft-state";
 import { ChallengeBanner } from "./challenge-banner";
 import { LobbyBanner } from "./lobby-banner";
+import { OpponentTracker } from "./opponent-tracker";
 import { DECADE_COLORS } from "./format";
 import { freshSeed, useGame } from "./game-provider";
 import { PoolList } from "./pool-list";
 import { RosterBoard } from "./roster-board";
 import { SlotReel } from "./slot-reel";
 import { usePhaseGuard } from "./use-phase-guard";
+import { useLiveLobbyPoll } from "@/components/social/live-lobby-poll";
 
 /** Reel roll time (franchise reel + staggered decade reel), in ms. */
 const REEL_MS = 3900;
@@ -53,6 +55,11 @@ export function PlayScreen() {
   const { state, dispatch, ctx, players, franchiseById } = useGame();
   const allowed = usePhaseGuard(["draft"]);
   const rounds = ctx.mode?.draftRounds ?? DRAFT_ROUNDS;
+
+  // Live lobby poll — drives the phase gate and opponent tracker.
+  const lobbyCode = state?.lobbyCode ?? null;
+  const liveState = useLiveLobbyPoll(lobbyCode);
+  const isLiveLobby = liveState?.isLive ?? false;
 
   // Arriving via /play?challenge={slug} retargets the draft at that team;
   // /play?lobby={code} starts a draft destined for that lobby. A fresh (or
@@ -106,7 +113,54 @@ export function PlayScreen() {
     [ctx, franchiseById]
   );
 
+  // Remember the player's display name so we can exclude them from the
+  // opponent tracker (matching by name is good enough for this UI).
+  const [myDisplayName, setMyDisplayName] = useState<string | null>(null);
+  useEffect(() => {
+    try {
+      const stored = window.localStorage.getItem("ud:player-name");
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- hydrate once on mount
+      if (stored) setMyDisplayName(stored);
+    } catch {
+      // storage unavailable
+    }
+  }, []);
+
+  // Debounced progress PATCH after each PLACE in a live lobby.
+  const picksCount = state?.picks.length ?? 0;
+  useEffect(() => {
+    if (!isLiveLobby || !lobbyCode) return;
+    const timer = window.setTimeout(() => {
+      void fetch(`/api/lobbies/${encodeURIComponent(lobbyCode)}/progress`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ picksCount }),
+      }).catch(() => {
+        // Best-effort; the poll will reflect final state on finish.
+      });
+    }, 500);
+    return () => window.clearTimeout(timer);
+  }, [isLiveLobby, lobbyCode, picksCount]);
+
   if (!state || !allowed) return <PlaySkeleton />;
+
+  // Live lobby phase gate: if the owner hasn't started yet, show a waiting
+  // screen instead of the draft. The poll will redirect once drafting begins.
+  if (isLiveLobby && liveState?.phase === "waiting") {
+    return (
+      <div className="flex h-dvh flex-col items-center justify-center gap-4 px-6 text-center">
+        <div className="flex flex-col items-center gap-2">
+          <div className="rounded-full bg-primary/20 p-3">
+            <div className="size-8 animate-pulse rounded-full bg-primary/60" />
+          </div>
+          <p className="text-base font-semibold">{t("waitingForStart")}</p>
+          <p className="text-sm text-muted-foreground">
+            {t("waitingForStartHint")}
+          </p>
+        </div>
+      </div>
+    );
+  }
 
   const spin = state.spin;
   const pool = spin
@@ -207,6 +261,14 @@ export function PlayScreen() {
               dispatch({ type: "LEAVE_LOBBY" });
             }
           }}
+        />
+      )}
+
+      {/* Live opponent progress strip (collapsible, shown during live drafts) */}
+      {isLiveLobby && liveState && liveState.phase === "drafting" && (
+        <OpponentTracker
+          participants={liveState.participants}
+          myDisplayName={myDisplayName}
         />
       )}
 

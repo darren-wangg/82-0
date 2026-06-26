@@ -64,9 +64,12 @@ import { usePhaseGuard } from "./use-phase-guard";
 const COUNT_UP_SECONDS = 2.2;
 /** catProfile values are z-score-ish; clamp the bars to ±3. */
 const CAT_RANGE = 3;
-/** Lobby entrants get one re-draft if they don't like their first team. */
-const MAX_LOBBY_RETRIES = 1;
+/** Async lobby entrants get one re-draft; live lobby entrants get none. */
+const MAX_LOBBY_RETRIES_ASYNC = 1;
+const MAX_LOBBY_RETRIES_LIVE = 0;
 const lobbyRetryKey = (code: string) => `ud:lobby-retries:${code}`;
+/** Stored in localStorage to mark a lobby as live (no re-drafts allowed). */
+const lobbyIsLiveKey = (code: string) => `ud:lobby-live:${code}`;
 
 function useCountUp(target: number, duration: number, delay = 0): number {
   const reducedMotion = useReducedMotion();
@@ -453,9 +456,11 @@ export function SimScreen() {
   const [localName, setLocalName] = useState("");
   const [localSaved, setLocalSaved] = useState(false);
   const [deviceError, setDeviceError] = useState<string | null>(null);
-  // Lobby re-draft: one per device per lobby, tracked in localStorage so it
-  // survives the NEW_GAME state reset and page reloads. null until read.
+  // Lobby re-draft: one per device per async lobby (zero for live), tracked in
+  // localStorage so it survives the NEW_GAME state reset and page reloads.
   const [lobbyRetriesUsed, setLobbyRetriesUsed] = useState<number | null>(null);
+  // Whether the current lobby is a live lobby (no re-drafts allowed).
+  const [isLiveLobby, setIsLiveLobby] = useState(false);
 
   const sim = useMemo(() => {
     if (!state || state.status !== "locked") return null;
@@ -481,18 +486,22 @@ export function SimScreen() {
     }
   }, []);
 
-  // Read how many lobby re-drafts this device has already used (per lobby).
+  // Read how many lobby re-drafts this device has already used (per lobby),
+  // and whether this is a live lobby (no re-drafts).
   const lobbyCode = state?.lobbyCode ?? null;
   useEffect(() => {
     if (!lobbyCode) return;
     let used = 0;
+    let live = false;
     try {
       used = Number(window.localStorage.getItem(lobbyRetryKey(lobbyCode))) || 0;
+      live = window.localStorage.getItem(lobbyIsLiveKey(lobbyCode)) === "1";
     } catch {
       // storage unavailable — treat as no retries used
     }
     // eslint-disable-next-line react-hooks/set-state-in-effect -- hydrate once per lobby
     setLobbyRetriesUsed(used);
+    setIsLiveLobby(live);
   }, [lobbyCode]);
 
   useEffect(() => {
@@ -518,6 +527,9 @@ export function SimScreen() {
 
   const { rating, season, roster, cost } = sim;
   const perfect = season.wins === SEASON_GAMES;
+
+  // Live lobbies have no re-drafts; async lobbies get one.
+  const maxLobbyRetries = isLiveLobby ? MAX_LOBBY_RETRIES_LIVE : MAX_LOBBY_RETRIES_ASYNC;
 
   const saveTeam = async () => {
     if (savingRef.current) return;
@@ -561,7 +573,7 @@ export function SimScreen() {
       }
       if (!res.ok) throw new Error(`save failed: ${res.status}`);
       const data: SaveTeamResponse = await res.json();
-      // Lobby draft: enter the team and jump to the standings.
+      // Lobby draft: enter (async) or finish (live) the team, then jump to standings.
       if (state.lobbyCode) {
         const displayName = playerName.trim().slice(0, 24) || undefined;
         if (displayName) {
@@ -571,15 +583,18 @@ export function SimScreen() {
             // best-effort persistence only
           }
         }
+        // Live lobbies use /finish; async lobbies use /enter.
+        const lobbyEndpoint = isLiveLobby
+          ? `/api/lobbies/${encodeURIComponent(state.lobbyCode)}/finish`
+          : "/api/lobbies/enter";
+        const lobbyBody = isLiveLobby
+          ? { teamSlug: data.team.slug, displayName }
+          : { code: state.lobbyCode, teamSlug: data.team.slug, displayName };
         try {
-          const l = await fetch("/api/lobbies/enter", {
+          const l = await fetch(lobbyEndpoint, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-              code: state.lobbyCode,
-              teamSlug: data.team.slug,
-              displayName,
-            }),
+            body: JSON.stringify(lobbyBody),
           });
           if (l.ok) {
             // The team is now locked into the lobby. Clear this device's draft
@@ -1035,15 +1050,16 @@ export function SimScreen() {
       <div className="sticky bottom-0 mt-auto flex flex-col gap-2 bg-gradient-to-t from-background via-background/95 to-transparent pt-4 pb-[max(1rem,env(safe-area-inset-bottom))]">
         {state.lobbyCode && save.phase !== "saved" && (
           <>
-            {/* One re-draft per lobby — hidden once it's been used. */}
-            {lobbyRetriesUsed !== null && lobbyRetriesUsed < MAX_LOBBY_RETRIES && (
+            {/* One re-draft per async lobby — hidden for live lobbies and
+                once the retry has been used. */}
+            {lobbyRetriesUsed !== null && lobbyRetriesUsed < maxLobbyRetries && (
               <Button
                 variant="outline"
                 className="h-12 w-full rounded-2xl text-sm font-bold"
                 onClick={reDraftForLobby}
               >
                 <RotateCcw className="size-4" />{" "}
-                {t("reDraft", { left: MAX_LOBBY_RETRIES - lobbyRetriesUsed })}
+                {t("reDraft", { left: maxLobbyRetries - lobbyRetriesUsed })}
               </Button>
             )}
             <Button
