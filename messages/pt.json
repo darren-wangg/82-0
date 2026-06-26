@@ -52,7 +52,9 @@
     "leave": "Sair",
     "confirmLeave": "Sair da sala {code}? Este draft continua como jogo livre; para entrar na sala depois, você precisará do link dela e de um novo draft.",
     "spin": "Girar",
-    "spinning": "GIRANDO…"
+    "spinning": "GIRANDO…",
+    "waitingForStart": "Aguardando o início do draft",
+    "waitingForStartHint": "O criador iniciará o draft quando todos estiverem prontos"
   },
   "sim": {
     "finalRecordAria": "Campanha final {wins} a {losses}",
@@ -136,7 +138,26 @@
     "createError": "Não foi possível criar a sala agora — tente novamente em um minuto.",
     "blurb5": "Titulares",
     "blurb8": "Clássico",
-    "blurb10": "Banco profundo"
+    "blurb10": "Banco profundo",
+    "live": "Ao vivo",
+    "liveHint": "Todos draftam simultaneamente",
+    "liveAria": "Ativar modo ao vivo",
+    "waitingRoom": "Sala de espera",
+    "noPlayersYet": "Nenhum jogador ainda — compartilhe o link",
+    "yourNamePlaceholder": "Seu nome",
+    "yourNameAria": "Seu nome para este lobby",
+    "joinLive": "Entrar",
+    "joining": "Entrando…",
+    "joinError": "Não foi possível entrar — tente novamente",
+    "joinedWaiting": "Você está dentro!",
+    "waitingForOwner": "Aguardando o criador iniciar o draft…",
+    "lobbyFull": "Este lobby está cheio",
+    "startDraft": "Iniciar draft",
+    "starting": "Iniciando…",
+    "startError": "Não foi possível iniciar o draft",
+    "startHint": "Precisa de mais {need} jogador(es)",
+    "inviteHint": "Compartilhe o link para convidar jogadores para \"{name}\"",
+    "liveProgress": "Progresso ao vivo"
   },
   "myTeams": {
     "empty": "Nenhum time de {size} salvo ainda — termine uma temporada e toque em Salvar.",

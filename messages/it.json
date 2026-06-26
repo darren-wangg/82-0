@@ -52,7 +52,9 @@
     "leave": "Esci",
     "confirmLeave": "Uscire dalla sala {code}? Questo draft continua come gioco libero; per entrare nella sala più tardi ti serviranno il suo link e un nuovo draft.",
     "spin": "Gira",
-    "spinning": "GIRA…"
+    "spinning": "GIRA…",
+    "waitingForStart": "In attesa dell'inizio del draft",
+    "waitingForStartHint": "Il creatore avvierà il draft quando tutti sono pronti"
   },
   "sim": {
     "finalRecordAria": "Record finale {wins} a {losses}",
@@ -136,7 +138,26 @@
     "createError": "Impossibile creare la sala ora — riprova tra un minuto.",
     "blurb5": "Titolari",
     "blurb8": "Classico",
-    "blurb10": "Panchina lunga"
+    "blurb10": "Panchina lunga",
+    "live": "Dal vivo",
+    "liveHint": "Tutti draftano simultaneamente",
+    "liveAria": "Attiva modalità live",
+    "waitingRoom": "Sala d'attesa",
+    "noPlayersYet": "Nessun giocatore — condividi il link",
+    "yourNamePlaceholder": "Il tuo nome",
+    "yourNameAria": "Il tuo nome per questa lobby",
+    "joinLive": "Unisciti",
+    "joining": "Partecipazione…",
+    "joinError": "Impossibile unirsi — riprova",
+    "joinedWaiting": "Sei dentro!",
+    "waitingForOwner": "In attesa che il creatore avvii il draft…",
+    "lobbyFull": "La lobby è piena",
+    "startDraft": "Inizia il draft",
+    "starting": "Avvio…",
+    "startError": "Impossibile avviare il draft",
+    "startHint": "Mancano {need} giocatore/i",
+    "inviteHint": "Condividi il link per invitare a \"{name}\"",
+    "liveProgress": "Progresso live"
   },
   "myTeams": {
     "empty": "Ancora nessuna squadra da {size} salvata — completa una stagione e premi Salva.",

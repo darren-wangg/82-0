@@ -52,7 +52,9 @@
     "leave": "Leave",
     "confirmLeave": "Leave lobby {code}? This draft continues as free play; to enter the lobby later you'll need its link and a fresh draft.",
     "spin": "Spin",
-    "spinning": "SPINNING…"
+    "spinning": "SPINNING…",
+    "waitingForStart": "Waiting for the draft to start",
+    "waitingForStartHint": "The owner will kick off the draft when everyone is ready"
   },
   "sim": {
     "finalRecordAria": "Final record {wins} and {losses}",
@@ -136,7 +138,26 @@
     "createError": "Couldn't create the lobby right now — try again in a minute.",
     "blurb5": "Starters",
     "blurb8": "Classic",
-    "blurb10": "Deep bench"
+    "blurb10": "Deep bench",
+    "live": "Live",
+    "liveHint": "Everyone drafts simultaneously",
+    "liveAria": "Enable live mode",
+    "waitingRoom": "Waiting room",
+    "noPlayersYet": "No players yet — share the link to invite friends",
+    "yourNamePlaceholder": "Your name",
+    "yourNameAria": "Your display name for this lobby",
+    "joinLive": "Join",
+    "joining": "Joining…",
+    "joinError": "Could not join — try again in a moment",
+    "joinedWaiting": "You're in!",
+    "waitingForOwner": "Waiting for the owner to start the draft…",
+    "lobbyFull": "This lobby is full",
+    "startDraft": "Start draft",
+    "starting": "Starting…",
+    "startError": "Could not start the draft — try again",
+    "startHint": "Need {need} more player to start",
+    "inviteHint": "Share the lobby link to invite players to \"{name}\"",
+    "liveProgress": "Live progress"
   },
   "myTeams": {
     "empty": "No saved {size}-man teams yet — draft a team and hit Save.",

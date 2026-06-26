@@ -52,7 +52,9 @@
     "leave": "나가기",
     "confirmLeave": "로비 {code}에서 나갈까요? 이 드래프트는 자유 플레이로 계속됩니다. 나중에 로비에 참여하려면 링크와 새 드래프트가 필요합니다.",
     "spin": "돌리기",
-    "spinning": "돌리는 중…"
+    "spinning": "돌리는 중…",
+    "waitingForStart": "드래프트 시작 대기 중",
+    "waitingForStartHint": "모두 준비되면 방장이 드래프트를 시작합니다"
   },
   "sim": {
     "finalRecordAria": "최종 전적 {wins}승 {losses}패",
@@ -136,7 +138,26 @@
     "createError": "지금은 로비를 만들 수 없습니다 — 잠시 후 다시 시도하세요.",
     "blurb5": "주전",
     "blurb8": "클래식",
-    "blurb10": "두꺼운 벤치"
+    "blurb10": "두꺼운 벤치",
+    "live": "라이브",
+    "liveHint": "모두 동시에 드래프트",
+    "liveAria": "라이브 모드 활성화",
+    "waitingRoom": "대기실",
+    "noPlayersYet": "아직 플레이어 없음 — 링크를 공유하세요",
+    "yourNamePlaceholder": "당신의 이름",
+    "yourNameAria": "이 로비에서 표시할 이름",
+    "joinLive": "참여",
+    "joining": "참여 중…",
+    "joinError": "참여 실패 — 다시 시도해 주세요",
+    "joinedWaiting": "참여 완료!",
+    "waitingForOwner": "방장의 드래프트 시작 대기 중…",
+    "lobbyFull": "로비가 꽉 찼습니다",
+    "startDraft": "드래프트 시작",
+    "starting": "시작 중…",
+    "startError": "드래프트를 시작할 수 없습니다",
+    "startHint": "시작하려면 {need}명 더 필요합니다",
+    "inviteHint": "\"{name}\" 초대 링크 공유",
+    "liveProgress": "실시간 진행"
   },
   "myTeams": {
     "empty": "아직 저장된 {size}인 팀이 없습니다 — 시즌을 마치고 저장을 누르세요.",

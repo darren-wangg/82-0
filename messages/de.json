@@ -52,7 +52,9 @@
     "leave": "Verlassen",
     "confirmLeave": "Lobby {code} verlassen? Dieser Draft läuft als freies Spiel weiter; um der Lobby später beizutreten, brauchst du ihren Link und einen neuen Draft.",
     "spin": "Drehen",
-    "spinning": "DREHT…"
+    "spinning": "DREHT…",
+    "waitingForStart": "Warte auf den Draftstart",
+    "waitingForStartHint": "Der Host startet den Draft sobald alle bereit sind"
   },
   "sim": {
     "finalRecordAria": "Endbilanz {wins} zu {losses}",
@@ -136,7 +138,26 @@
     "createError": "Lobby konnte gerade nicht erstellt werden — versuch es in einer Minute erneut.",
     "blurb5": "Starter",
     "blurb8": "Klassisch",
-    "blurb10": "Tiefe Bank"
+    "blurb10": "Tiefe Bank",
+    "live": "Live",
+    "liveHint": "Alle draften gleichzeitig",
+    "liveAria": "Live-Modus aktivieren",
+    "waitingRoom": "Warteraum",
+    "noPlayersYet": "Noch keine Spieler — Link teilen zum Einladen",
+    "yourNamePlaceholder": "Dein Name",
+    "yourNameAria": "Dein Anzeigename für diese Lobby",
+    "joinLive": "Beitreten",
+    "joining": "Beitritt…",
+    "joinError": "Beitritt fehlgeschlagen — bitte erneut versuchen",
+    "joinedWaiting": "Du bist dabei!",
+    "waitingForOwner": "Warte auf den Host…",
+    "lobbyFull": "Diese Lobby ist voll",
+    "startDraft": "Draft starten",
+    "starting": "Startet…",
+    "startError": "Draft konnte nicht gestartet werden",
+    "startHint": "Noch {need} Spieler benötigt",
+    "inviteHint": "Teile den Link zu \"{name}\"",
+    "liveProgress": "Live-Fortschritt"
   },
   "myTeams": {
     "empty": "Noch keine gespeicherten {size}-Mann-Teams — beende eine Saison und tippe auf Speichern.",

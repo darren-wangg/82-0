@@ -23,6 +23,7 @@ import { LobbyCelebration } from "@/components/social/lobby-celebration";
 import { LobbyCloseNotifier } from "@/components/social/lobby-close-notifier";
 import { LobbyLimitEditor } from "@/components/social/lobby-limit-editor";
 import { LobbyRefresh } from "@/components/social/lobby-refresh";
+import { LiveWaitingRoom } from "@/components/social/live-waiting-room";
 import { ShareButton } from "@/components/social/share-button";
 import { StandingsTable } from "@/components/social/standings-table";
 import { Unavailable } from "@/components/social/unavailable";
@@ -74,6 +75,38 @@ export default async function LobbyPage({ params }: PageProps<"/l/[code]">) {
     ? lobby.standings.findIndex((s) => s.teamSlug === viewer.entryTeamSlug)
     : -1;
   const placement = placementIdx >= 0 ? placementIdx + 1 : null;
+
+  // Live lobby in waiting/drafting phase: render the waiting room instead of
+  // the normal draft-entry CTA. Results phase falls through to the normal
+  // closed-lobby standings rendering.
+  if (viewer.isLive && open) {
+    return (
+      <main className="space-y-5">
+        <div className="text-center">
+          <h1 className="text-2xl font-black tracking-tight">{lobby.name}</h1>
+          <p className="mt-1.5 flex items-center justify-center gap-2 text-xs text-muted-foreground">
+            <CopyCode code={lobby.code} />
+            <span className="rounded-md bg-primary/20 px-2 py-0.5 text-[10px] font-bold tracking-wide text-primary uppercase">
+              Live
+            </span>
+          </p>
+          <p className="mt-1.5 flex justify-center">
+            <span className="rounded-md bg-muted px-2 py-0.5 text-[10px] font-bold tracking-wide text-muted-foreground uppercase">
+              {viewer.teamSize}-man
+            </span>
+          </p>
+        </div>
+        <LiveWaitingRoom
+          code={lobby.code}
+          isCreator={viewer.isCreator}
+          isParticipant={viewer.isParticipant}
+          draftPath={draftPath}
+          teamLimit={limit}
+          lobbyName={lobby.name}
+        />
+      </main>
+    );
+  }
 
   return (
     <main className="space-y-5">

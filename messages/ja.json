@@ -52,7 +52,9 @@
     "leave": "退出",
     "confirmLeave": "ロビー {code} から退出しますか？このドラフトはフリープレイとして続行します。後でロビーに参加するには、そのリンクと新しいドラフトが必要です。",
     "spin": "回す",
-    "spinning": "回転中…"
+    "spinning": "回転中…",
+    "waitingForStart": "ドラフト開始待ち",
+    "waitingForStartHint": "オーナーが全員の準備が整ったらドラフトを開始します"
   },
   "sim": {
     "finalRecordAria": "最終成績 {wins} 勝 {losses} 敗",
@@ -136,7 +138,26 @@
     "createError": "今はロビーを作成できませんでした——1分後にもう一度お試しください。",
     "blurb5": "スターター",
     "blurb8": "クラシック",
-    "blurb10": "厚いベンチ"
+    "blurb10": "厚いベンチ",
+    "live": "ライブ",
+    "liveHint": "全員が同時にドラフト",
+    "liveAria": "ライブモードを有効にする",
+    "waitingRoom": "待合室",
+    "noPlayersYet": "まだプレイヤーがいません — リンクを共有して友達を招待",
+    "yourNamePlaceholder": "あなたの名前",
+    "yourNameAria": "このロビーでの表示名",
+    "joinLive": "参加する",
+    "joining": "参加中…",
+    "joinError": "参加できませんでした — もう一度お試しください",
+    "joinedWaiting": "参加しました！",
+    "waitingForOwner": "オーナーのドラフト開始待ち…",
+    "lobbyFull": "このロビーは満員です",
+    "startDraft": "ドラフト開始",
+    "starting": "開始中…",
+    "startError": "ドラフトを開始できませんでした",
+    "startHint": "あと{need}人必要",
+    "inviteHint": "「{name}」への招待リンクを共有",
+    "liveProgress": "ライブ進捗"
   },
   "myTeams": {
     "empty": "保存された{size}人のチームはまだありません——シーズンを終えて保存を押してください。",

@@ -52,7 +52,9 @@
     "leave": "Quitter",
     "confirmLeave": "Quitter le salon {code} ? Ce draft continue en jeu libre ; pour rejoindre le salon plus tard, il vous faudra son lien et un nouveau draft.",
     "spin": "Tourner",
-    "spinning": "ROTATION…"
+    "spinning": "ROTATION…",
+    "waitingForStart": "En attente du début du draft",
+    "waitingForStartHint": "Le créateur lancera le draft quand tout le monde sera prêt"
   },
   "sim": {
     "finalRecordAria": "Bilan final {wins} à {losses}",
@@ -136,7 +138,26 @@
     "createError": "Impossible de créer le salon pour l'instant — réessayez dans une minute.",
     "blurb5": "Titulaires",
     "blurb8": "Classique",
-    "blurb10": "Banc profond"
+    "blurb10": "Banc profond",
+    "live": "En direct",
+    "liveHint": "Tout le monde draft simultanément",
+    "liveAria": "Activer le mode en direct",
+    "waitingRoom": "Salle d'attente",
+    "noPlayersYet": "Aucun joueur — partagez le lien",
+    "yourNamePlaceholder": "Votre nom",
+    "yourNameAria": "Votre nom pour ce salon",
+    "joinLive": "Rejoindre",
+    "joining": "Rejoindre…",
+    "joinError": "Impossible de rejoindre — réessayez",
+    "joinedWaiting": "Vous êtes dans le salon !",
+    "waitingForOwner": "En attente du créateur pour lancer le draft…",
+    "lobbyFull": "Ce salon est plein",
+    "startDraft": "Lancer le draft",
+    "starting": "Démarrage…",
+    "startError": "Impossible de lancer le draft",
+    "startHint": "Il faut {need} joueur(s) de plus",
+    "inviteHint": "Partagez le lien pour rejoindre \"{name}\"",
+    "liveProgress": "Progression en direct"
   },
   "myTeams": {
     "empty": "Aucune équipe à {size} enregistrée — terminez une saison et appuyez sur Enregistrer.",

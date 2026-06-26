@@ -52,7 +52,9 @@
     "leave": "离开",
     "confirmLeave": "离开房间 {code} 吗？此选秀将作为自由游戏继续；若想稍后加入房间，你需要它的链接并重新选秀。",
     "spin": "转动",
-    "spinning": "转动中…"
+    "spinning": "转动中…",
+    "waitingForStart": "等待选秀开始",
+    "waitingForStartHint": "当所有人准备好后，房主将开始选秀"
   },
   "sim": {
     "finalRecordAria": "最终战绩 {wins} 比 {losses}",
@@ -136,7 +138,26 @@
     "createError": "目前无法创建房间——请一分钟后再试。",
     "blurb5": "首发",
     "blurb8": "经典",
-    "blurb10": "深度替补"
+    "blurb10": "深度替补",
+    "live": "直播",
+    "liveHint": "所有人同时选秀",
+    "liveAria": "启用直播模式",
+    "waitingRoom": "等候室",
+    "noPlayersYet": "还没有玩家 — 分享链接邀请朋友",
+    "yourNamePlaceholder": "你的名字",
+    "yourNameAria": "您在此大厅的显示名称",
+    "joinLive": "加入",
+    "joining": "加入中…",
+    "joinError": "无法加入 — 请稍后再试",
+    "joinedWaiting": "您已加入!",
+    "waitingForOwner": "等待房主开始选秀…",
+    "lobbyFull": "此大厅已满",
+    "startDraft": "开始选秀",
+    "starting": "开始中…",
+    "startError": "无法开始选秀",
+    "startHint": "还需要{need}名玩家",
+    "inviteHint": "分享大厅链接邀请玩家加入\"{name}\"",
+    "liveProgress": "实时进度"
   },
   "myTeams": {
     "empty": "还没有已保存的 {size} 人球队——完成一个赛季并点击保存。",

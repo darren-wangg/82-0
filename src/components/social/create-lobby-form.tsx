@@ -20,6 +20,7 @@ export function CreateLobbyForm({
   const [teamSize, setTeamSize] = useState<TeamSize>(defaultSize);
   const [capped, setCapped] = useState(false);
   const [limit, setLimit] = useState("8");
+  const [isLive, setIsLive] = useState(false);
   const [pending, setPending] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -37,7 +38,7 @@ export function CreateLobbyForm({
       const res = await fetch("/api/lobbies", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name: trimmed, limit: parsedLimit, teamSize }),
+        body: JSON.stringify({ name: trimmed, limit: parsedLimit, teamSize, isLive }),
       });
       if (!res.ok) throw new Error(String(res.status));
       const lobby: LobbyResponse = await res.json();
@@ -121,6 +122,25 @@ export function CreateLobbyForm({
             <span className="text-xs text-muted-foreground">{t("maxTeamsHint")}</span>
           </div>
         )}
+      </div>
+
+      {/* Live mode: everyone drafts simultaneously with real-time progress. */}
+      <div className="rounded-xl border border-border/70 px-3 py-2.5">
+        <label className="flex items-center justify-between gap-3 text-sm">
+          <span>
+            <span className="font-medium">{t("live")}</span>
+            <span className="block text-xs text-muted-foreground">
+              {t("liveHint")}
+            </span>
+          </span>
+          <input
+            type="checkbox"
+            checked={isLive}
+            onChange={(e) => setIsLive(e.target.checked)}
+            className="size-4 accent-primary"
+            aria-label={t("liveAria")}
+          />
+        </label>
       </div>
 
       <Button
