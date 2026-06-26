@@ -190,6 +190,7 @@
     "budgetExceeded": "예산 초과 — 서버가 이 로스터를 거부했습니다.",
     "challengeFailed": "도전 실패 — 다시 시도하세요.",
     "viewLeaderboard": "예산 리더보드",
-    "allDifficulties": "전체"
+    "allDifficulties": "전체",
+    "backToSummary": "요약으로 돌아가기"
   }
 }

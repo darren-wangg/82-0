@@ -190,6 +190,7 @@
     "budgetExceeded": "Budget überschritten — der Server hat dieses Team abgelehnt.",
     "challengeFailed": "Herausforderung fehlgeschlagen — erneut versuchen.",
     "viewLeaderboard": "Budget-Bestenliste",
-    "allDifficulties": "Alle"
+    "allDifficulties": "Alle",
+    "backToSummary": "Zurück zur Übersicht"
   }
 }

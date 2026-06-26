@@ -190,6 +190,7 @@
     "budgetExceeded": "Orçamento excedido — o servidor rejeitou esta equipe.",
     "challengeFailed": "Desafio falhou — tente novamente.",
     "viewLeaderboard": "Classificação Orçamento",
-    "allDifficulties": "Todos"
+    "allDifficulties": "Todos",
+    "backToSummary": "Voltar ao resumo"
   }
 }

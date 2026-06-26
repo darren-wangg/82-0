@@ -190,6 +190,7 @@
     "budgetExceeded": "バジェット超過 — サーバーがこのロスターを拒否しました。",
     "challengeFailed": "チャレンジ失敗 — もう一度試してください。",
     "viewLeaderboard": "バジェットリーダーボード",
-    "allDifficulties": "すべて"
+    "allDifficulties": "すべて",
+    "backToSummary": "サマリーに戻る"
   }
 }

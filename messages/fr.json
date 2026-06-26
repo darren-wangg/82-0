@@ -190,6 +190,7 @@
     "budgetExceeded": "Budget dépassé — le serveur a refusé cette équipe.",
     "challengeFailed": "Défi échoué — réessayez.",
     "viewLeaderboard": "Classement Budget",
-    "allDifficulties": "Tous"
+    "allDifficulties": "Tous",
+    "backToSummary": "Retour au résumé"
   }
 }

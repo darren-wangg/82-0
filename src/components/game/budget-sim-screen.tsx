@@ -13,9 +13,8 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
-import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
-import { Check, ChevronRight, RotateCcw, Save as SaveIcon, Trophy } from "lucide-react";
-import Link from "next/link";
+import { useReducedMotion } from "framer-motion";
+import { Check, ChevronRight, Loader2, RotateCcw, Save as SaveIcon } from "lucide-react";
 import { Button, buttonVariants } from "@/components/ui/button";
 import {
   Dialog,
@@ -27,18 +26,13 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
-import {
-  SEASON_GAMES,
-  type MatchupResponse,
-  type SaveTeamResponse,
-} from "@/lib/contracts";
+import { SEASON_GAMES, type SaveTeamResponse } from "@/lib/contracts";
 import { containsProfanity } from "@/lib/profanity";
 import { getEngine } from "@/lib/engine-provider";
 import { getBaselines, getSnapshot } from "@/lib/snapshot-client";
 import { cn } from "@/lib/utils";
 import { isBudgetDifficulty, type BudgetDifficulty } from "@/lib/budget";
 import { priceMapOf } from "@/lib/pricing";
-import { FAMOUS_TEAMS, type FamousTeam } from "@/lib/famous-teams";
 import { DownloadCardButton } from "@/components/social/download-card";
 import { analyzeCost } from "./cost-analysis";
 import { Confetti } from "./confetti";
@@ -83,9 +77,12 @@ export function BudgetSimScreen() {
 
   const [teamName, setTeamName] = useState("");
   const [difficulty, setDifficulty] = useState<BudgetDifficulty>("normal");
-  const [step, setStep] = useState<"record" | "challenge" | "saving">("record");
+  const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const savingRef = useRef(false);
+  // Cache the saved slug so navigating back and re-tapping Challenge reuses the
+  // same persisted team instead of creating a duplicate row each time.
+  const savedSlugRef = useRef<string | null>(null);
 
   // Save-to-device dialog (mirrors the classic sim screen).
   const [localOpen, setLocalOpen] = useState(false);
@@ -145,7 +142,9 @@ export function BudgetSimScreen() {
     setLocalSaved(true);
   };
 
-  const saveAndChallenge = async (opponent: FamousTeam) => {
+  // Save the budget team (server validates the cap), then route to the dedicated
+  // opponent-picker screen. The matchup itself is created there, on pick.
+  const saveAndGoToChallenge = async () => {
     if (savingRef.current || !state || !sim) return;
     const name = teamName.trim();
     if (!name) {
@@ -157,8 +156,21 @@ export function BudgetSimScreen() {
       return;
     }
     setError(null);
+
+    const goTo = (slug: string) =>
+      router.push(
+        `/budget/challenge?team=${encodeURIComponent(slug)}` +
+          `&name=${encodeURIComponent(name)}&difficulty=${difficulty}`
+      );
+
+    // Already saved (user came back to re-pick) — skip the duplicate write.
+    if (savedSlugRef.current) {
+      goTo(savedSlugRef.current);
+      return;
+    }
+
     savingRef.current = true;
-    setStep("saving");
+    setSaving(true);
     try {
       const saveRes = await fetch("/api/budget/teams", {
         method: "POST",
@@ -172,41 +184,22 @@ export function BudgetSimScreen() {
       });
       if (saveRes.status === 409) {
         setError(tSim("toastStaleData"));
-        setStep("challenge");
-        savingRef.current = false;
         return;
       }
       if (saveRes.status === 422) {
         const data = (await saveRes.json().catch(() => null)) as { error?: string } | null;
         setError(data?.error ?? t("budgetExceeded"));
-        setStep("challenge");
-        savingRef.current = false;
         return;
       }
       if (!saveRes.ok) throw new Error(`save failed: ${saveRes.status}`);
       const saveData: SaveTeamResponse = await saveRes.json();
-
-      const matchupRes = await fetch("/api/matchups", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          teamSlugA: saveData.team.slug,
-          teamSlugB: opponent.slug,
-        }),
-      });
-      if (!matchupRes.ok) throw new Error(`matchup failed: ${matchupRes.status}`);
-      const matchupData: MatchupResponse = await matchupRes.json();
-
-      try {
-        window.localStorage.removeItem("eighty-two-zero/budget/v1");
-      } catch {
-        /* storage unavailable */
-      }
-      router.push(`/m/${matchupData.id}`);
+      savedSlugRef.current = saveData.team.slug;
+      goTo(saveData.team.slug);
     } catch {
       setError(t("challengeFailed"));
-      setStep("challenge");
+    } finally {
       savingRef.current = false;
+      setSaving(false);
     }
   };
 
@@ -316,99 +309,47 @@ export function BudgetSimScreen() {
           </p>
         )}
 
-        {step === "record" ? (
-          <>
-            <Input
-              value={teamName}
-              maxLength={40}
-              placeholder={tSim("teamNamePlaceholder")}
-              aria-label={tSim("teamNameAria")}
-              className="h-11 rounded-xl"
-              onChange={(e) => {
-                setTeamName(e.target.value);
-                if (error) setError(null);
-              }}
-            />
-            {error && (
-              <p role="alert" className="text-sm font-medium text-destructive">
-                {error}
-              </p>
-            )}
-            <Button
-              className="h-14 w-full rounded-2xl font-display text-lg tracking-wide shadow-lg shadow-primary/30"
-              disabled={teamName.trim().length === 0}
-              onClick={() => {
-                if (!teamName.trim()) {
-                  setError(tSim("toastNameRequired"));
-                  return;
-                }
-                setError(null);
-                setStep("challenge");
-              }}
-            >
-              {t("challengeCta")} <ChevronRight className="size-5" />
-            </Button>
-            <Button
-              variant="outline"
-              className="h-12 w-full rounded-2xl text-sm font-bold"
-              onClick={() => {
-                dispatch({ type: "NEW_GAME", seed: freshSeed() });
-                router.push("/budget");
-              }}
-            >
-              {t("redraft")} <RotateCcw className="size-4" />
-            </Button>
-          </>
-        ) : (
-          <>
-            <p className="text-sm font-semibold">{t("pickOpponent")}</p>
-            {error && <p className="text-xs text-destructive">{error}</p>}
-            <ul className="flex flex-col gap-2">
-              {FAMOUS_TEAMS.map((team) => (
-                <li key={team.slug}>
-                  <button
-                    type="button"
-                    disabled={step === "saving"}
-                    onClick={() => saveAndChallenge(team)}
-                    className={cn(
-                      "flex w-full items-center justify-between rounded-xl border border-border/80 bg-card/70 px-4 py-3 text-left shadow-md shadow-black/20 transition-transform active:scale-[0.99]",
-                      step === "saving" && "cursor-wait opacity-50"
-                    )}
-                  >
-                    <div className="min-w-0">
-                      <p className="text-sm font-bold">{team.name}</p>
-                      <p className="truncate text-xs text-muted-foreground">
-                        {team.era} · {team.blurb}
-                      </p>
-                    </div>
-                    <ChevronRight className="size-4 shrink-0 text-muted-foreground" />
-                  </button>
-                </li>
-              ))}
-            </ul>
-            <Link
-              href="/leaderboard?mode=budget"
-              className="mt-1 flex items-center justify-center gap-1.5 text-sm font-semibold text-muted-foreground hover:text-foreground"
-            >
-              <Trophy className="size-4" /> {t("viewLeaderboard")}
-            </Link>
-          </>
-        )}
-      </div>
-
-      <AnimatePresence>
-        {error && step !== "record" && (
-          <motion.div
-            initial={{ opacity: 0, y: 16 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: 16 }}
-            role="status"
-            className="fixed inset-x-4 bottom-24 z-50 mx-auto max-w-md rounded-xl border border-border bg-popover px-4 py-3 text-sm text-popover-foreground shadow-lg"
-          >
+        <Input
+          value={teamName}
+          maxLength={40}
+          placeholder={tSim("teamNamePlaceholder")}
+          aria-label={tSim("teamNameAria")}
+          className="h-11 rounded-xl"
+          onChange={(e) => {
+            setTeamName(e.target.value);
+            if (error) setError(null);
+          }}
+        />
+        {error && (
+          <p role="alert" className="text-sm font-medium text-destructive">
             {error}
-          </motion.div>
+          </p>
         )}
-      </AnimatePresence>
+        <Button
+          className="h-14 w-full rounded-2xl font-display text-lg tracking-wide shadow-lg shadow-primary/30"
+          disabled={teamName.trim().length === 0 || saving}
+          onClick={saveAndGoToChallenge}
+        >
+          {saving ? (
+            <Loader2 className="size-5 animate-spin" />
+          ) : (
+            <>
+              {t("challengeCta")} <ChevronRight className="size-5" />
+            </>
+          )}
+        </Button>
+        <Button
+          variant="outline"
+          className="h-12 w-full rounded-2xl text-sm font-bold"
+          disabled={saving}
+          onClick={() => {
+            dispatch({ type: "NEW_GAME", seed: freshSeed() });
+            router.push("/budget");
+          }}
+        >
+          {t("redraft")} <RotateCcw className="size-4" />
+        </Button>
+      </div>
     </div>
   );
 }

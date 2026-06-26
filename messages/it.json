@@ -190,6 +190,7 @@
     "budgetExceeded": "Budget superato — il server ha rifiutato questa squadra.",
     "challengeFailed": "Sfida fallita — riprova.",
     "viewLeaderboard": "Classifica Budget",
-    "allDifficulties": "Tutte"
+    "allDifficulties": "Tutte",
+    "backToSummary": "Torna al riepilogo"
   }
 }

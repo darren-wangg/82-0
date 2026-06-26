@@ -168,8 +168,8 @@
   },
   "budget": {
     "title": "Budget Draft",
-    "subtitle": "Draft under a cap — challenge history",
-    "intro": "Pick a difficulty, draft 8 players under the salary cap, then challenge one of the greatest teams ever assembled.",
+    "subtitle": "Draft under a salary cap",
+    "intro": "Pick a difficulty, draft 8 players under the salary cap, then challenge historic teams head-to-head.",
     "backHome": "Back to home",
     "difficulty": {
       "easy": "Easy",
@@ -177,7 +177,7 @@
       "hard": "Hard"
     },
     "difficultyHint": {
-      "easy": "$130 cap — plenty of room",
+      "easy": "$130 cap — like you're the Lakers or Dodgers",
       "normal": "$100 cap — balanced",
       "hard": "$75 cap — elite efficiency only"
     },
@@ -190,6 +190,7 @@
     "budgetExceeded": "Budget exceeded — the server rejected this roster.",
     "challengeFailed": "Challenge failed — try again.",
     "viewLeaderboard": "Budget Leaderboard",
-    "allDifficulties": "All"
+    "allDifficulties": "All",
+    "backToSummary": "Back to summary"
   }
 }
