@@ -36,6 +36,7 @@ import { containsProfanity } from "@/lib/profanity";
 import { getEngine } from "@/lib/engine-provider";
 import { getBaselines } from "@/lib/snapshot-client";
 import { cn } from "@/lib/utils";
+import { SoundToggle } from "@/components/sound-toggle";
 import { DownloadCardButton } from "@/components/social/download-card";
 import { analyzeCost } from "./cost-analysis";
 import { Confetti } from "./confetti";
@@ -151,18 +152,8 @@ export function SimScreen() {
     return () => window.clearTimeout(timer);
   }, [toast]);
 
-  // Buzz when the 82-0 lands (Android; iOS has no vibration API — no-op).
-  useEffect(() => {
-    if (sim?.season.wins !== SEASON_GAMES) return;
-    const timer = window.setTimeout(() => {
-      try {
-        navigator.vibrate?.([120, 60, 120, 60, 240]);
-      } catch {
-        // best-effort haptics only
-      }
-    }, COUNT_UP_SECONDS * 1000);
-    return () => window.clearTimeout(timer);
-  }, [sim]);
+  // The result sound + buzz (win / loss / perfect) is fired centrally by
+  // <RecordReveal> when the record lands, so both sim screens match.
 
   if (!state || !allowed || !sim) return <SimSkeleton />;
 
@@ -375,6 +366,7 @@ export function SimScreen() {
 
       {/* download image + save (device) + share icons, top right */}
       <div className="flex justify-end gap-2">
+        <SoundToggle className="mr-auto" />
         <DownloadCardButton
           cardUrl={cardUrl}
           fileName="ultimate-draft-team-card.png"

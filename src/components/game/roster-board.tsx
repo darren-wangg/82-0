@@ -5,6 +5,8 @@ import { motion } from "framer-motion";
 import { useFormatter, useTranslations } from "next-intl";
 import { POSITIONS } from "@/lib/contracts";
 import { cn } from "@/lib/utils";
+import { playSound } from "@/lib/sfx";
+import { haptic } from "@/lib/haptics";
 import {
   eligibleSlotsFor,
   moveTargetsFor,
@@ -144,11 +146,18 @@ export function RosterBoard({ className }: { className?: string }) {
   );
   const onTap = (slot: Slot) => {
     if (placing) {
-      if (highlights.has(slot)) dispatch({ type: "PLACE", slot });
+      if (highlights.has(slot)) {
+        // A budget pick is a purchase — ring the register; otherwise a pop.
+        playSound(ctx.mode?.id === "budget" ? "cash" : "place");
+        haptic("medium");
+        dispatch({ type: "PLACE", slot });
+      }
       return;
     }
     if (moveFrom) {
       if (highlights.has(slot)) {
+        playSound("tap");
+        haptic("light");
         dispatch({ type: "MOVE", from: moveFrom, to: slot });
         setMoveFrom(null);
         return;

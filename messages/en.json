@@ -195,5 +195,9 @@
     "allDifficulties": "All",
     "backToSummary": "Back to summary",
     "nameOptionalPlaceholder": "Name your team (optional)"
+  },
+  "sound": {
+    "mute": "Mute sound",
+    "unmute": "Unmute sound"
   }
 }

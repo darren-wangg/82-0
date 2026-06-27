@@ -12,7 +12,7 @@
  * Spin/reels/slots/roster board are reused wholesale from the classic path.
  */
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { AnimatePresence, motion } from "framer-motion";
@@ -22,6 +22,9 @@ import { Progress } from "@/components/ui/progress";
 import { Skeleton } from "@/components/ui/skeleton";
 import { DECADES, DRAFT_ROUNDS } from "@/lib/contracts";
 import { cn } from "@/lib/utils";
+import { playSound } from "@/lib/sfx";
+import { haptic } from "@/lib/haptics";
+import { SoundToggle } from "@/components/sound-toggle";
 import {
   canSkipEra,
   canSkipTeam,
@@ -122,6 +125,21 @@ export function BudgetPlayScreen() {
     return () => window.clearTimeout(timeout);
   }, [spinNonce, hasSpin]);
 
+  // Reel audio: a whoosh as they start rolling, a thunk as they settle. Only on
+  // an actual user spin — never on a draft restored at mount.
+  const prevSpunNonce = useRef(spinNonce);
+  useEffect(() => {
+    if (!hasSpin || prevSpunNonce.current === spinNonce) return;
+    prevSpunNonce.current = spinNonce;
+    playSound("spin");
+    haptic("medium");
+    const id = window.setTimeout(() => {
+      playSound("reelStop");
+      haptic("light");
+    }, REEL_MS - 80);
+    return () => window.clearTimeout(id);
+  }, [spinNonce, hasSpin]);
+
   const franchiseNames = useMemo(
     () => Object.keys(ctx.pools).map((id) => franchiseById.get(id)?.name ?? id),
     [ctx, franchiseById]
@@ -184,6 +202,7 @@ export function BudgetPlayScreen() {
             >
               <RotateCcw />
             </Button>
+            <SoundToggle className="size-7 border-transparent bg-transparent backdrop-blur-none" />
           </div>
           <Progress
             value={(state.picks.length / rounds) * 100}

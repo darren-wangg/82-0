@@ -24,6 +24,8 @@ import {
 } from "@/lib/contracts";
 import { displayCatValue } from "@/lib/cat-display";
 import { cn } from "@/lib/utils";
+import { playSound } from "@/lib/sfx";
+import { haptic } from "@/lib/haptics";
 import { CatProfileInfo } from "@/components/social/cat-profile-info";
 import { ExplainStream } from "@/components/social/explain-stream";
 import type { CostAnalysis } from "./cost-analysis";
@@ -128,17 +130,27 @@ export function RecordReveal({ season }: { season: SeasonResult }) {
   const losses = Math.round((season.losses * gamesPlayed) / SEASON_GAMES);
   const wins = gamesPlayed - losses;
 
+  // The payoff sound + buzz, fired the moment the record lands: a triumphant
+  // arpeggio for 82-0, a bright swish for a winning record, a muted buzzer
+  // otherwise. Centralized here so both sim screens sound identical.
+  const winningRecord = season.wins >= season.losses;
+  const resultSound = perfect ? "perfect" : winningRecord ? "win" : "lose";
+
   // True once the count-up settles — gates the landing pop / ball burst.
   const [landed, setLanded] = useState(false);
   useEffect(() => {
-    if (reducedMotion) {
-      // eslint-disable-next-line react-hooks/set-state-in-effect -- no count-up to wait for
+    const land = () => {
       setLanded(true);
+      playSound(resultSound);
+      haptic(winningRecord ? "success" : "error");
+    };
+    if (reducedMotion) {
+      land();
       return;
     }
-    const timer = window.setTimeout(() => setLanded(true), COUNT_UP_SECONDS * 1000);
+    const timer = window.setTimeout(land, COUNT_UP_SECONDS * 1000);
     return () => window.clearTimeout(timer);
-  }, [reducedMotion]);
+  }, [reducedMotion, resultSound, winningRecord]);
 
   return (
     <div className="relative flex flex-col items-center text-center">

@@ -195,5 +195,9 @@
     "allDifficulties": "すべて",
     "backToSummary": "サマリーに戻る",
     "nameOptionalPlaceholder": "チーム名（任意）"
+  },
+  "sound": {
+    "mute": "ミュート",
+    "unmute": "ミュート解除"
   }
 }

@@ -195,5 +195,9 @@
     "allDifficulties": "Todas",
     "backToSummary": "Volver al resumen",
     "nameOptionalPlaceholder": "Nombra tu equipo (opcional)"
+  },
+  "sound": {
+    "mute": "Silenciar",
+    "unmute": "Activar sonido"
   }
 }

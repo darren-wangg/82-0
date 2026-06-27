@@ -195,5 +195,9 @@
     "allDifficulties": "全部",
     "backToSummary": "返回总结",
     "nameOptionalPlaceholder": "为你的球队命名（可选）"
+  },
+  "sound": {
+    "mute": "静音",
+    "unmute": "取消静音"
   }
 }

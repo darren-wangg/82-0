@@ -195,5 +195,9 @@
     "allDifficulties": "전체",
     "backToSummary": "요약으로 돌아가기",
     "nameOptionalPlaceholder": "팀 이름 (선택)"
+  },
+  "sound": {
+    "mute": "음소거",
+    "unmute": "음소거 해제"
   }
 }

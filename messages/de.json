@@ -195,5 +195,9 @@
     "allDifficulties": "Alle",
     "backToSummary": "Zurück zur Übersicht",
     "nameOptionalPlaceholder": "Benenne dein Team (optional)"
+  },
+  "sound": {
+    "mute": "Ton aus",
+    "unmute": "Ton an"
   }
 }

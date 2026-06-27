@@ -7,6 +7,7 @@ import { DollarSign, MessageSquarePlus, Shirt, Trophy, UsersRound } from "lucide
 import { buttonVariants } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { HowToPlayDialog } from "@/components/game/how-to-play";
+import { SoundToggle } from "@/components/sound-toggle";
 import { LanguageSwitcher } from "@/components/i18n/language-switcher";
 import { TeamSizeSwitch } from "@/components/team-size-switch";
 import { PLAY_PATH, resolveTeamSize, TEAM_SIZE_COOKIE } from "@/lib/team-size";
@@ -18,26 +19,29 @@ export const metadata: Metadata = {
     "Spin for a team and an era, draft 8 players, and chase the perfect 82-0 season.",
 };
 
+// Premium-sleek wayfinding: cohesive elevated cards (one surface), with color
+// carried by the accent icon + a hover glow rather than full tinted fills.
 const NAV_TILES = [
   {
     href: "/leaderboard",
     labelKey: "leaderboard",
     icon: Trophy,
-    className:
-      "border-amber-400/40 bg-amber-400/10 text-amber-300 hover:bg-amber-400/20",
+    iconClass: "text-amber-300",
+    glow: "hover:border-amber-400/50 hover:shadow-amber-400/20",
   },
   {
     href: "/l",
     labelKey: "lobbies",
     icon: UsersRound,
-    className: "border-sky-400/40 bg-sky-400/10 text-sky-300 hover:bg-sky-400/20",
+    iconClass: "text-sky-300",
+    glow: "hover:border-sky-400/50 hover:shadow-sky-400/20",
   },
   {
     href: "/teams",
     labelKey: "myTeams",
     icon: Shirt,
-    className:
-      "border-emerald-400/40 bg-emerald-400/10 text-emerald-300 hover:bg-emerald-400/20",
+    iconClass: "text-emerald-300",
+    glow: "hover:border-emerald-400/50 hover:shadow-emerald-400/20",
   },
 ] as const;
 
@@ -67,6 +71,9 @@ export default async function Home() {
         className="pointer-events-none absolute -bottom-40 -left-24 size-80 rounded-full bg-violet-500/10 blur-3xl"
       />
       <main className="relative mx-auto flex w-full max-w-md flex-1 flex-col items-center justify-center gap-8 px-6 pt-16 pb-10">
+        <div className="absolute right-5 top-[max(1rem,env(safe-area-inset-top))] z-10">
+          <SoundToggle />
+        </div>
         <div className="flex animate-in flex-col items-center gap-4 text-center duration-700 fade-in slide-in-from-bottom-4">
           {/* NBA Jam fire: yellow → orange → red sweep */}
           <h1 className="animate-gradient-x bg-gradient-to-r from-amber-300 via-primary to-red-500 bg-[length:200%_auto] bg-clip-text text-center font-display text-6xl leading-[0.95] tracking-tight text-transparent uppercase">
@@ -101,16 +108,21 @@ export default async function Home() {
             {t("startDraft")}
           </Link>
           <div className="grid w-full grid-cols-3 gap-2">
-            {NAV_TILES.map(({ href, labelKey, icon: Icon, className }) => (
+            {NAV_TILES.map(({ href, labelKey, icon: Icon, iconClass, glow }) => (
               <Link
                 key={href}
                 href={href}
                 className={cn(
-                  "flex h-20 flex-col items-center justify-center gap-1.5 rounded-xl border text-center transition-[transform,background-color] active:scale-95",
-                  className
+                  "group flex h-20 flex-col items-center justify-center gap-1.5 rounded-2xl border border-border/60 bg-card/70 text-center shadow-lg shadow-black/20 transition-all duration-200 hover:-translate-y-0.5 active:scale-95",
+                  glow
                 )}
               >
-                <Icon className="size-5" />
+                <Icon
+                  className={cn(
+                    "size-5 transition-transform duration-200 group-hover:scale-110",
+                    iconClass
+                  )}
+                />
                 <span className="px-1 text-[11px] leading-tight font-semibold text-foreground">
                   {t(`nav.${labelKey}`)}
                 </span>

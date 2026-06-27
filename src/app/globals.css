@@ -86,25 +86,27 @@
 }
 
 .dark {
-  /* Hardwood-at-night: deep indigo court, basketball-orange primary. */
-  --background: oklch(0.17 0.032 272);
-  --foreground: oklch(0.97 0.01 280);
-  --card: oklch(0.215 0.04 274);
-  --card-foreground: oklch(0.97 0.01 280);
-  --popover: oklch(0.215 0.04 274);
-  --popover-foreground: oklch(0.97 0.01 280);
-  --primary: oklch(0.72 0.185 45);
+  /* Hardwood-at-night: deep indigo court, basketball-orange primary.
+     Tuned for a premium, high-contrast feel — a near-black court so the
+     elevated cards and the orange primary read with more depth. */
+  --background: oklch(0.155 0.028 270);
+  --foreground: oklch(0.98 0.008 280);
+  --card: oklch(0.225 0.04 274);
+  --card-foreground: oklch(0.98 0.008 280);
+  --popover: oklch(0.235 0.042 274);
+  --popover-foreground: oklch(0.98 0.008 280);
+  --primary: oklch(0.72 0.19 47);
   --primary-foreground: oklch(0.16 0.03 45);
   --secondary: oklch(0.29 0.06 282);
   --secondary-foreground: oklch(0.97 0.01 280);
   --muted: oklch(0.26 0.035 276);
-  --muted-foreground: oklch(0.73 0.025 280);
+  --muted-foreground: oklch(0.74 0.024 280);
   --accent: oklch(0.34 0.09 296);
   --accent-foreground: oklch(0.97 0.01 280);
   --destructive: oklch(0.66 0.21 23);
-  --border: oklch(0.97 0.015 280 / 22%);
-  --input: oklch(0.97 0.01 280 / 20%);
-  --ring: oklch(0.72 0.185 45 / 60%);
+  --border: oklch(0.97 0.015 280 / 14%);
+  --input: oklch(0.97 0.01 280 / 14%);
+  --ring: oklch(0.72 0.185 45 / 55%);
   --chart-1: oklch(0.72 0.185 45);
   --chart-2: oklch(0.75 0.13 185);
   --chart-3: oklch(0.66 0.17 296);

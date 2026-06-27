@@ -195,5 +195,9 @@
     "allDifficulties": "Tous",
     "backToSummary": "Retour au résumé",
     "nameOptionalPlaceholder": "Nommez votre équipe (facultatif)"
+  },
+  "sound": {
+    "mute": "Couper le son",
+    "unmute": "Activer le son"
   }
 }

@@ -195,5 +195,9 @@
     "allDifficulties": "Tutte",
     "backToSummary": "Torna al riepilogo",
     "nameOptionalPlaceholder": "Dai un nome alla squadra (facoltativo)"
+  },
+  "sound": {
+    "mute": "Disattiva audio",
+    "unmute": "Attiva audio"
   }
 }

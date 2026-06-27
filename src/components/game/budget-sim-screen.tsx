@@ -31,6 +31,7 @@ import { containsProfanity } from "@/lib/profanity";
 import { getEngine } from "@/lib/engine-provider";
 import { getBaselines, getSnapshot } from "@/lib/snapshot-client";
 import { cn } from "@/lib/utils";
+import { SoundToggle } from "@/components/sound-toggle";
 import { isBudgetDifficulty, type BudgetDifficulty } from "@/lib/budget";
 import { priceMapOf } from "@/lib/pricing";
 import { DownloadCardButton } from "@/components/social/download-card";
@@ -213,6 +214,7 @@ export function BudgetSimScreen() {
 
       {/* download image + save (device), top right — same as the classic screen */}
       <div className="flex justify-end gap-2">
+        <SoundToggle className="mr-auto" />
         <DownloadCardButton
           cardUrl={cardUrl}
           fileName="budget-team-card.png"

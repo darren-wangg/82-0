@@ -7,6 +7,8 @@ import { Search, X } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import type { NineCat, PlayerStatLine } from "@/lib/contracts";
 import { cn } from "@/lib/utils";
+import { playSound } from "@/lib/sfx";
+import { haptic } from "@/lib/haptics";
 import { ONE_DECIMAL, isEstimated, SORT_OPTIONS } from "./format";
 import { isLegendary } from "./legends";
 import { PlayerHeadshot } from "./player-headshot";
@@ -248,7 +250,14 @@ export function PoolList({
               <button
                 type="button"
                 disabled={!draftable}
-                onClick={() => onSelect(selected ? null : p.id)}
+                onClick={() => {
+                  const next = selected ? null : p.id;
+                  if (next) {
+                    playSound(legendary ? "cash" : "select");
+                    haptic("select");
+                  }
+                  onSelect(next);
+                }}
                 className={cn(
                   "flex w-full items-center gap-2.5 rounded-xl border p-2 text-left transition-colors",
                   selected
