@@ -408,6 +408,186 @@ export const FAMOUS_TEAMS: FamousTeam[] = [
       ],
     },
   },
+  {
+    slug: "famous-99-spurs",
+    name: "'99 Spurs",
+    era: "1998–99",
+    blurb: "The Twin Towers win San Antonio's first title.",
+    roster: {
+      starters: {
+        PG: "johnsav01-SAS-1990s", // Avery Johnson
+        SG: "eliema01-SAS-1990s",  // Mario Elie
+        SF: "elliose01-SAS-1990s", // Sean Elliott
+        PF: "duncati01-SAS-1990s", // Tim Duncan (1999 Finals MVP)
+        C:  "robinda01-SAS-1990s", // David Robinson
+      },
+      bench: [
+        "jacksja01-SAS-1990s"  // Jaren Jackson
+      ],
+    },
+  },
+  {
+    slug: "famous-77-blazers",
+    name: "'77 Blazers",
+    era: "1976–77",
+    blurb: "Bill Walton's Blazermania crowns Portland.",
+    roster: {
+      starters: {
+        PG: "hollili01-POR-1970s", // Lionel Hollins
+        SG: "twardda01-POR-1970s", // Dave Twardzik
+        SF: "grossbo01-POR-1970s", // Bob Gross
+        PF: "lucasma01-POR-1970s", // Maurice Lucas
+        C:  "waltobi01-POR-1970s", // Bill Walton (1977 Finals MVP)
+      },
+      bench: [
+        "davisjo01-POR-1970s"  // Johnny Davis
+      ],
+    },
+  },
+  {
+    slug: "famous-71-bucks",
+    name: "'71 Bucks",
+    era: "1970–71",
+    blurb: "Kareem and Oscar romp to Milwaukee's lone title.",
+    roster: {
+      starters: {
+        PG: "roberos01-MIL-1970s", // Oscar Robertson
+        SG: "mcglojo01-MIL-1970s", // Jon McGlocklin
+        SF: "dandrbo01-MIL-1970s", // Bob Dandridge
+        PF: "smithgr01-MIL-1970s", // Greg Smith
+        C:  "abdulka01-MIL-1970s", // Kareem Abdul-Jabbar (1971 MVP)
+      },
+      bench: [
+        "boozebo01-MIL-1970s"  // Bob Boozer
+      ],
+    },
+  },
+  {
+    slug: "famous-19-raptors",
+    name: "'19 Raptors",
+    era: "2018–19",
+    blurb: "Kawhi's one-year reign brings Toronto a crown.",
+    roster: {
+      starters: {
+        PG: "lowryky01-TOR-2010s", // Kyle Lowry
+        SG: "greenda02-TOR-2010s", // Danny Green
+        SF: "leonaka01-TOR-2010s", // Kawhi Leonard (2019 Finals MVP)
+        PF: "siakapa01-TOR-2010s", // Pascal Siakam
+        C:  "ibakase01-TOR-2010s", // Serge Ibaka
+      },
+      bench: [
+        "vanvlfr01-TOR-2010s"  // Fred VanVleet
+      ],
+    },
+  },
+  {
+    slug: "famous-11-mavericks",
+    name: "'11 Mavericks",
+    era: "2010–11",
+    blurb: "Dirk outduels the Heat's Big Three.",
+    roster: {
+      starters: {
+        PG: "kiddja01-DAL-2010s",  // Jason Kidd
+        SG: "terryja01-DAL-2010s", // Jason Terry
+        SF: "mariosh01-DAL-2010s", // Shawn Marion
+        PF: "nowitdi01-DAL-2010s", // Dirk Nowitzki (2011 Finals MVP)
+        C:  "chandty01-DAL-2010s", // Tyson Chandler
+      },
+      bench: [
+        "bareajo01-DAL-2010s"  // J.J. Barea
+      ],
+    },
+  },
+  {
+    slug: "famous-24-celtics",
+    name: "'24 Celtics",
+    era: "2023–24",
+    blurb: "Tatum and Brown raise banner 18.",
+    roster: {
+      starters: {
+        PG: "holidjr01-BOS-2020s", // Jrue Holiday
+        SG: "whitede01-BOS-2020s", // Derrick White
+        SF: "brownja02-BOS-2020s", // Jaylen Brown (2024 Finals MVP)
+        PF: "tatumja01-BOS-2020s", // Jayson Tatum
+        C:  "porzikr01-BOS-2020s", // Kristaps Porziņģis
+      },
+      bench: [
+        "horfoal01-BOS-2020s"  // Al Horford
+      ],
+    },
+  },
+  {
+    slug: "famous-06-heat",
+    name: "'06 Heat",
+    era: "2005–06",
+    blurb: "Wade and Shaq deliver Miami's first title.",
+    roster: {
+      starters: {
+        PG: "willija02-MIA-2000s", // Jason Williams
+        SG: "wadedw01-MIA-2000s",  // Dwyane Wade (2006 Finals MVP)
+        SF: "walkean02-MIA-2000s", // Antoine Walker
+        PF: "hasleud01-MIA-2000s", // Udonis Haslem
+        C:  "onealsh01-MIA-2000s", // Shaquille O'Neal
+      },
+      bench: [
+        "mournal01-MIA-2000s"  // Alonzo Mourning
+      ],
+    },
+  },
+  {
+    slug: "famous-67-sixers",
+    name: "'67 76ers",
+    era: "1966–67",
+    blurb: "A 68-win Wilt machine, long the gold standard.",
+    roster: {
+      starters: {
+        PG: "joneswa02-PHI-1960s", // Wali Jones
+        SG: "greerha01-PHI-1960s", // Hal Greer
+        SF: "walkech01-PHI-1960s", // Chet Walker
+        PF: "jackslu01-PHI-1960s", // Luke Jackson
+        C:  "chambwi01-PHI-1960s", // Wilt Chamberlain (1967 MVP)
+      },
+      bench: [
+        "cunnibi01-PHI-1960s"  // Billy Cunningham
+      ],
+    },
+  },
+  {
+    slug: "famous-65-celtics",
+    name: "'65 Celtics",
+    era: "1964–65",
+    blurb: "Russell's dynasty at its dominant peak.",
+    roster: {
+      starters: {
+        PG: "joneskc01-BOS-1960s", // K.C. Jones
+        SG: "jonessa01-BOS-1960s", // Sam Jones
+        SF: "heinsto01-BOS-1960s", // Tom Heinsohn
+        PF: "sandeto01-BOS-1960s", // Tom Sanders
+        C:  "russebi01-BOS-1960s", // Bill Russell (1965 MVP)
+      },
+      bench: [
+        "havlijo01-BOS-1960s"  // John Havlicek
+      ],
+    },
+  },
+  {
+    slug: "famous-20-lakers",
+    name: "'20 Lakers",
+    era: "2019–20",
+    blurb: "LeBron and AD win it in the bubble.",
+    roster: {
+      starters: {
+        PG: "rondora01-LAL-2020s", // Rajon Rondo
+        SG: "greenda02-LAL-2020s", // Danny Green
+        SF: "jamesle01-LAL-2020s", // LeBron James (2020 Finals MVP)
+        PF: "davisan02-LAL-2020s", // Anthony Davis
+        C:  "howardw01-LAL-2020s", // Dwight Howard
+      },
+      bench: [
+        "caldwke01-LAL-2020s"  // Kentavious Caldwell-Pope
+      ],
+    },
+  },
 ];
 
 /** Quick lookup by slug. */
