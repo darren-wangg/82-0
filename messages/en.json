@@ -179,11 +179,11 @@
     "difficultyHint": {
       "easy": "$130 cap — like you're the Lakers or Dodgers",
       "normal": "$100 cap — balanced",
-      "hard": "$75 cap — elite efficiency only"
+      "hard": "$75 cap — elite GMs only"
     },
     "howPricing": "Prices reflect each player's era-adjusted performance ($5–$50).",
     "budgetLabel": "Budget",
-    "challengeCta": "Challenge a Famous Team",
+    "challengeCta": "Challenge a Historic Team",
     "redraft": "Redraft",
     "pickOpponent": "Pick your opponent",
     "totalSpend": "Roster cost: ${spend} ({difficulty} cap)",
