@@ -2,8 +2,8 @@
  * Unit tests for src/lib/famous-teams.ts.
  *
  * Validates every curated roster against the live snapshot:
- *   - all 8 player IDs exist in the snapshot,
- *   - exactly 5 starters + 3 bench,
+ *   - all 6 player IDs exist in the snapshot,
+ *   - exactly 5 starters + 1 bench (6-man, matching budget teams),
  *   - slugs are stable and unique.
  */
 
@@ -34,9 +34,9 @@ describe("FAMOUS_TEAMS", () => {
       const starterIds = Object.values(team.roster.starters);
       const allIds = [...starterIds, ...team.roster.bench];
 
-      it("has exactly 5 starters and 3 bench players", () => {
+      it("has exactly 5 starters and 1 bench player", () => {
         expect(starterIds).toHaveLength(5);
-        expect(team.roster.bench).toHaveLength(3);
+        expect(team.roster.bench).toHaveLength(1);
       });
 
       it("starters cover all 5 positions (PG, SG, SF, PF, C)", () => {
@@ -46,7 +46,7 @@ describe("FAMOUS_TEAMS", () => {
         }
       });
 
-      it("all 8 player IDs exist in snapshot-v1", () => {
+      it("all 6 player IDs exist in snapshot-v1", () => {
         for (const id of allIds) {
           expect(
             players.has(id),

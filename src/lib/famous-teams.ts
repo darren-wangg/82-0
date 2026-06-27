@@ -40,9 +40,7 @@ export const FAMOUS_TEAMS: FamousTeam[] = [
         C: "longllu01-CHI-1990s",  // Luc Longley
       },
       bench: [
-        "kukocto01-CHI-1990s",  // Toni Kukoč
-        "harpero01-CHI-1990s",  // Ron Harper
-        "kerrst01-CHI-1990s",   // Steve Kerr
+        "kerrst01-CHI-1990s"  // Steve Kerr
       ],
     },
   },
@@ -60,9 +58,7 @@ export const FAMOUS_TEAMS: FamousTeam[] = [
         C:  "parisro01-BOS-1980s", // Robert Parish
       },
       bench: [
-        "maxwece01-BOS-1980s",  // Cedric Maxwell
-        "waltobi01-BOS-1980s",  // Bill Walton
-        "architi01-BOS-1980s",  // Tiny Archibald
+        "maxwece01-BOS-1980s"  // Cedric Maxwell
       ],
     },
   },
@@ -80,9 +76,7 @@ export const FAMOUS_TEAMS: FamousTeam[] = [
         C:  "abdulka01-LAL-1980s", // Kareem Abdul-Jabbar
       },
       bench: [
-        "wilkeja01-LAL-1980s",  // Jamaal Wilkes
-        "coopemi01-LAL-1980s",  // Michael Cooper
-        "rambiku01-LAL-1980s",  // Kurt Rambis
+        "wilkeja01-LAL-1980s"  // Jamaal Wilkes
       ],
     },
   },
@@ -100,9 +94,7 @@ export const FAMOUS_TEAMS: FamousTeam[] = [
         C:  "onealsh01-LAL-2000s", // Shaquille O'Neal
       },
       bench: [
-        "ricegl01-LAL-2000s",   // Glen Rice
-        "horryro01-LAL-2000s",  // Robert Horry
-        "paytoga01-LAL-2000s",  // Gary Payton
+        "paytoga01-LAL-2000s"  // Gary Payton
       ],
     },
   },
@@ -120,9 +112,7 @@ export const FAMOUS_TEAMS: FamousTeam[] = [
         C:  "reedwi01-NYK-1970s",  // Willis Reed
       },
       bench: [
-        "lucasje01-NYK-1970s",  // Jerry Lucas
-        "haywosp01-NYK-1970s",  // Spencer Haywood
-        "mcadobo01-NYK-1970s",  // Bob McAdoo
+        "mcadobo01-NYK-1970s"  // Bob McAdoo
       ],
     },
   },
@@ -140,9 +130,7 @@ export const FAMOUS_TEAMS: FamousTeam[] = [
         C:  "olajuha01-HOU-1990s", // Hakeem Olajuwon
       },
       bench: [
-        "smithke01-HOU-1990s",   // Kenny Smith
-        "maxweve01-HOU-1990s",   // Vernon Maxwell
-        "pippesc01-HOU-1990s",   // Scottie Pippen
+        "smithke01-HOU-1990s"  // Kenny Smith
       ],
     },
   },
@@ -160,9 +148,7 @@ export const FAMOUS_TEAMS: FamousTeam[] = [
         C:  "bogutan01-GSW-2010s",  // Andrew Bogut
       },
       bench: [
-        "greendr01-GSW-2010s",   // Draymond Green
-        "barneha02-GSW-2010s",   // Harrison Barnes
-        "leeda02-GSW-2010s",     // David Lee
+        "greendr01-GSW-2010s"  // Draymond Green
       ],
     },
   },
@@ -180,9 +166,7 @@ export const FAMOUS_TEAMS: FamousTeam[] = [
         C:  "onealje01-MIA-2010s", // Jermaine O'Neal
       },
       bench: [
-        "richajo01-MIA-2010s",  // Josh Richardson
-        "denglu01-MIA-2010s",   // Luol Deng
-        "beaslmi01-MIA-2010s",  // Michael Beasley
+        "richajo01-MIA-2010s"  // Josh Richardson
       ],
     },
   },
@@ -200,9 +184,7 @@ export const FAMOUS_TEAMS: FamousTeam[] = [
         C:  "robinda01-SAS-2000s", // David Robinson
       },
       bench: [
-        "nestera01-SAS-2000s",  // Rasho Nesterović
-        "anderde01-SAS-2000s",  // Derek Anderson
-        "turkohe01-SAS-2000s",  // Hedo Türkoğlu
+        "anderde01-SAS-2000s"  // Derek Anderson
       ],
     },
   },
@@ -220,9 +202,7 @@ export const FAMOUS_TEAMS: FamousTeam[] = [
         C:  "eatonma01-UTA-1990s", // Mark Eaton
       },
       bench: [
-        "malonje01-UTA-1990s",  // Jeff Malone
-        "russebr01-UTA-1990s",  // Bryon Russell
-        "ostergr01-UTA-1990s",  // Greg Ostertag
+        "russebr01-UTA-1990s"  // Bryon Russell
       ],
     },
   },
@@ -240,9 +220,7 @@ export const FAMOUS_TEAMS: FamousTeam[] = [
         C:  "laimbbi01-DET-1980s", // Bill Laimbeer
       },
       bench: [
-        "johnsvi01-DET-1980s",  // Vinnie Johnson
-        "dantlad01-DET-1980s",  // Adrian Dantley
-        "bensoke01-DET-1980s",  // Kent Benson
+        "dantlad01-DET-1980s"  // Adrian Dantley
       ],
     },
   },
@@ -260,9 +238,7 @@ export const FAMOUS_TEAMS: FamousTeam[] = [
         C:  "malonmo01-PHI-1980s", // Moses Malone
       },
       bench: [
-        "hawkihe01-PHI-1980s",  // Hersey Hawkins
-        "robincl01-PHI-1980s",  // Cliff Robinson
-        "dawkida01-PHI-1980s",  // Darryl Dawkins
+        "dawkida01-PHI-1980s"  // Darryl Dawkins
       ],
     },
   },
@@ -280,9 +256,7 @@ export const FAMOUS_TEAMS: FamousTeam[] = [
         C:  "jeffeal01-BOS-2000s", // Al Jefferson
       },
       bench: [
-        "walkean02-BOS-2000s",  // Antoine Walker
-        "davisri01-BOS-2000s",  // Ricky Davis
-        "westde01-BOS-2000s",   // Delonte West
+        "walkean02-BOS-2000s"  // Antoine Walker
       ],
     },
   },
@@ -300,9 +274,7 @@ export const FAMOUS_TEAMS: FamousTeam[] = [
         C:  "hicksjj01-CLE-2010s", // J.J. Hickson
       },
       bench: [
-        "jamisan01-CLE-2010s",  // Antawn Jamison
-        "willima01-CLE-2010s",  // Mo Williams
-        "sessira01-CLE-2010s",  // Ramon Sessions
+        "willima01-CLE-2010s"  // Mo Williams
       ],
     },
   },
@@ -320,9 +292,7 @@ export const FAMOUS_TEAMS: FamousTeam[] = [
         C:  "gasolpa01-SAS-2010s", // Pau Gasol
       },
       bench: [
-        "derozde01-SAS-2010s",  // DeMar DeRozan
-        "aldrila01-SAS-2010s",  // LaMarcus Aldridge
-        "hillge01-SAS-2010s",   // George Hill
+        "aldrila01-SAS-2010s"  // LaMarcus Aldridge
       ],
     },
   },
@@ -340,9 +310,7 @@ export const FAMOUS_TEAMS: FamousTeam[] = [
         C:  "robincl02-DET-2000s", // Clifford Robinson
       },
       bench: [
-        "hillgr01-DET-2000s",   // Grant Hill
-        "iversal01-DET-2000s",  // Allen Iverson
-        "stuckro01-DET-2000s",  // Rodney Stuckey
+        "hillgr01-DET-2000s"  // Grant Hill
       ],
     },
   },
@@ -360,9 +328,7 @@ export const FAMOUS_TEAMS: FamousTeam[] = [
         C:  "kanteen01-OKC-2010s", // Enes Kanter
       },
       bench: [
-        "georgpa01-OKC-2010s",  // Paul George
-        "anthoca01-OKC-2010s",  // Carmelo Anthony
-        "schrode01-OKC-2010s",  // Dennis Schröder
+        "georgpa01-OKC-2010s"  // Paul George
       ],
     },
   },
@@ -380,9 +346,7 @@ export const FAMOUS_TEAMS: FamousTeam[] = [
         C:  "jokicni01-DEN-2020s", // Nikola Jokić
       },
       bench: [
-        "bartowi01-DEN-2020s",  // Will Barton
-        "hardati02-DEN-2020s",  // Tim Hardaway Jr.
-        "morrimo01-DEN-2020s",  // Monte Morris
+        "bartowi01-DEN-2020s"  // Will Barton
       ],
     },
   },
@@ -400,9 +364,7 @@ export const FAMOUS_TEAMS: FamousTeam[] = [
         C:  "lopezbr01-MIL-2020s", // Brook Lopez
       },
       bench: [
-        "portibo01-MIL-2020s",  // Bobby Portis
-        "bledser01-MIL-2020s",  // Eric Bledsoe
-        "turnemy01-MIL-2020s",  // Myles Turner
+        "bledser01-MIL-2020s"  // Eric Bledsoe
       ],
     },
   },
@@ -420,9 +382,7 @@ export const FAMOUS_TEAMS: FamousTeam[] = [
         C:  "mannida01-PHX-1990s", // Danny Manning
       },
       bench: [
-        "chambto01-PHX-1990s",  // Tom Chambers
-        "cebalce01-PHX-1990s",  // Cedric Ceballos
-        "kiddja01-PHX-1990s",   // Jason Kidd
+        "kiddja01-PHX-1990s"  // Jason Kidd
       ],
     },
   },
@@ -440,9 +400,7 @@ export const FAMOUS_TEAMS: FamousTeam[] = [
         C:  "chambwi01-LAL-1970s",  // Wilt Chamberlain
       },
       bench: [
-        "mcmilji01-LAL-1970s",  // Jim McMillian
-        "allenlu01-LAL-1970s",  // Lucius Allen
-        "wilkeja01-LAL-1970s",  // Jamaal Wilkes
+        "mcmilji01-LAL-1970s"  // Jim McMillian
       ],
     },
   },
