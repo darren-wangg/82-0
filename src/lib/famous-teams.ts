@@ -30,7 +30,7 @@ export const FAMOUS_TEAMS: FamousTeam[] = [
     slug: "famous-96-bulls",
     name: "'96 Bulls",
     era: "1995–96",
-    blurb: "72-win MJ/Pippen/Rodman juggernaut — the gold standard.",
+    blurb: "A 72-win Jordan–Pippen–Rodman juggernaut.",
     roster: {
       starters: {
         PG: "armstbj01-CHI-1990s", // B.J. Armstrong
@@ -50,7 +50,7 @@ export const FAMOUS_TEAMS: FamousTeam[] = [
     slug: "famous-86-celtics",
     name: "'86 Celtics",
     era: "1985–86",
-    blurb: "Bird, McHale, Parish + off-the-bench Bill Walton. Best team ever?",
+    blurb: "Bird, McHale, and Parish over a stacked bench.",
     roster: {
       starters: {
         PG: "johnsde01-BOS-1980s", // Dennis Johnson
@@ -70,7 +70,7 @@ export const FAMOUS_TEAMS: FamousTeam[] = [
     slug: "famous-87-lakers",
     name: "'87 Lakers",
     era: "1986–87",
-    blurb: "Showtime at its peak: Magic, Kareem, and Worthy.",
+    blurb: "Showtime at its peak with Magic, Kareem, and Worthy.",
     roster: {
       starters: {
         PG: "johnsma02-LAL-1980s", // Magic Johnson
@@ -90,7 +90,7 @@ export const FAMOUS_TEAMS: FamousTeam[] = [
     slug: "famous-00-lakers",
     name: "'00 Lakers",
     era: "1999–2000",
-    blurb: "Shaq + Kobe begin their dynasty. Three-peat machine.",
+    blurb: "Shaq and Kobe kick off a three-peat dynasty.",
     roster: {
       starters: {
         PG: "fishede01-LAL-2000s", // Derek Fisher
@@ -110,7 +110,7 @@ export const FAMOUS_TEAMS: FamousTeam[] = [
     slug: "famous-73-knicks",
     name: "'73 Knicks",
     era: "1972–73",
-    blurb: "The last Knicks dynasty. Frazier, Monroe, DeBusschere.",
+    blurb: "Frazier and Monroe deliver the last Knicks title.",
     roster: {
       starters: {
         PG: "fraziwa01-NYK-1970s", // Walt Frazier
@@ -130,7 +130,7 @@ export const FAMOUS_TEAMS: FamousTeam[] = [
     slug: "famous-95-rockets",
     name: "'95 Rockets",
     era: "1994–95",
-    blurb: "Hakeem's back-to-back. Drexler reunion, Barkley arrived.",
+    blurb: "Hakeem powers a back-to-back title run.",
     roster: {
       starters: {
         PG: "cassesa01-HOU-1990s", // Sam Cassell
@@ -150,7 +150,7 @@ export const FAMOUS_TEAMS: FamousTeam[] = [
     slug: "famous-17-warriors",
     name: "'17 Warriors",
     era: "2016–17",
-    blurb: "73-win core + KD = 16-1 playoffs. History's greatest offense.",
+    blurb: "A 73-win core adds KD for a 16–1 playoff romp.",
     roster: {
       starters: {
         PG: "curryst01-GSW-2010s",  // Stephen Curry
@@ -170,7 +170,7 @@ export const FAMOUS_TEAMS: FamousTeam[] = [
     slug: "famous-13-heat",
     name: "'13 Heat",
     era: "2012–13",
-    blurb: "LeBron's masterpiece season. The Big Three at their best.",
+    blurb: "LeBron’s Big Three at the peak of their powers.",
     roster: {
       starters: {
         PG: "dragigo01-MIA-2010s", // Goran Dragić
@@ -190,7 +190,7 @@ export const FAMOUS_TEAMS: FamousTeam[] = [
     slug: "famous-05-spurs",
     name: "'05 Spurs",
     era: "2004–05",
-    blurb: "Duncan + Robinson's swan song, Parker and Ginóbili rising.",
+    blurb: "Duncan, Parker, and Ginóbili win it again.",
     roster: {
       starters: {
         PG: "parketo01-SAS-2000s", // Tony Parker
@@ -210,7 +210,7 @@ export const FAMOUS_TEAMS: FamousTeam[] = [
     slug: "famous-97-jazz",
     name: "'97 Jazz",
     era: "1996–97",
-    blurb: "Stockton & Malone's Finals run. A dynasty that never got its ring.",
+    blurb: "Stockton and Malone reach their first Finals.",
     roster: {
       starters: {
         PG: "stockjo01-UTA-1990s", // John Stockton
@@ -230,7 +230,7 @@ export const FAMOUS_TEAMS: FamousTeam[] = [
     slug: "famous-89-pistons",
     name: "'89 Pistons",
     era: "1988–89",
-    blurb: "The Bad Boys. Isiah and Dumars bullied the league to a title.",
+    blurb: "The Bad Boys bully the league behind Isiah.",
     roster: {
       starters: {
         PG: "thomais01-DET-1980s", // Isiah Thomas
@@ -250,7 +250,7 @@ export const FAMOUS_TEAMS: FamousTeam[] = [
     slug: "famous-83-sixers",
     name: "'83 Sixers",
     era: "1982–83",
-    blurb: "Fo', Fo', Fo'. Dr. J and Moses Malone steamrolled the playoffs.",
+    blurb: "Dr. J and Moses Malone steamroll the playoffs.",
     roster: {
       starters: {
         PG: "cheekma01-PHI-1980s", // Maurice Cheeks
@@ -270,7 +270,7 @@ export const FAMOUS_TEAMS: FamousTeam[] = [
     slug: "famous-08-celtics",
     name: "'08 Celtics",
     era: "2007–08",
-    blurb: "The new Big Three — KG, Pierce, Ray Allen — raised banner 17.",
+    blurb: "KG, Pierce, and Ray Allen raise banner 17.",
     roster: {
       starters: {
         PG: "rondora01-BOS-2000s", // Rajon Rondo
@@ -290,7 +290,7 @@ export const FAMOUS_TEAMS: FamousTeam[] = [
     slug: "famous-16-cavs",
     name: "'16 Cavs",
     era: "2015–16",
-    blurb: "Down 3–1, then history. LeBron brought Cleveland a title.",
+    blurb: "LeBron erases a 3–1 deficit for Cleveland.",
     roster: {
       starters: {
         PG: "irvinky01-CLE-2010s", // Kyrie Irving
@@ -310,7 +310,7 @@ export const FAMOUS_TEAMS: FamousTeam[] = [
     slug: "famous-14-spurs",
     name: "'14 Spurs",
     era: "2013–14",
-    blurb: "Beautiful game. Ball movement that dismantled the Heat.",
+    blurb: "Beautiful-game ball movement that buried the Heat.",
     roster: {
       starters: {
         PG: "parketo01-SAS-2010s", // Tony Parker
@@ -330,7 +330,7 @@ export const FAMOUS_TEAMS: FamousTeam[] = [
     slug: "famous-04-pistons",
     name: "'04 Pistons",
     era: "2003–04",
-    blurb: "Goin' to Work. No superstars — just a champion defense.",
+    blurb: "A star-less champion built on elite defense.",
     roster: {
       starters: {
         PG: "billuch01-DET-2000s", // Chauncey Billups
@@ -350,7 +350,7 @@ export const FAMOUS_TEAMS: FamousTeam[] = [
     slug: "famous-12-thunder",
     name: "'12 Thunder",
     era: "2011–12",
-    blurb: "KD, Westbrook, and Harden — the young core that reached the Finals.",
+    blurb: "A young KD, Westbrook, and Harden reach the Finals.",
     roster: {
       starters: {
         PG: "westbru01-OKC-2010s", // Russell Westbrook
@@ -370,7 +370,7 @@ export const FAMOUS_TEAMS: FamousTeam[] = [
     slug: "famous-23-nuggets",
     name: "'23 Nuggets",
     era: "2022–23",
-    blurb: "Jokić's coronation — Denver's first title behind a two-time MVP.",
+    blurb: "Jokić wins Denver’s first-ever title.",
     roster: {
       starters: {
         PG: "murraja01-DEN-2020s", // Jamal Murray
@@ -390,7 +390,7 @@ export const FAMOUS_TEAMS: FamousTeam[] = [
     slug: "famous-21-bucks",
     name: "'21 Bucks",
     era: "2020–21",
-    blurb: "Giannis closes it out — 50 in the clincher. Bucks in six.",
+    blurb: "Giannis drops 50 to clinch the title.",
     roster: {
       starters: {
         PG: "holidjr01-MIL-2020s", // Jrue Holiday
@@ -410,7 +410,7 @@ export const FAMOUS_TEAMS: FamousTeam[] = [
     slug: "famous-93-suns",
     name: "'93 Suns",
     era: "1992–93",
-    blurb: "MVP Barkley's run to the Finals. Sir Charles in his prime.",
+    blurb: "MVP Barkley carries Phoenix to the Finals.",
     roster: {
       starters: {
         PG: "johnske02-PHX-1990s", // Kevin Johnson
@@ -430,7 +430,7 @@ export const FAMOUS_TEAMS: FamousTeam[] = [
     slug: "famous-72-lakers",
     name: "'72 Lakers",
     era: "1971–72",
-    blurb: "33 straight wins — the longest streak in NBA history.",
+    blurb: "Winners of an NBA-record 33 straight games.",
     roster: {
       starters: {
         PG: "westje01-LAL-1970s",   // Jerry West

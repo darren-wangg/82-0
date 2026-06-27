@@ -149,7 +149,7 @@ export async function POST(request: Request) {
       }
       const players = getPlayerMap();
       const roster = draftReq.roster as Roster;
-      const valid = validateRoster(roster, players, { benchCounts: [0, 3, 5] });
+      const valid = validateRoster(roster, players, { benchCounts: [0, 1, 3, 5] });
       if (!valid.ok) return jsonError(422, valid.error);
       const rating = getEngine().teamRating(roster, players, getBaselines());
       kind = "team";

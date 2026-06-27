@@ -127,8 +127,8 @@ export function BudgetChallengeScreen() {
                       </span>
                     )}
                   </div>
-                  <p className="truncate text-xs text-muted-foreground">
-                    {team.era} · {team.blurb}
+                  <p className="line-clamp-2 text-xs text-muted-foreground">
+                    {team.blurb}
                   </p>
                 </div>
                 {loading ? (

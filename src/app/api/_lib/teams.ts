@@ -32,10 +32,10 @@ export const FlexibleRosterSchema = z.object({
   bench: z.array(z.string()).min(0).max(5),
 });
 
-/** Bench length → roster size label stored on the Team/Lobby rows.
- *  0 bench = 5-man, 3 = 8-man (classic), 5 = 10-man. */
+/** Bench length → roster size stored on the Team/Lobby rows.
+ *  0 bench = 5-man, 1 = 6-man (budget), 3 = 8-man (classic), 5 = 10-man. */
 export function teamSizeOf(roster: Roster): number {
-  return roster.bench.length === 0 ? 5 : roster.bench.length >= 5 ? 10 : 8;
+  return 5 + roster.bench.length;
 }
 
 /** Row shape returned by team queries below (with owner relation). */
@@ -76,8 +76,8 @@ export function computeTeamOutputs(roster: Roster): {
 } {
   const snapshot = getSnapshot();
   const players = getPlayerMap(snapshot);
-  // Accept 5-man (0 bench), normal 8-man (3 bench), and 10-man (5 bench).
-  const validation = validateRoster(roster, players, { benchCounts: [0, 3, 5] });
+  // Accept 5-man (0), 6-man budget (1), classic 8-man (3), and 10-man (5 bench).
+  const validation = validateRoster(roster, players, { benchCounts: [0, 1, 3, 5] });
   if (!validation.ok) throw new RosterError(validation.error);
 
   const engine = getEngine();

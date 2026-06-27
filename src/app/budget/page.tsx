@@ -15,7 +15,7 @@ import { BUDGET_CAP, BUDGET_DIFFICULTIES } from "@/lib/budget";
 export const metadata: Metadata = {
   title: "Budget Draft — 82-0",
   description:
-    "Draft an 8-man roster under a salary cap, then challenge a famous historical team.",
+    "Draft a 6-man roster under a salary cap, then challenge a famous historical team.",
 };
 
 const DIFFICULTY_STYLES = {

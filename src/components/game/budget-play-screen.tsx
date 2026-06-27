@@ -13,7 +13,7 @@
  */
 
 import { useEffect, useMemo, useState } from "react";
-import { useSearchParams } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { AnimatePresence, motion } from "framer-motion";
 import { RefreshCcw, RotateCcw } from "lucide-react";
@@ -37,7 +37,7 @@ import { usePhaseGuard } from "./use-phase-guard";
 import { BudgetMeter } from "./budget-meter";
 import type { BudgetDifficulty } from "@/lib/budget";
 import { BUDGET_CAP, isBudgetDifficulty } from "@/lib/budget";
-import { priceMapOf } from "@/lib/pricing";
+import { priceMapOf, PRICE_MIN } from "@/lib/pricing";
 import { getSnapshot } from "@/lib/snapshot-client";
 
 const REEL_MS = 3900;
@@ -67,6 +67,7 @@ export function BudgetPlayScreen() {
   const allowed = usePhaseGuard(["draft"]);
   const rounds = ctx.mode?.draftRounds ?? DRAFT_ROUNDS;
 
+  const router = useRouter();
   const searchParams = useSearchParams();
   const difficultyParam = searchParams.get("difficulty");
   const difficulty: BudgetDifficulty = isBudgetDifficulty(difficultyParam)
@@ -103,6 +104,13 @@ export function BudgetPlayScreen() {
 
   const remaining = cap - spent;
 
+  // Every still-empty slot after the current pick needs at least the $5 floor,
+  // so the most you may spend on this pick is the remaining cap minus a $5
+  // reserve per later slot. This stops you blowing the whole budget early and
+  // getting stranded with $0 for the final pick(s).
+  const slotsAfterThisPick = Math.max(0, rounds - (state?.picks.length ?? 0) - 1);
+  const spendableNow = remaining - PRICE_MIN * slotsAfterThisPick;
+
   const [settledNonce, setSettledNonce] = useState(-1);
   const spinNonce = state?.spinNonce ?? 0;
   const hasSpin = state?.spin != null;
@@ -138,9 +146,12 @@ export function BudgetPlayScreen() {
   const skipTeamOk = settled && canSkipTeam(state, ctx);
   const skipEraOk = settled && canSkipEra(state, ctx);
 
+  // Redraft returns to the difficulty selector (a fresh budget run starts by
+  // re-picking a cap), matching the sim screen's "Redraft" button.
   const newGame = () => {
     if (state.picks.length > 0 && !window.confirm(t("confirmNewGame"))) return;
     dispatch({ type: "NEW_GAME", seed: freshSeed() });
+    router.push("/budget");
   };
 
   return (
@@ -285,15 +296,15 @@ export function BudgetPlayScreen() {
               <PoolList
                 pool={pool}
                 selectedId={state.selectedPlayerId}
-                // Hard cap: a player you can't afford isn't draftable. Combined
-                // with the server-side cap check on save, you can never exceed
-                // the budget.
+                // Hard cap: a player you can't afford isn't draftable. Uses the
+                // $5-per-later-slot reserve so you always keep enough to fill the
+                // rest. The server re-validates the cap on save as a backstop.
                 isDraftable={(id) =>
-                  draftable.has(id) && (priceMap?.get(id) ?? 0) <= remaining
+                  draftable.has(id) && (priceMap?.get(id) ?? 0) <= spendableNow
                 }
                 onSelect={(playerId) => dispatch({ type: "SELECT_PLAYER", playerId })}
                 priceMap={priceMap}
-                remainingBudget={remaining}
+                remainingBudget={spendableNow}
               />
             </motion.div>
           )}

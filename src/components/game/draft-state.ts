@@ -71,6 +71,12 @@ const CLASSIC_BENCH: BenchSlotDef[] = [
   { key: "BC", label: "C", accepts: ["C"] },
 ];
 
+/** Budget: a single flexible 6th-man bench slot (accepts any position), so a
+ *  budget roster is 5 starters + 1 bench = 6 players. */
+const BUDGET_BENCH: BenchSlotDef[] = [
+  { key: "B6", label: "6th", accepts: [...POSITIONS] },
+];
+
 /** 10-man: a strict positional bench (a second of each position). */
 const TEN_BENCH: BenchSlotDef[] = [
   { key: "bPG", label: "PG", accepts: ["PG"] },
@@ -122,20 +128,20 @@ export const FIVE_MODE: GameMode = {
 };
 
 /**
- * Budget mode: same 8-man roster as classic, but routes to /budget/* paths so
- * the phase guard navigates between the budget draft and budget sim screens.
- * The salary cap is NOT part of the GameMode — it is tracked separately in
- * BudgetContext from the ?difficulty= URL param.
+ * Budget mode: a 6-man roster (5 starters + 1 flexible bench), routed to
+ * /budget/* paths so the phase guard navigates between the budget draft and
+ * budget sim screens. The salary cap is NOT part of the GameMode — it is
+ * tracked separately in BudgetContext from the ?difficulty= URL param.
  */
 export const BUDGET_MODE: GameMode = {
   id: "budget",
   label: "Budget",
-  draftRounds: DRAFT_ROUNDS,
+  draftRounds: 6,
   teamSkips: TEAM_SKIPS_PER_GAME,
   eraSkips: ERA_SKIPS_PER_GAME,
-  benchSlots: CLASSIC_BENCH,
-  allSlots: [...POSITIONS, ...CLASSIC_BENCH.map((b) => b.key)],
-  storageKey: "eighty-two-zero/budget/v1",
+  benchSlots: BUDGET_BENCH,
+  allSlots: [...POSITIONS, ...BUDGET_BENCH.map((b) => b.key)],
+  storageKey: "eighty-two-zero/budget/v2",
   playPath: "/budget/play",
   simPath: "/budget/sim",
 };

@@ -169,7 +169,7 @@
   "budget": {
     "title": "Budget Draft",
     "subtitle": "Draft under a salary cap",
-    "intro": "Pick a difficulty, draft 8 players under the salary cap, then challenge historic teams head-to-head.",
+    "intro": "Pick a difficulty, draft 6 players under the salary cap, then challenge historic teams head-to-head.",
     "backHome": "Back to home",
     "difficulty": {
       "easy": "Easy",
@@ -177,7 +177,7 @@
       "hard": "Hard"
     },
     "difficultyHint": {
-      "easy": "$130 cap — like you're the Lakers or Dodgers",
+      "easy": "$130 cap — like you're the Lakers",
       "normal": "$100 cap — balanced",
       "hard": "$75 cap — elite GMs only"
     },

@@ -92,12 +92,16 @@ export default async function LeaderboardPage({
     <main className="flex flex-1 flex-col">
       <div className="flex items-start justify-between gap-3">
         <h1 className="font-display text-3xl tracking-wide">Leaderboard</h1>
-        <div className="flex items-center gap-2">
-          <span className="text-sm font-semibold tracking-wide text-muted-foreground uppercase">
-            {t("teamSize")}
-          </span>
-          <TeamSizeSwitch value={teamSize} />
-        </div>
+        {/* Team-size switch only applies to the classic boards; budget teams
+            are all 6-man and grouped by difficulty instead. */}
+        {!modeParm && (
+          <div className="flex items-center gap-2">
+            <span className="text-sm font-semibold tracking-wide text-muted-foreground uppercase">
+              {t("teamSize")}
+            </span>
+            <TeamSizeSwitch value={teamSize} />
+          </div>
+        )}
       </div>
 
       {/* Mode tab: Classic vs Budget */}
@@ -116,13 +120,24 @@ export default async function LeaderboardPage({
         <Link
           href={boardHref({ mode: "budget", difficulty: undefined, page: "1" })}
           className={cn(
-            "rounded-lg py-1.5",
+            "flex items-center justify-center gap-1.5 rounded-lg py-1.5",
             modeParm === "budget"
               ? "bg-primary text-primary-foreground"
               : "text-muted-foreground"
           )}
         >
           Budget
+          <Badge
+            variant="outline"
+            className={cn(
+              "px-1 py-0 text-[9px] font-bold",
+              modeParm === "budget"
+                ? "border-primary-foreground/40 text-primary-foreground"
+                : "border-violet-400/60 bg-violet-400/10 text-violet-300"
+            )}
+          >
+            Beta
+          </Badge>
         </Link>
       </div>
 
