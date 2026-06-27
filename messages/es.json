@@ -137,7 +137,9 @@
     "createError": "No se pudo crear la sala ahora mismo — inténtalo de nuevo en un minuto.",
     "blurb5": "Titulares",
     "blurb8": "Clásico",
-    "blurb10": "Banca amplia"
+    "blurb10": "Banca amplia",
+    "live": "Draft en vivo",
+    "liveHint": "Todos draftean a la vez y lo ven en directo. Sin repeticiones."
   },
   "myTeams": {
     "empty": "Aún no hay equipos de {size} guardados — termina una temporada y pulsa Guardar.",

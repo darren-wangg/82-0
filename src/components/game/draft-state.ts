@@ -285,6 +285,9 @@ export interface GameState {
   challengeSlug: string | null;
   /** Lobby code this draft will be entered into on save, if any. */
   lobbyCode: string | null;
+  /** True when lobbyCode is a *live* lobby (synced draft): submit via the
+   *  live finish path, report per-pick progress, and allow no re-draft. */
+  lobbyLive: boolean;
 }
 
 export type GameAction =
@@ -293,6 +296,7 @@ export type GameAction =
       seed: number;
       challengeSlug?: string | null;
       lobbyCode?: string | null;
+      lobbyLive?: boolean;
     }
   | { type: "SPIN" }
   | { type: "SKIP_TEAM" }
@@ -456,7 +460,8 @@ export function newGame(
   seed: number,
   ctx: DraftContext,
   challengeSlug: string | null = null,
-  lobbyCode: string | null = null
+  lobbyCode: string | null = null,
+  lobbyLive: boolean = false
 ): GameState {
   const mode = ctxMode(ctx);
   const rng = mulberry32(seed >>> 0);
@@ -478,6 +483,7 @@ export function newGame(
     selectedPlayerId: null,
     challengeSlug,
     lobbyCode,
+    lobbyLive,
   };
   // Exclude decades for the whole game; retry (deterministically) in the
   // unlikely case an exclusion set leaves no spinnable combos.
@@ -504,11 +510,14 @@ export function gameReducer(
         action.seed,
         ctx,
         action.challengeSlug ?? null,
-        action.lobbyCode ?? null
+        action.lobbyCode ?? null,
+        action.lobbyLive ?? false
       );
 
     case "LEAVE_LOBBY":
-      return state.lobbyCode === null ? state : { ...state, lobbyCode: null };
+      return state.lobbyCode === null
+        ? state
+        : { ...state, lobbyCode: null, lobbyLive: false };
 
     case "SPIN": {
       if (state.status !== "draft" || state.spin !== null) return state;
@@ -659,6 +668,8 @@ const PersistedSchema = z.object({
   // Optional for saves written before challenges / lobbies existed.
   challengeSlug: z.string().nullable().default(null),
   lobbyCode: z.string().nullable().default(null),
+  // Optional for saves written before live lobbies existed.
+  lobbyLive: z.boolean().default(false),
 });
 
 export function serializeGame(state: GameState): string {

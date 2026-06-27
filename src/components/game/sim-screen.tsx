@@ -222,15 +222,27 @@ export function SimScreen() {
           }
         }
         try {
-          const l = await fetch("/api/lobbies/enter", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-              code: state.lobbyCode,
-              teamSlug: data.team.slug,
-              displayName,
-            }),
-          });
+          // Live lobbies submit through the per-code finish route (records the
+          // entry, marks this device done, closes the lobby when all are in);
+          // async lobbies use the shared enter route.
+          const l = state.lobbyLive
+            ? await fetch(
+                `/api/lobbies/${encodeURIComponent(state.lobbyCode)}/finish`,
+                {
+                  method: "POST",
+                  headers: { "Content-Type": "application/json" },
+                  body: JSON.stringify({ teamSlug: data.team.slug, displayName }),
+                }
+              )
+            : await fetch("/api/lobbies/enter", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                  code: state.lobbyCode,
+                  teamSlug: data.team.slug,
+                  displayName,
+                }),
+              });
           if (l.ok) {
             // The team is now locked into the lobby. Clear this device's draft
             // so the submitted team can't be reopened from /sim or resurrected
@@ -560,8 +572,11 @@ export function SimScreen() {
       <div className="sticky bottom-0 mt-auto flex flex-col gap-2 bg-gradient-to-t from-background via-background/95 to-transparent pt-4 pb-[max(1rem,env(safe-area-inset-bottom))]">
         {state.lobbyCode && save.phase !== "saved" && (
           <>
-            {/* One re-draft per lobby — hidden once it's been used. */}
-            {lobbyRetriesUsed !== null && lobbyRetriesUsed < MAX_LOBBY_RETRIES && (
+            {/* One re-draft per async lobby — hidden once used. Live lobbies
+                are synced (everyone drafts at once), so there are no redos. */}
+            {!state.lobbyLive &&
+              lobbyRetriesUsed !== null &&
+              lobbyRetriesUsed < MAX_LOBBY_RETRIES && (
               <Button
                 variant="outline"
                 className="h-12 w-full rounded-2xl text-sm font-bold"

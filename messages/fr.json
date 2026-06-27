@@ -137,7 +137,9 @@
     "createError": "Impossible de créer le salon pour l'instant — réessayez dans une minute.",
     "blurb5": "Titulaires",
     "blurb8": "Classique",
-    "blurb10": "Banc profond"
+    "blurb10": "Banc profond",
+    "live": "Draft en direct",
+    "liveHint": "Tout le monde drafte en même temps, en direct. Sans reprise."
   },
   "myTeams": {
     "empty": "Aucune équipe à {size} enregistrée — terminez une saison et appuyez sur Enregistrer.",

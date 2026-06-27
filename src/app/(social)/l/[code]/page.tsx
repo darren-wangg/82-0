@@ -20,6 +20,7 @@ import { CloseLobbyButton } from "@/components/social/close-lobby-button";
 import { CopyCode } from "@/components/social/copy-code";
 import { DownloadCardButton } from "@/components/social/download-card";
 import { LobbyAutoRefresh } from "@/components/social/lobby-auto-refresh";
+import { LiveLobbyRoom } from "@/components/social/live-lobby-room";
 import { LobbyCelebration } from "@/components/social/lobby-celebration";
 import { LobbyCloseNotifier } from "@/components/social/lobby-close-notifier";
 import { LobbyLimitEditor } from "@/components/social/lobby-limit-editor";
@@ -65,6 +66,14 @@ export default async function LobbyPage({ params }: PageProps<"/l/[code]">) {
   if (!lobby) notFound();
 
   const open = lobby.status === "open";
+
+  // Live lobby while still running → the waiting room / live draft tracker.
+  // Once it closes (results), fall through to the shared standings view below,
+  // which works identically for live lobbies (LobbyEntry rows exist).
+  if (viewer.isLive && open) {
+    return <LiveLobbyRoom code={lobby.code} name={lobby.name} />;
+  }
+
   const entered = viewer.entryTeamSlug !== null;
   const teamCount = lobby.standings.length;
   const limit = viewer.teamLimit;

@@ -137,7 +137,9 @@
     "createError": "Couldn't create the lobby right now — try again in a minute.",
     "blurb5": "Starters",
     "blurb8": "Classic",
-    "blurb10": "Deep bench"
+    "blurb10": "Deep bench",
+    "live": "Live draft",
+    "liveHint": "Everyone drafts at once and watches it live. No redos."
   },
   "myTeams": {
     "empty": "No saved {size}-man teams yet — draft a team and hit Save.",

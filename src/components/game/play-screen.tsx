@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { AnimatePresence, motion } from "framer-motion";
@@ -61,6 +61,8 @@ export function PlayScreen() {
   const searchParams = useSearchParams();
   const challengeParam = searchParams.get("challenge");
   const lobbyParam = searchParams.get("lobby");
+  // /play?lobby={code}&live=1 targets a *live* lobby (synced draft).
+  const liveParam = searchParams.get("live") === "1";
   const stateChallenge = state?.challengeSlug ?? null;
   const stateLobby = state?.lobbyCode ?? null;
   const statePicks = state?.picks.length ?? 0;
@@ -83,8 +85,27 @@ export function PlayScreen() {
       seed: freshSeed(),
       challengeSlug: wantsChallenge ? challengeParam : null,
       lobbyCode: wantsLobby ? lobbyParam : null,
+      lobbyLive: wantsLobby ? liveParam : false,
     });
-  }, [stateReady, challengeParam, stateChallenge, lobbyParam, stateLobby, statePicks, dispatch, t]);
+  }, [stateReady, challengeParam, stateChallenge, lobbyParam, liveParam, stateLobby, statePicks, dispatch, t]);
+
+  // Live lobby: report this device's pick count after each placement so
+  // opponents see the bar fill in near-real-time. Fire-and-forget, deduped on
+  // the count so re-renders don't re-POST. (No-op for non-live drafts.)
+  const liveLobbyCode = state?.lobbyLive ? state.lobbyCode : null;
+  const lastReportedPicks = useRef(-1);
+  useEffect(() => {
+    if (!liveLobbyCode) return;
+    if (statePicks === lastReportedPicks.current) return;
+    lastReportedPicks.current = statePicks;
+    void fetch(`/api/lobbies/${encodeURIComponent(liveLobbyCode)}/progress`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ picksCount: statePicks }),
+    }).catch(() => {
+      // Transient — the next pick (or the opponent's poll) will catch up.
+    });
+  }, [liveLobbyCode, statePicks]);
 
   // Nonce of the last spin whose reel animation has finished. Every (re)spin —
   // including a restored pending spin on mount — counts as a reel roll: the
