@@ -3,8 +3,9 @@ import Link from "next/link";
 import { cookies } from "next/headers";
 import { preload } from "react-dom";
 import { getTranslations } from "next-intl/server";
-import { MessageSquarePlus, Shirt, Trophy, UsersRound } from "lucide-react";
+import { DollarSign, MessageSquarePlus, Shirt, Trophy, UsersRound } from "lucide-react";
 import { buttonVariants } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 import { HowToPlayDialog } from "@/components/game/how-to-play";
 import { LanguageSwitcher } from "@/components/i18n/language-switcher";
 import { TeamSizeSwitch } from "@/components/team-size-switch";
@@ -117,6 +118,21 @@ export default async function Home() {
             ))}
           </div>
           <HowToPlayDialog />
+
+          {/* Budget Draft — compact Beta chip, beneath the primary modes */}
+          <Link
+            href="/budget"
+            className="inline-flex items-center gap-1.5 rounded-full border border-violet-400/40 bg-violet-400/10 px-3 py-1.5 text-xs font-semibold text-violet-300 transition-[transform,background-color] active:scale-95 hover:bg-violet-400/20"
+          >
+            <DollarSign className="size-3.5 shrink-0" />
+            {t("nav.budget")}
+            <Badge
+              variant="outline"
+              className="border-violet-400/60 bg-violet-400/10 px-1 py-0 text-[9px] font-bold text-violet-300"
+            >
+              Beta
+            </Badge>
+          </Link>
 
           <LanguageSwitcher className="mt-1" label={t("language")} />
         </div>

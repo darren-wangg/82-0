@@ -5,7 +5,8 @@
     "nav": {
       "leaderboard": "Classement",
       "lobbies": "Salons",
-      "myTeams": "Mes équipes"
+      "myTeams": "Mes équipes",
+      "budget": "Draft Budget"
     },
     "attribution": "Statistiques issues du jeu de données <link>NBA Stats (1947–présent)</link> de Sumitro Datta (CC BY-SA 4.0). Sans affiliation avec la NBA.",
     "language": "Langue",
@@ -164,5 +165,32 @@
       "tpm": "Tir à trois points",
       "tov": "Pertes de balle"
     }
+  },
+  "budget": {
+    "title": "Draft Budget",
+    "subtitle": "Draftez sous un plafond salarial",
+    "intro": "Choisissez une difficulté, draftez 8 joueurs sous le plafond, puis défiez une des meilleures équipes de l'histoire.",
+    "backHome": "Retour à l'accueil",
+    "difficulty": {
+      "easy": "Facile",
+      "normal": "Normal",
+      "hard": "Difficile"
+    },
+    "difficultyHint": {
+      "easy": "Plafond $130 — beaucoup de marge",
+      "normal": "Plafond $100 — équilibré",
+      "hard": "Plafond $75 — efficacité d'élite seulement"
+    },
+    "howPricing": "Les prix reflètent la performance ajustée à l'ère ($5–$50).",
+    "budgetLabel": "Budget",
+    "challengeCta": "Défier une équipe célèbre",
+    "redraft": "Redraft",
+    "pickOpponent": "Choisissez votre adversaire",
+    "totalSpend": "Coût de l'équipe : ${spend} (plafond {difficulty})",
+    "budgetExceeded": "Budget dépassé — le serveur a refusé cette équipe.",
+    "challengeFailed": "Défi échoué — réessayez.",
+    "viewLeaderboard": "Classement Budget",
+    "allDifficulties": "Tous",
+    "backToSummary": "Retour au résumé"
   }
 }

@@ -77,17 +77,28 @@ const ROW_CATS: { cat: NineCat; label: string }[] = [
  * sorted by the chosen stat (PPG by default). One tap selects a player and
  * lights up their eligible roster slots — placement happens on the board.
  * Players with no open eligible slot are shown dimmed.
+ *
+ * When `priceMap` is provided (budget mode), each player shows their $price
+ * and players whose price would exceed the remaining budget are flagged.
  */
 export function PoolList({
   pool,
   selectedId,
   isDraftable,
   onSelect,
+  priceMap,
+  remainingBudget,
 }: {
   pool: PlayerStatLine[];
   selectedId: string | null;
   isDraftable: (id: string) => boolean;
   onSelect: (id: string | null) => void;
+  /** Optional: budget-mode price map. When provided, shows $price per player. */
+  priceMap?: Map<string, number> | null;
+  /** Optional: remaining cap in budget mode. Players whose price exceeds this
+   *  get a red price badge; the caller also marks them non-draftable so the
+   *  cap is a hard limit. */
+  remainingBudget?: number;
 }) {
   const t = useTranslations("pool");
   const format = useFormatter();
@@ -217,6 +228,11 @@ export function PoolList({
           const selected = selectedId === p.id;
           const legendary = isLegendary(p);
           const delay = Math.min(i * 0.035, 0.45);
+          const price = priceMap?.get(p.id);
+          const overBudget =
+            price !== undefined &&
+            remainingBudget !== undefined &&
+            price > remainingBudget;
           return (
             <motion.li
               key={p.id}
@@ -263,6 +279,19 @@ export function PoolList({
                       {[p.position, ...p.altPositions].slice(0, 3).join("/")}
                       {p.altPositions.length > 2 && "+"}
                     </Badge>
+                    {/* Budget mode: price badge, red when over remaining cap. */}
+                    {price !== undefined && (
+                      <span
+                        className={cn(
+                          "ml-auto shrink-0 rounded px-1 font-mono text-[10px] font-bold tabular-nums",
+                          overBudget
+                            ? "bg-red-500/20 text-red-400"
+                            : "bg-muted text-muted-foreground"
+                        )}
+                      >
+                        ${price}
+                      </span>
+                    )}
                   </div>
                   {showStats && (
                   <div className="mt-1 grid grid-cols-6 gap-1">

@@ -139,6 +139,12 @@ model Team {
   user           User?         @relation(fields: [userId], references: [id])
   userId         String?
   createdAt DateTime @default(now())
+  // Budget Matchups: preset famous teams never pollute normal leaderboards.
+  isPreset   Boolean @default(false)
+  // Draft mode: null = classic/ten/five; "budget" = budget draft.
+  mode       String?
+  // Budget difficulty: "easy" | "normal" | "hard" (set only when mode="budget").
+  difficulty String?
 
   matchupsAsA  Matchup[]    @relation("teamA")
   matchupsAsB  Matchup[]    @relation("teamB")
@@ -146,6 +152,7 @@ model Team {
 
   @@index([snapshotVersion, wins, ovr]) // leaderboard reads
   @@index([createdAt])
+  @@index([mode, difficulty, snapshotVersion, ovr]) // budget leaderboard reads
 }
 
 model Matchup {

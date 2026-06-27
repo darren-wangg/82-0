@@ -5,7 +5,8 @@
     "nav": {
       "leaderboard": "순위표",
       "lobbies": "로비",
-      "myTeams": "내 팀"
+      "myTeams": "내 팀",
+      "budget": "예산 드래프트"
     },
     "attribution": "통계는 Sumitro Datta의 <link>NBA Stats(1947년~현재)</link> 데이터셋(CC BY-SA 4.0)에서 가져왔습니다. NBA와 무관합니다.",
     "language": "언어",
@@ -164,5 +165,32 @@
       "tpm": "3점슛",
       "tov": "턴오버"
     }
+  },
+  "budget": {
+    "title": "예산 드래프트",
+    "subtitle": "샐러리캡 내에서 드래프트",
+    "intro": "난이도를 선택하고, 샐러리캡 내에서 8명을 드래프트한 후, 역사상 최고의 팀에 도전하세요.",
+    "backHome": "홈으로 돌아가기",
+    "difficulty": {
+      "easy": "쉬움",
+      "normal": "보통",
+      "hard": "어려움"
+    },
+    "difficultyHint": {
+      "easy": "$130 캡 — 여유 있음",
+      "normal": "$100 캡 — 균형적",
+      "hard": "$75 캡 — 엘리트 효율만"
+    },
+    "howPricing": "가격은 시대 조정 성과를 반영합니다（$5–$50）.",
+    "budgetLabel": "예산",
+    "challengeCta": "역사적 팀에 도전",
+    "redraft": "재드래프트",
+    "pickOpponent": "상대 선택",
+    "totalSpend": "팀 비용: ${spend}（{difficulty} 캡）",
+    "budgetExceeded": "예산 초과 — 서버가 이 로스터를 거부했습니다.",
+    "challengeFailed": "도전 실패 — 다시 시도하세요.",
+    "viewLeaderboard": "예산 리더보드",
+    "allDifficulties": "전체",
+    "backToSummary": "요약으로 돌아가기"
   }
 }

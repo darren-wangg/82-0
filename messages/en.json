@@ -5,7 +5,8 @@
     "nav": {
       "leaderboard": "Leaderboard",
       "lobbies": "Lobbies",
-      "myTeams": "My Teams"
+      "myTeams": "My Teams",
+      "budget": "Budget Draft"
     },
     "attribution": "Stats derived from the <link>NBA Stats (1947–present)</link> dataset by Sumitro Datta (CC BY-SA 4.0). Not affiliated with the NBA.",
     "language": "Language",
@@ -164,5 +165,32 @@
       "tpm": "Three-point shooting",
       "tov": "Turnovers"
     }
+  },
+  "budget": {
+    "title": "Budget Draft",
+    "subtitle": "Draft under a salary cap",
+    "intro": "Pick a difficulty, draft 8 players under the salary cap, then challenge historic teams head-to-head.",
+    "backHome": "Back to home",
+    "difficulty": {
+      "easy": "Easy",
+      "normal": "Normal",
+      "hard": "Hard"
+    },
+    "difficultyHint": {
+      "easy": "$130 cap — like you're the Lakers or Dodgers",
+      "normal": "$100 cap — balanced",
+      "hard": "$75 cap — elite GMs only"
+    },
+    "howPricing": "Prices reflect each player's era-adjusted performance ($5–$50).",
+    "budgetLabel": "Budget",
+    "challengeCta": "Challenge a Historic Team",
+    "redraft": "Redraft",
+    "pickOpponent": "Pick your opponent",
+    "totalSpend": "Roster cost: ${spend} ({difficulty} cap)",
+    "budgetExceeded": "Budget exceeded — the server rejected this roster.",
+    "challengeFailed": "Challenge failed — try again.",
+    "viewLeaderboard": "Budget Leaderboard",
+    "allDifficulties": "All",
+    "backToSummary": "Back to summary"
   }
 }

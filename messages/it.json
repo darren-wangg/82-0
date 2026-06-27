@@ -5,7 +5,8 @@
     "nav": {
       "leaderboard": "Classifica",
       "lobbies": "Sale",
-      "myTeams": "Le mie squadre"
+      "myTeams": "Le mie squadre",
+      "budget": "Draft Budget"
     },
     "attribution": "Statistiche tratte dal dataset <link>NBA Stats (1947–presente)</link> di Sumitro Datta (CC BY-SA 4.0). Non affiliato alla NBA.",
     "language": "Lingua",
@@ -164,5 +165,32 @@
       "tpm": "Tiro da tre",
       "tov": "Palle perse"
     }
+  },
+  "budget": {
+    "title": "Draft Budget",
+    "subtitle": "Dratta sotto il tetto salariale",
+    "intro": "Scegli una difficoltà, dratta 8 giocatori entro il tetto salariale, poi sfida una delle migliori squadre della storia.",
+    "backHome": "Torna alla home",
+    "difficulty": {
+      "easy": "Facile",
+      "normal": "Normale",
+      "hard": "Difficile"
+    },
+    "difficultyHint": {
+      "easy": "Tetto $130 — molto spazio",
+      "normal": "Tetto $100 — equilibrato",
+      "hard": "Tetto $75 — solo efficienza d'elite"
+    },
+    "howPricing": "I prezzi riflettono le prestazioni aggiustate per era ($5–$50).",
+    "budgetLabel": "Budget",
+    "challengeCta": "Sfida una squadra famosa",
+    "redraft": "Ridrafta",
+    "pickOpponent": "Scegli il tuo avversario",
+    "totalSpend": "Costo del team: ${spend} (tetto {difficulty})",
+    "budgetExceeded": "Budget superato — il server ha rifiutato questa squadra.",
+    "challengeFailed": "Sfida fallita — riprova.",
+    "viewLeaderboard": "Classifica Budget",
+    "allDifficulties": "Tutte",
+    "backToSummary": "Torna al riepilogo"
   }
 }

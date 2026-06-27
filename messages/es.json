@@ -5,7 +5,8 @@
     "nav": {
       "leaderboard": "Clasificación",
       "lobbies": "Salas",
-      "myTeams": "Mis equipos"
+      "myTeams": "Mis equipos",
+      "budget": "Draft Presupuesto"
     },
     "attribution": "Estadísticas derivadas del conjunto de datos <link>NBA Stats (1947–presente)</link> de Sumitro Datta (CC BY-SA 4.0). No afiliado a la NBA.",
     "language": "Idioma",
@@ -164,5 +165,32 @@
       "tpm": "Triples",
       "tov": "Pérdidas"
     }
+  },
+  "budget": {
+    "title": "Draft Presupuesto",
+    "subtitle": "Fichar bajo límite salarial",
+    "intro": "Elige la dificultad, elige 8 jugadores con el tope salarial y desafía a uno de los mejores equipos de la historia.",
+    "backHome": "Volver al inicio",
+    "difficulty": {
+      "easy": "Fácil",
+      "normal": "Normal",
+      "hard": "Difícil"
+    },
+    "difficultyHint": {
+      "easy": "Tope $130 — bastante margen",
+      "normal": "Tope $100 — equilibrado",
+      "hard": "Tope $75 — solo eficiencia de élite"
+    },
+    "howPricing": "Los precios reflejan el rendimiento ajustado por era ($5–$50).",
+    "budgetLabel": "Presupuesto",
+    "challengeCta": "Desafiar a un equipo histórico",
+    "redraft": "Rediseñar",
+    "pickOpponent": "Elige a tu rival",
+    "totalSpend": "Coste del equipo: ${spend} (tope {difficulty})",
+    "budgetExceeded": "Presupuesto superado — el servidor rechazó este equipo.",
+    "challengeFailed": "Desafío fallido — inténtalo de nuevo.",
+    "viewLeaderboard": "Clasificación Budget",
+    "allDifficulties": "Todas",
+    "backToSummary": "Volver al resumen"
   }
 }
