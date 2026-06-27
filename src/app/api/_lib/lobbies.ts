@@ -1,6 +1,11 @@
 /** Lobby loading + lifecycle shared by /api/lobbies/* and the /l/[code] page. */
 
 import { LobbyResponse, Roster } from "@/lib/contracts";
+import {
+  lobbyPhase,
+  type LiveLobbyState,
+  type LiveParticipant,
+} from "@/lib/live-lobby";
 import { prisma } from "@/lib/db";
 import { getAnonIdFromCookie } from "@/lib/auth";
 import { getEngine } from "@/lib/engine-provider";
@@ -15,6 +20,51 @@ import {
 /** Open means entries are still accepted: the creator hasn't ended it. */
 export function lobbyIsOpen(lobby: { closedAt: Date | null }): boolean {
   return lobby.closedAt === null;
+}
+
+/**
+ * Compact live state for a live lobby (waiting room + draft tracker), polled
+ * ~2s by the client. No round-robin here — standings run only at results, via
+ * the existing loadLobbyResponse path. viewerAnonId is the polling device, used
+ * to flag its own participant row without a second query.
+ */
+export async function loadLiveLobbyState(
+  code: string,
+  viewerAnonId: string | null
+): Promise<LiveLobbyState | null> {
+  const lobby = await prisma.lobby.findUnique({
+    where: { code },
+    include: { participants: { orderBy: { joinedAt: "asc" } } },
+  });
+  if (!lobby) return null;
+
+  const participants: LiveParticipant[] = lobby.participants.map((p) => ({
+    displayName: p.displayName,
+    picksCount: p.picksCount,
+    done: p.done,
+    teamSlug: p.teamSlug,
+    isViewer: viewerAnonId !== null && p.anonIdentityId === viewerAnonId,
+    isCreator:
+      lobby.creatorAnonId !== null && p.anonIdentityId === lobby.creatorAnonId,
+  }));
+  const mine = participants.find((p) => p.isViewer) ?? null;
+
+  return {
+    code: lobby.code,
+    name: lobby.name,
+    phase: lobbyPhase(lobby),
+    rosterSize: lobby.teamSize,
+    teamLimit: lobby.teamLimit,
+    startedAt: lobby.startedAt?.toISOString() ?? null,
+    participants,
+    viewer: {
+      joined: mine !== null,
+      isCreator:
+        viewerAnonId !== null && lobby.creatorAnonId === viewerAnonId,
+      done: mine?.done ?? false,
+      teamSlug: mine?.teamSlug ?? null,
+    },
+  };
 }
 
 const ACTIVE_LOBBY_LIMIT = 50;
@@ -122,12 +172,18 @@ export async function loadLobbyViewer(code: string): Promise<{
   entryTeamSlug: string | null;
   teamLimit: number | null;
   teamSize: number;
+  isLive: boolean;
 }> {
   const anonId = await getAnonIdFromCookie();
   const [lobby, entry] = await Promise.all([
     prisma.lobby.findUnique({
       where: { code },
-      select: { creatorAnonId: true, teamLimit: true, teamSize: true },
+      select: {
+        creatorAnonId: true,
+        teamLimit: true,
+        teamSize: true,
+        isLive: true,
+      },
     }),
     anonId
       ? prisma.lobbyEntry.findFirst({
@@ -141,5 +197,6 @@ export async function loadLobbyViewer(code: string): Promise<{
     entryTeamSlug: entry?.teamSlug ?? null,
     teamLimit: lobby?.teamLimit ?? null,
     teamSize: lobby?.teamSize ?? 8,
+    isLive: lobby?.isLive ?? false,
   };
 }

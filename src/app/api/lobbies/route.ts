@@ -64,13 +64,17 @@ export async function POST(request: Request) {
   }
   const teamSize = sizeParsed.data ?? 8;
 
+  // Live lobbies: everyone drafts at once in a synced room (kept off the frozen
+  // contract like the team limit / size).
+  const isLive = (body as { isLive?: unknown }).isLive === true;
+
   try {
     const creatorAnonId = await getOrCreateAnonId();
     for (let attempt = 0; attempt < CODE_ATTEMPTS; attempt++) {
       const code = makeLobbyCode();
       try {
         const lobby = await prisma.lobby.create({
-          data: { code, name: parsed.data.name, teamLimit, teamSize, creatorAnonId },
+          data: { code, name: parsed.data.name, teamLimit, teamSize, creatorAnonId, isLive },
         });
         const response: LobbyResponse = {
           code: lobby.code,

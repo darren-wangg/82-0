@@ -186,7 +186,34 @@ model Lobby {
   // AnonIdentity.id of the device that created the lobby (may close it early).
   // Nullable only for rows that predate creator tracking.
   creatorAnonId String?
+  // Live lobbies: everyone drafts simultaneously and watches progress in real
+  // time. isLive flips the /l/[code] page into a waiting room → live draft →
+  // results flow. startedAt is null until the creator starts the draft; phase
+  // is derived from (isLive, startedAt, closedAt) — see lobbyPhase().
+  isLive    Boolean   @default(false)
+  startedAt DateTime?
   entries   LobbyEntry[]
+  participants LobbyParticipant[]
+}
+
+// Live-lobby presence/progress layer. One row per device that joins a live
+// lobby, created in the waiting phase and updated as the player drafts. The
+// existing LobbyEntry is still created when a player finishes, so standings /
+// results compute exactly as in async lobbies — participants only add the
+// "who's here and how far along" view that powers the live draft tracker.
+model LobbyParticipant {
+  id             String   @id @default(cuid())
+  lobby          Lobby    @relation(fields: [lobbyCode], references: [code], onDelete: Cascade)
+  lobbyCode      String
+  anonIdentityId String
+  displayName    String
+  joinedAt       DateTime @default(now())
+  picksCount     Int      @default(0)
+  done           Boolean  @default(false)
+  teamSlug       String?
+
+  @@unique([lobbyCode, anonIdentityId])
+  @@index([lobbyCode])
 }
 
 model LobbyEntry {
