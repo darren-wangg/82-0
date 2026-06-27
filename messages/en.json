@@ -191,6 +191,7 @@
     "challengeFailed": "Challenge failed — try again.",
     "viewLeaderboard": "Budget Leaderboard",
     "allDifficulties": "All",
-    "backToSummary": "Back to summary"
+    "backToSummary": "Back to summary",
+    "nameOptionalPlaceholder": "Name your team (optional)"
   }
 }

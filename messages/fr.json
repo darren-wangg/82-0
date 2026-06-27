@@ -191,6 +191,7 @@
     "challengeFailed": "Défi échoué — réessayez.",
     "viewLeaderboard": "Classement Budget",
     "allDifficulties": "Tous",
-    "backToSummary": "Retour au résumé"
+    "backToSummary": "Retour au résumé",
+    "nameOptionalPlaceholder": "Nommez votre équipe (facultatif)"
   }
 }

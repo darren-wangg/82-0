@@ -50,6 +50,8 @@ async function main() {
     // Re-run the engine server-side (server authoritative).
     const rating = engine.teamRating(ft.roster, players, baselines);
     const season = engine.projectSeason(rating);
+    // Famous teams are 6-man (5 starters + 1 bench), matching budget rosters.
+    const teamSize = 5 + ft.roster.bench.length;
 
     await prisma.team.upsert({
       where: { slug: ft.slug },
@@ -59,7 +61,7 @@ async function main() {
         ownerName: ft.era,
         roster: ft.roster as object,
         snapshotVersion: snapshot.version,
-        teamSize: 8,
+        teamSize,
         ovr: rating.ovr,
         offRating: rating.offRating,
         defRating: rating.defRating,
@@ -74,7 +76,7 @@ async function main() {
         ownerName: ft.era,
         roster: ft.roster as object,
         snapshotVersion: snapshot.version,
-        teamSize: 8,
+        teamSize,
         ovr: rating.ovr,
         offRating: rating.offRating,
         defRating: rating.defRating,

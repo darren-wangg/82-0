@@ -191,6 +191,7 @@
     "challengeFailed": "Sfida fallita — riprova.",
     "viewLeaderboard": "Classifica Budget",
     "allDifficulties": "Tutte",
-    "backToSummary": "Torna al riepilogo"
+    "backToSummary": "Torna al riepilogo",
+    "nameOptionalPlaceholder": "Dai un nome alla squadra (facoltativo)"
   }
 }

@@ -191,6 +191,7 @@
     "challengeFailed": "Herausforderung fehlgeschlagen — erneut versuchen.",
     "viewLeaderboard": "Budget-Bestenliste",
     "allDifficulties": "Alle",
-    "backToSummary": "Zurück zur Übersicht"
+    "backToSummary": "Zurück zur Übersicht",
+    "nameOptionalPlaceholder": "Benenne dein Team (optional)"
   }
 }

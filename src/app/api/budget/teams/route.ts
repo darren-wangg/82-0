@@ -34,8 +34,12 @@ import { RATE_LIMITS, rateLimitGate } from "../../_lib/rate-limit";
 
 const SLUG_ATTEMPTS = 5;
 
+/** Budget teams can be saved unnamed (a name is only needed to show named on
+ *  the leaderboard); blank/omitted falls back to a generic name below. */
+const DEFAULT_BUDGET_TEAM_NAME = "Budget Lineup";
+
 const BudgetSaveTeamBodySchema = z.object({
-  teamName: z.string().min(1).max(40),
+  teamName: z.string().trim().max(40).optional(),
   roster: FlexibleRosterSchema,
   snapshotVersion: z.string(),
   difficulty: z.enum(BUDGET_DIFFICULTIES),
@@ -57,8 +61,10 @@ export async function POST(request: Request) {
     return jsonError(400, parsed.error.issues[0]?.message ?? "Invalid request");
   }
   const { teamName, roster, snapshotVersion, difficulty } = parsed.data;
+  // Name is optional for budget: only matters for a named leaderboard entry.
+  const finalName = teamName && teamName.length > 0 ? teamName : DEFAULT_BUDGET_TEAM_NAME;
 
-  if (containsProfanity(teamName)) {
+  if (teamName && containsProfanity(teamName)) {
     return jsonError(422, PROFANITY_ERROR);
   }
 
@@ -107,7 +113,7 @@ export async function POST(request: Request) {
         const team = await prisma.team.create({
           data: {
             slug,
-            teamName,
+            teamName: finalName,
             roster: toJsonInput(roster),
             snapshotVersion,
             teamSize: teamSizeOf(roster),

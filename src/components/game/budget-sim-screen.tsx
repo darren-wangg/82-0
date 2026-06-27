@@ -146,12 +146,10 @@ export function BudgetSimScreen() {
   // opponent-picker screen. The matchup itself is created there, on pick.
   const saveAndGoToChallenge = async () => {
     if (savingRef.current || !state || !sim) return;
+    // Name is optional for budget challenges — only needed to appear named on
+    // the leaderboard. Validate it only when the user actually typed one.
     const name = teamName.trim();
-    if (!name) {
-      setError(tSim("toastNameRequired"));
-      return;
-    }
-    if (containsProfanity(name)) {
+    if (name && containsProfanity(name)) {
       setError(tSim("nameRejected"));
       return;
     }
@@ -312,7 +310,7 @@ export function BudgetSimScreen() {
         <Input
           value={teamName}
           maxLength={40}
-          placeholder={tSim("teamNamePlaceholder")}
+          placeholder={t("nameOptionalPlaceholder")}
           aria-label={tSim("teamNameAria")}
           // Solid surface: the footer sits over the scrolling reveal, so the
           // input's default translucent fill let content bleed through and made
@@ -330,7 +328,7 @@ export function BudgetSimScreen() {
         )}
         <Button
           className="h-14 w-full rounded-2xl font-display text-lg tracking-wide shadow-lg shadow-primary/30"
-          disabled={teamName.trim().length === 0 || saving}
+          disabled={saving}
           onClick={saveAndGoToChallenge}
         >
           {saving ? (

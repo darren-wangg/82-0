@@ -5,17 +5,18 @@
  * identically. Results are upserted on the unique (teamA, teamB, seed).
  */
 
+import { z } from "zod";
 import {
   CreateMatchupRequestSchema,
   MatchupResponse,
   MatchupResult,
-  RosterSchema,
 } from "@/lib/contracts";
 import { prisma } from "@/lib/db";
 import { getEngine } from "@/lib/engine-provider";
 import { stableSeed } from "@/components/social/hashing";
 import {
   computeTeamOutputs,
+  FlexibleRosterSchema,
   isDbUnavailable,
   jsonError,
   findTeamBySlug,
@@ -29,12 +30,17 @@ import { RATE_LIMITS, rateLimitGate } from "../_lib/rate-limit";
 
 function ratingFor(team: TeamWithOwner) {
   // Prefer a fresh engine run from the roster (server authoritative); fall
-  // back to the stored rating if the roster predates the current snapshot.
+  // back to the stored rating if the roster predates the current snapshot
+  // (RosterError) or its shape has drifted (ZodError). FlexibleRosterSchema
+  // accepts every mode's bench size (5/6/8/10-man) — the frozen RosterSchema
+  // pins bench to 3, which would 500 on budget (6-man) and 5/10-man teams.
   try {
-    const roster = RosterSchema.parse(team.roster);
+    const roster = FlexibleRosterSchema.parse(team.roster);
     return computeTeamOutputs(roster).rating;
   } catch (err) {
-    if (err instanceof RosterError) return ratingFromRow(team);
+    if (err instanceof RosterError || err instanceof z.ZodError) {
+      return ratingFromRow(team);
+    }
     throw err;
   }
 }

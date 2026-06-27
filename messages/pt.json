@@ -191,6 +191,7 @@
     "challengeFailed": "Desafio falhou — tente novamente.",
     "viewLeaderboard": "Classificação Orçamento",
     "allDifficulties": "Todos",
-    "backToSummary": "Voltar ao resumo"
+    "backToSummary": "Voltar ao resumo",
+    "nameOptionalPlaceholder": "Nomeie sua equipe (opcional)"
   }
 }

@@ -191,6 +191,7 @@
     "challengeFailed": "挑战失败 — 请重试。",
     "viewLeaderboard": "预算排行榜",
     "allDifficulties": "全部",
-    "backToSummary": "返回总结"
+    "backToSummary": "返回总结",
+    "nameOptionalPlaceholder": "为你的球队命名（可选）"
   }
 }

@@ -191,6 +191,7 @@
     "challengeFailed": "도전 실패 — 다시 시도하세요.",
     "viewLeaderboard": "예산 리더보드",
     "allDifficulties": "전체",
-    "backToSummary": "요약으로 돌아가기"
+    "backToSummary": "요약으로 돌아가기",
+    "nameOptionalPlaceholder": "팀 이름 (선택)"
   }
 }
