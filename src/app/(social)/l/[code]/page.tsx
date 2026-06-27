@@ -19,6 +19,7 @@ import { cn } from "@/lib/utils";
 import { CloseLobbyButton } from "@/components/social/close-lobby-button";
 import { CopyCode } from "@/components/social/copy-code";
 import { DownloadCardButton } from "@/components/social/download-card";
+import { LobbyAutoRefresh } from "@/components/social/lobby-auto-refresh";
 import { LobbyCelebration } from "@/components/social/lobby-celebration";
 import { LobbyCloseNotifier } from "@/components/social/lobby-close-notifier";
 import { LobbyLimitEditor } from "@/components/social/lobby-limit-editor";
@@ -153,12 +154,12 @@ export default async function LobbyPage({ params }: PageProps<"/l/[code]">) {
               </Link>
               {teamCount < 2 ? (
                 <span className="mt-1 block text-xs text-muted-foreground">
-                  Nobody to beat yet — send the invite, then tap the refresh
-                  icon up top to check for new entries.
+                  Nobody to beat yet — send the invite. New entries show up
+                  here automatically.
                 </span>
               ) : (
                 <span className="mt-1 block text-xs text-muted-foreground">
-                  Tap the refresh icon up top to check for new entries.
+                  Standings update automatically as friends draft.
                 </span>
               )}
             </CardContent>
@@ -247,6 +248,14 @@ export default async function LobbyPage({ params }: PageProps<"/l/[code]">) {
             </div>
           )}
         </>
+      )}
+
+      {open && (
+        <LobbyAutoRefresh
+          code={lobby.code}
+          entrantCount={teamCount}
+          status="open"
+        />
       )}
 
       {entered && (

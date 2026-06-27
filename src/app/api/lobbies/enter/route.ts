@@ -113,6 +113,20 @@ export async function POST(request: Request) {
       });
     }
 
+    // Auto-close when the lobby fills: a capped lobby that just hit its limit
+    // has no more spots, so crown the champion now instead of waiting for the
+    // creator to end it by hand. updateMany with a closedAt:null guard makes
+    // this idempotent under concurrent entries (only the first close wins).
+    if (lobby.teamLimit !== null) {
+      const entered = await prisma.lobbyEntry.count({ where: { lobbyCode: code } });
+      if (entered >= lobby.teamLimit) {
+        await prisma.lobby.updateMany({
+          where: { code, closedAt: null },
+          data: { closedAt: new Date() },
+        });
+      }
+    }
+
     const response = await loadLobbyResponse(code);
     if (!response) return jsonError(404, "Lobby not found");
     return Response.json(response);
