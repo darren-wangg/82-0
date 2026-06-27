@@ -1,8 +1,8 @@
 /**
  * Unit tests for src/lib/pricing.ts.
  *
- * Pins: outputs are multiples of $5 in [$5, $50], monotonic in playerScore,
- * known all-timers = $50, known fillers = $5.
+ * Pins: outputs are multiples of $5 in [$5, $35], monotonic in playerScore,
+ * known all-timers = $35 (the ceiling), known fillers = $5.
  */
 
 import { describe, it, expect } from "vitest";
@@ -18,6 +18,7 @@ import {
   PRICE_STEP,
 } from "./pricing";
 import { POSITIONS, type Position } from "./contracts";
+import { BUDGET_CAP } from "./budget";
 import { engine } from "@/engine";
 
 const snapshot = getSnapshot();
@@ -40,8 +41,8 @@ describe("snapPrice", () => {
     expect(snapPrice(2)).toBe(PRICE_MIN);
   });
 
-  it("clamps above PRICE_MAX to $50", () => {
-    expect(snapPrice(51)).toBe(PRICE_MAX);
+  it("clamps above PRICE_MAX to the ceiling", () => {
+    expect(snapPrice(PRICE_MAX + 100)).toBe(PRICE_MAX);
     expect(snapPrice(1000)).toBe(PRICE_MAX);
   });
 });
@@ -80,16 +81,16 @@ describe("priceOf", () => {
     }
   });
 
-  it("prices Jordan (CHI 1990s) at $50", () => {
+  it("prices Jordan (CHI 1990s) at the ceiling", () => {
     const jordan = players.get("jordami01-CHI-1990s")!;
     expect(jordan).toBeDefined();
-    expect(priceOf(jordan, baselines)).toBe(50);
+    expect(priceOf(jordan, baselines)).toBe(PRICE_MAX);
   });
 
-  it("prices Wilt Chamberlain (GSW 1960s) at $50", () => {
+  it("prices Wilt Chamberlain (GSW 1960s) at the ceiling", () => {
     const wilt = players.get("chambwi01-GSW-1960s")!;
     expect(wilt).toBeDefined();
-    expect(priceOf(wilt, baselines)).toBe(50);
+    expect(priceOf(wilt, baselines)).toBe(PRICE_MAX);
   });
 
   it("prices a replacement-level player at $5", () => {
@@ -123,7 +124,7 @@ describe("priceMapOf", () => {
     expect(map.size).toBe(snapshot.players.length);
   });
 
-  it("all values are multiples of $5 in [$5, $50]", () => {
+  it("all values are multiples of $5 in [$5, $35]", () => {
     const map = priceMapOf(snapshot);
     for (const [, price] of map) {
       expect(price % PRICE_STEP).toBe(0);
@@ -132,10 +133,10 @@ describe("priceMapOf", () => {
     }
   });
 
-  it("still prices the all-timers (Jordan, Wilt) at $50 after normalization", () => {
+  it("still prices the all-timers (Jordan, Wilt) at the ceiling after normalization", () => {
     const map = priceMapOf(snapshot);
-    expect(map.get("jordami01-CHI-1990s")).toBe(50);
-    expect(map.get("chambwi01-GSW-1960s")).toBe(50);
+    expect(map.get("jordami01-CHI-1990s")).toBe(PRICE_MAX);
+    expect(map.get("chambwi01-GSW-1960s")).toBe(PRICE_MAX);
   });
 
   it("equalizes mean price across the five starting slots (no center premium)", () => {
@@ -155,6 +156,23 @@ describe("priceMapOf", () => {
     // Before normalization C averaged ~$13 vs ~$8 at SG (a ~$5 gap); the
     // per-position offset closes it to a tight band.
     expect(spread).toBeLessThanOrEqual(2);
+  });
+
+  it("lets a budget team field at least 2 stars on every difficulty", () => {
+    // Roster math: an 8-man team can pair its two priciest stars with six $5
+    // fillers, so the cheapest "2 stars" roster costs (s1 + s2) + 6·PRICE_MIN.
+    // With the $35 ceiling this must fit even the Hard cap — the property the
+    // pricing is tuned for. STAR = $20 (top ~8% of the pool).
+    const STAR = 20;
+    const map = priceMapOf(snapshot);
+    const starPrices = [...map.values()]
+      .filter((p) => p >= STAR)
+      .sort((a, b) => a - b);
+    expect(starPrices.length).toBeGreaterThanOrEqual(2);
+    const minTwoStarRoster = starPrices[0] + starPrices[1] + 6 * PRICE_MIN;
+    for (const cap of Object.values(BUDGET_CAP)) {
+      expect(minTwoStarRoster).toBeLessThanOrEqual(cap);
+    }
   });
 
   it("is monotonic in score *within* each position", () => {

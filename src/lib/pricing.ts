@@ -1,15 +1,20 @@
 /**
  * Budget Matchups pricing layer.
  *
- * Derives a $5–$50 salary-cap price for each player from their era-adjusted
+ * Derives a $5–$35 salary-cap price for each player from their era-adjusted
  * composite (playerScore), memoized per snapshot object (mirrors the
  * baselinesOf/playerMapOf pattern in snapshot-core.ts).
  *
  * Calibration:
- *   - Peak all-timers (Jordan, Wilt) → $50
+ *   - Peak all-timers (Jordan, Wilt) → $35; Hall-of-Fame tier → $30–$35
  *   - Replacement-level pool fillers → $5
  *   - Linear ramp between PRICE_LO_SCORE and PRICE_HI_SCORE, snapped to the
  *     nearest $5 so UI reads cleanly.
+ *
+ * Why $35 (not $50): with 8-man rosters and a $5 floor, two stars priced $T
+ * cost 2·T + 6·$5. A $35 ceiling keeps two top-tier stars affordable on every
+ * difficulty — two $20 stars fit the Hard $75 cap (2·20 + 30 = $70), two $35
+ * all-timers fit Normal $100 — so a budget team can always field a real core.
  */
 
 import { POSITIONS } from "./contracts";
@@ -20,15 +25,15 @@ import { engine } from "@/engine";
 /** Scores below this floor price at $5 (replacement level). */
 export const PRICE_LO_SCORE = 0.0;
 /**
- * Scores at or above this ceiling price at $50 (peak all-timer).
+ * Scores at or above this ceiling price at $35 (peak all-timer).
  * Calibrated so that the best players in the snapshot (Jordan ≈1.87,
- * Wilt ≈2.49 era-adjusted) are clamped to $50; anything above also caps at
- * $50 via the clamp in priceOf.
+ * Wilt ≈2.49 era-adjusted) are clamped to $35; anything above also caps at
+ * $35 via the clamp in priceOf.
  */
 export const PRICE_HI_SCORE = 1.8;
 
 export const PRICE_MIN = 5;
-export const PRICE_MAX = 50;
+export const PRICE_MAX = 35;
 export const PRICE_STEP = 5;
 
 /**
@@ -47,7 +52,7 @@ export function scoreOf(player: PlayerStatLine, baselines: EraBaselines): number
 /**
  * Map a composite score to a snapped $5 tier via the global price ramp.
  * Linear between the floor and ceiling, clamped so anything at/above
- * PRICE_HI_SCORE lands at $50, then snapped to the nearest $5.
+ * PRICE_HI_SCORE lands at $35, then snapped to the nearest $5.
  */
 export function priceFromScore(score: number): number {
   const t = Math.min(1, Math.max(0, (score - PRICE_LO_SCORE) / (PRICE_HI_SCORE - PRICE_LO_SCORE)));
@@ -77,7 +82,7 @@ export function priceOf(
  * Subtracting it before the ramp equalizes the *average* price across the five
  * starting slots, removing the structural center premium (centers averaged
  * ~$13 vs ~$8–10 elsewhere) while preserving merit *within* a position: elite
- * bigs still clamp to $50, replacement-level players still floor at $5.
+ * bigs still clamp to $35, replacement-level players still floor at $5.
  */
 export function positionPriceOffsets(
   players: Map<string, PlayerStatLine>,
