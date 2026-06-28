@@ -6,7 +6,6 @@ import { useTranslations } from "next-intl";
 import { AnimatePresence, motion } from "framer-motion";
 import { RefreshCcw, RotateCcw } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Progress } from "@/components/ui/progress";
 import { Skeleton } from "@/components/ui/skeleton";
 import { DECADES, DRAFT_ROUNDS } from "@/lib/contracts";
 import { cn } from "@/lib/utils";
@@ -210,11 +209,6 @@ export function PlayScreen() {
             )}
             <SoundToggle className="size-7 border-transparent bg-transparent backdrop-blur-none" />
           </div>
-          <Progress
-            value={(state.picks.length / rounds) * 100}
-            className="mt-1 w-28"
-            aria-label={t("progressAria")}
-          />
         </div>
         <div className="flex shrink-0 items-center gap-1.5">
           <Button

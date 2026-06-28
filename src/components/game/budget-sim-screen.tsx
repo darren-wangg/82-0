@@ -298,8 +298,12 @@ export function BudgetSimScreen() {
         snapshotVersion={state.snapshotVersion}
       />
 
-      {/* budget footer: spend summary + famous-team challenge flow */}
-      <div className="sticky bottom-0 mt-6 flex flex-col gap-3 bg-gradient-to-t from-background via-background/95 to-transparent pt-4 pb-[max(1rem,env(safe-area-inset-bottom))]">
+      {/* budget footer: spend summary + famous-team challenge flow.
+          Solid surface so the spend line, name field, and CTAs stay readable
+          over the scrolling reveal; a thin fade strip above the top edge keeps
+          the reveal dissolving in gracefully instead of meeting a hard line. */}
+      <div className="sticky bottom-0 mt-6 flex flex-col gap-3 border-t border-border/60 bg-background pt-4 pb-[max(1rem,env(safe-area-inset-bottom))]">
+        <div className="pointer-events-none absolute inset-x-0 bottom-full h-8 bg-gradient-to-t from-background to-transparent" />
         {totalSpend > 0 && (
           <p className="text-center text-xs text-muted-foreground">
             {t("totalSpend", {

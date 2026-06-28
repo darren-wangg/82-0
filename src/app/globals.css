@@ -135,6 +135,32 @@
       background-position: 100% 50%;
     }
   }
+
+  /* Gentle ambient drift for decorative background glows — gives the court a
+     subtle sense of life without distracting from gameplay. Two speeds so
+     stacked blobs don't move in lockstep. Apply to the *inner* glow element so
+     the transform here doesn't fight any centering transform on a wrapper. */
+  --animate-float: float 11s ease-in-out infinite;
+  --animate-float-slow: float 17s ease-in-out infinite;
+  @keyframes float {
+    0%,
+    100% {
+      transform: translate3d(0, 0, 0) scale(1);
+    }
+    50% {
+      transform: translate3d(0, -20px, 0) scale(1.07);
+    }
+  }
+}
+
+/* Honor reduced-motion: every decorative loop above is purely cosmetic, so
+   switch them all off rather than letting them run. */
+@media (prefers-reduced-motion: reduce) {
+  .animate-gradient-x,
+  .animate-float,
+  .animate-float-slow {
+    animation: none !important;
+  }
 }
 
 @layer base {

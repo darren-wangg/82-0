@@ -27,21 +27,21 @@ const NAV_TILES = [
     labelKey: "leaderboard",
     icon: Trophy,
     iconClass: "text-amber-300",
-    glow: "hover:border-amber-400/50 hover:shadow-amber-400/20",
+    glow: "hover:border-amber-400/50 hover:shadow-amber-400/20 hover:bg-amber-400/[0.07]",
   },
   {
     href: "/l",
     labelKey: "lobbies",
     icon: UsersRound,
     iconClass: "text-sky-300",
-    glow: "hover:border-sky-400/50 hover:shadow-sky-400/20",
+    glow: "hover:border-sky-400/50 hover:shadow-sky-400/20 hover:bg-sky-400/[0.07]",
   },
   {
     href: "/teams",
     labelKey: "myTeams",
     icon: Shirt,
     iconClass: "text-emerald-300",
-    glow: "hover:border-emerald-400/50 hover:shadow-emerald-400/20",
+    glow: "hover:border-emerald-400/50 hover:shadow-emerald-400/20 hover:bg-emerald-400/[0.07]",
   },
 ] as const;
 
@@ -61,14 +61,21 @@ export default async function Home() {
   const feedbackUrl = process.env.NEXT_PUBLIC_FEEDBACK_URL;
   return (
     <div className="dark relative flex min-h-dvh flex-1 flex-col overflow-hidden bg-background text-foreground">
-      {/* ambient court glow — pure CSS, decorative only */}
+      {/* ambient court glow — pure CSS, decorative only; the blobs drift slowly
+          (disabled under prefers-reduced-motion) for a subtle living backdrop */}
       <div
         aria-hidden
-        className="pointer-events-none absolute -top-32 left-1/2 size-96 -translate-x-1/2 rounded-full bg-primary/15 blur-3xl"
+        className="pointer-events-none absolute -top-32 left-1/2 -translate-x-1/2"
+      >
+        <div className="size-96 animate-float rounded-full bg-primary/15 blur-3xl" />
+      </div>
+      <div
+        aria-hidden
+        className="pointer-events-none absolute -bottom-40 -left-24 size-80 animate-float-slow rounded-full bg-violet-500/10 blur-3xl"
       />
       <div
         aria-hidden
-        className="pointer-events-none absolute -bottom-40 -left-24 size-80 rounded-full bg-violet-500/10 blur-3xl"
+        className="pointer-events-none absolute top-1/3 -right-28 size-72 animate-float rounded-full bg-sky-500/10 blur-3xl"
       />
       <main className="relative mx-auto flex w-full max-w-md flex-1 flex-col items-center justify-center gap-8 px-6 pt-16 pb-10">
         <div className="absolute right-5 top-[max(1rem,env(safe-area-inset-top))] z-10">
