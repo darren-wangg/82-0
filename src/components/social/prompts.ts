@@ -16,7 +16,7 @@ import {
 } from "@/lib/contracts";
 import { displayCatValue } from "@/lib/cat-display";
 
-export const PROMPT_VERSION = "v11";
+export const PROMPT_VERSION = "v12";
 /** Cheapest tier — explanations are short, structured-input blurbs. */
 export const EXPLAIN_MODEL = "claude-haiku-4-5-20251001";
 
@@ -45,7 +45,9 @@ export interface MatchupExplainPayload {
   result: MatchupResult;
 }
 
-const SYSTEM_PROMPT =
+// Shared persona + grounding rules. The length cap is appended per-kind so
+// matchup recaps can run a touch longer than the one-liner team takes.
+const SYSTEM_CORE =
   "You are Coach Buckets — a washed ex-journeyman turned loudmouth podcast " +
   "analyst covering a fantasy game where people draft all-time NBA " +
   "rosters that get simulated. Your takes are SHORT, funny, and ruthless. " +
@@ -64,14 +66,24 @@ const SYSTEM_PROMPT =
   "AND baselined to a title contender, so ~0 is normal ball security for a " +
   "star roster — only call out turnovers when the number is clearly negative, " +
   "never treat a slightly-below-zero tov as a flaw. Never invent stats. Plain " +
-  "text only, no markdown, no " +
-  "headings, no bullet points. Hard limit: ONE punchy sentence (two only if " +
-  "the second is just as short), ~30 words max, no exceptions — like a bar, " +
-  "not a paragraph: no filler, no warm-up, no stacked clauses. Get in, land " +
-  "the take, get out.";
+  "text only, no markdown, no headings, no bullet points. ";
+
+// Team takes: one-liner.
+const TEAM_LENGTH =
+  "Hard limit: ONE punchy sentence (two only if the second is just as short), " +
+  "~30 words max, no exceptions — like a bar, not a paragraph: no filler, no " +
+  "warm-up, no stacked clauses. Get in, land the take, get out.";
+
+// Matchup recaps: a touch longer so there's room to call the result and the
+// edge (or two) that decided it — but still a hot take, not a paragraph.
+const MATCHUP_LENGTH =
+  "Hard limit: two or three short sentences, ~60 words max, no exceptions — " +
+  "call the result, then the edge (or the couple of edges) that decided it. " +
+  "Still a bar, not a paragraph: no filler, no warm-up, no box-score readout. " +
+  "Land the take and get out.";
 
 export function buildTeamSystemPrompt(): string {
-  return SYSTEM_PROMPT;
+  return SYSTEM_CORE + TEAM_LENGTH;
 }
 
 export function buildTeamPrompt(payload: TeamExplainPayload): string {
@@ -112,7 +124,7 @@ export function buildTeamPrompt(payload: TeamExplainPayload): string {
 }
 
 export function buildMatchupSystemPrompt(): string {
-  return SYSTEM_PROMPT;
+  return SYSTEM_CORE + MATCHUP_LENGTH;
 }
 
 export function buildMatchupPrompt(payload: MatchupExplainPayload): string {
@@ -129,8 +141,8 @@ export function buildMatchupPrompt(payload: MatchupExplainPayload): string {
     .join("\n");
 
   return [
-    `Recap this simulated best-of-7 in ONE short sentence (two only if both are tiny).`,
-    `Who got cooked (or how close it was), and the edge that decided it — nothing else.`,
+    `Recap this simulated best-of-7 in two or three short sentences.`,
+    `Who got cooked (or how close it was), and the edge — or the couple of edges — that decided it. Keep it punchy, no box-score readout.`,
     ``,
     `Matchup: "${teamA.teamName}" (OVR ${teamA.rating.ovr.toFixed(1)}) vs "${teamB.teamName}" (OVR ${teamB.rating.ovr.toFixed(1)})`,
     `Winner: "${winner}" over "${loser}", series ${result.seriesScore[0]}-${result.seriesScore[1]} (score is teamA-teamB)`,

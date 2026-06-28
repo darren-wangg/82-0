@@ -38,7 +38,7 @@ import { DownloadCardButton } from "@/components/social/download-card";
 import { analyzeCost } from "./cost-analysis";
 import { Confetti } from "./confetti";
 import { toRoster } from "./draft-state";
-import { freshSeed, useGame } from "./game-provider";
+import { useGame } from "./game-provider";
 import { saveLocalTeam } from "./local-teams";
 import { usePhaseGuard } from "./use-phase-guard";
 import { COUNT_UP_SECONDS, TeamRevealBody } from "./team-reveal";
@@ -71,7 +71,7 @@ function SimSkeleton() {
 export function BudgetSimScreen() {
   const t = useTranslations("budget");
   const tSim = useTranslations("sim");
-  const { state, dispatch, ctx, players } = useGame();
+  const { state, ctx, players } = useGame();
   const allowed = usePhaseGuard(["locked"]);
   const router = useRouter();
   const reducedMotion = useReducedMotion();
@@ -350,7 +350,20 @@ export function BudgetSimScreen() {
           className="h-12 w-full rounded-2xl text-sm font-bold"
           disabled={saving}
           onClick={() => {
-            dispatch({ type: "NEW_GAME", seed: freshSeed() });
+            // Back to the difficulty selector for a fresh run. We clear the
+            // persisted budget game instead of dispatching NEW_GAME here: a
+            // reset flips the phase to "draft", and this screen's phase guard
+            // ("locked") would then race us to /budget/play at the default $100
+            // cap before our push to the selector lands. Clearing storage lets
+            // the next /budget/play mount start a brand-new draft at the cap the
+            // user re-picks.
+            try {
+              if (ctx.mode?.storageKey) {
+                window.localStorage.removeItem(ctx.mode.storageKey);
+              }
+            } catch {
+              // storage unavailable — a fresh game is still created on mount
+            }
             router.push("/budget");
           }}
         >

@@ -44,7 +44,9 @@ export function EdgeBars({
               <div
                 className={cn(
                   "absolute inset-y-0 rounded-full",
-                  e.edge >= 0 ? "right-1/2 bg-sky-500" : "left-1/2 bg-orange-500"
+                  // Green when the edge favors team A (advantage), red when it
+                  // favors team B (disadvantage).
+                  e.edge >= 0 ? "right-1/2 bg-emerald-500" : "left-1/2 bg-red-500"
                 )}
                 style={{ width: `${half}%` }}
               />

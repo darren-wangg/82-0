@@ -50,6 +50,18 @@ export function BudgetChallengeScreen() {
     return map;
   }, []);
 
+  // Strongest opponents first. Teams whose OVR couldn't be computed (snapshot
+  // race) sort last but keep their authored order.
+  const orderedTeams = useMemo(() => {
+    return [...FAMOUS_TEAMS].sort((a, b) => {
+      const oa = ovrBySlug.get(a.slug);
+      const ob = ovrBySlug.get(b.slug);
+      if (oa === undefined) return ob === undefined ? 0 : 1;
+      if (ob === undefined) return -1;
+      return ob - oa;
+    });
+  }, [ovrBySlug]);
+
   const challenge = async (opponent: FamousTeam) => {
     if (pending || !teamSlug) return;
     setError(null);
@@ -99,7 +111,7 @@ export function BudgetChallengeScreen() {
       )}
 
       <ul className="flex flex-1 flex-col gap-2 overflow-y-auto overscroll-contain pb-4">
-        {FAMOUS_TEAMS.map((team) => {
+        {orderedTeams.map((team) => {
           const ovr = ovrBySlug.get(team.slug);
           const loading = pending === team.slug;
           return (
