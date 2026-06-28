@@ -16,7 +16,7 @@ import {
 } from "@/lib/contracts";
 import { displayCatValue } from "@/lib/cat-display";
 
-export const PROMPT_VERSION = "v12";
+export const PROMPT_VERSION = "v13";
 /** Cheapest tier — explanations are short, structured-input blurbs. */
 export const EXPLAIN_MODEL = "claude-haiku-4-5-20251001";
 
@@ -37,6 +37,10 @@ export interface TeamExplainPayload {
   players: { name: string; era: string; position: string; bench: boolean }[];
   rating: TeamRating;
   season: SeasonResult;
+  /** Coarse, accumulated tendencies of a returning drafter (client-derived).
+   *  Optional; part of the payload so it's folded into the content hash — but
+   *  bucketed enough that many drafters share one descriptor (cache stays warm). */
+  drafterProfile?: string;
 }
 
 export interface MatchupExplainPayload {
@@ -87,7 +91,7 @@ export function buildTeamSystemPrompt(): string {
 }
 
 export function buildTeamPrompt(payload: TeamExplainPayload): string {
-  const { teamName, players, rating, season } = payload;
+  const { teamName, players, rating, season, drafterProfile } = payload;
   const starters = players.filter((p) => !p.bench);
   const bench = players.filter((p) => p.bench);
   const cats = (Object.entries(rating.catProfile) as [NineCat, number][])
@@ -120,6 +124,15 @@ export function buildTeamPrompt(payload: TeamExplainPayload): string {
       ? [`Bench: ${bench.map((p) => `${p.name} (${p.position}, ${p.era})`).join("; ")}`]
       : []),
     `Category profile (era-adjusted, higher is better): ${cats}`,
+    // Returning-drafter personalization: if present, the model gets ONE optional
+    // nod — never a second sentence, never forced — so the take quietly adapts
+    // over time without breaking the one-liner length cap.
+    ...(drafterProfile
+      ? [
+          ``,
+          `This drafter's pattern across past drafts: ${drafterProfile}. If it fits naturally, land ONE quick knowing nod to that pattern inside your take — don't force it, don't add a sentence for it, don't list it out.`,
+        ]
+      : []),
   ].join("\n");
 }
 

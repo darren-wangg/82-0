@@ -61,6 +61,10 @@ const DraftExplainSchema = z.object({
     bench: z.array(z.string()).min(0).max(5),
   }),
   snapshotVersion: z.string(),
+  // Optional coarse "drafter profile" blurb (client-derived from past drafts).
+  // Bounded so it can't bloat the prompt; folded into the explanation hash via
+  // the payload so distinct profiles get distinct cache entries.
+  playerProfile: z.string().max(200).optional(),
 });
 
 /** In-flight generations by content hash (per instance): concurrent first
@@ -71,7 +75,8 @@ const inFlight = new Map<string, Promise<string>>();
 function payloadFromRoster(
   teamName: string,
   roster: Roster,
-  rating: TeamRating
+  rating: TeamRating,
+  drafterProfile?: string
 ): TeamExplainPayload {
   const season = getEngine().projectSeason(rating);
   const players = getPlayerMap();
@@ -91,6 +96,7 @@ function payloadFromRoster(
     ],
     rating,
     season,
+    ...(drafterProfile ? { drafterProfile } : {}),
   };
 }
 
@@ -154,8 +160,14 @@ export async function POST(request: Request) {
       const rating = getEngine().teamRating(roster, players, getBaselines());
       kind = "team";
       // Constant name: identical rosters share one cache entry; the saved
-      // variant hashes the real team name instead.
-      const teamPayload = payloadFromRoster("This draft", roster, rating);
+      // variant hashes the real team name instead. The coarse drafter profile
+      // (when sent) further partitions the cache, but only into a few buckets.
+      const teamPayload = payloadFromRoster(
+        "This draft",
+        roster,
+        rating,
+        draftReq.playerProfile
+      );
       payload = teamPayload;
       system = buildTeamSystemPrompt();
       prompt = buildTeamPrompt(teamPayload);

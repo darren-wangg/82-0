@@ -12,6 +12,7 @@ import { useFormatter, useTranslations } from "next-intl";
 import { animate, motion, useReducedMotion } from "framer-motion";
 import { TriangleAlert } from "lucide-react";
 import { Card } from "@/components/ui/card";
+import { Skeleton } from "@/components/ui/skeleton";
 import {
   NINE_CATS,
   OVR_MAX,
@@ -29,6 +30,13 @@ import { haptic } from "@/lib/haptics";
 import { CatProfileInfo } from "@/components/social/cat-profile-info";
 import { ExplainStream } from "@/components/social/explain-stream";
 import type { CostAnalysis } from "./cost-analysis";
+import {
+  avgEraYear,
+  describeProfile,
+  draftKey,
+  readProfile,
+  recordDraft,
+} from "./draft-memory";
 import { type BenchSlotDef } from "./draft-state";
 import { CAT_LABELS, ONE_DECIMAL } from "./format";
 import { PlayerHeadshot } from "./player-headshot";
@@ -400,6 +408,27 @@ export function TeamRevealBody({
   const t = useTranslations("sim");
   const catT = useTranslations("cats");
   const format = useFormatter();
+
+  // Drafter memory: read the blurb from PRIOR drafts first (so this draft never
+  // personalizes its own summary), then fold this draft in for next time.
+  // undefined = not yet resolved (client-only read); null = no blurb yet.
+  const [profileBlurb, setProfileBlurb] = useState<string | null | undefined>(
+    undefined
+  );
+  useEffect(() => {
+    const blurb = describeProfile(readProfile());
+    recordDraft({
+      key: draftKey(roster),
+      wins: season.wins,
+      off: rating.offRating,
+      def: rating.defRating,
+      avgYear: avgEraYear(roster, players),
+      catProfile: rating.catProfile,
+    });
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- client-only read of localStorage, resolved once per draft
+    setProfileBlurb(blurb);
+  }, [roster, season, rating, players]);
+
   return (
     <>
       {/* final record */}
@@ -528,13 +557,24 @@ export function TeamRevealBody({
           <p className="font-arcade text-[9px] text-muted-foreground uppercase">
             {t("scoutingReport")}
           </p>
-          <ExplainStream
-            request={{
-              kind: "draft",
-              roster,
-              snapshotVersion,
-            }}
-          />
+          {/* Hold the AI request until the drafter blurb resolves, so we don't
+              fire one explanation without it then a second one with it. */}
+          {profileBlurb !== undefined ? (
+            <ExplainStream
+              request={{
+                kind: "draft",
+                roster,
+                snapshotVersion,
+                ...(profileBlurb ? { playerProfile: profileBlurb } : {}),
+              }}
+            />
+          ) : (
+            <div className="space-y-2" aria-busy>
+              <Skeleton className="h-3 w-full" />
+              <Skeleton className="h-3 w-11/12" />
+              <Skeleton className="h-3 w-4/5" />
+            </div>
+          )}
         </Card>
       </motion.div>
     </>

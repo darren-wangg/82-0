@@ -13,7 +13,15 @@ import { Skeleton } from "@/components/ui/skeleton";
 
 type Status = "loading" | "streaming" | "done" | "unavailable" | "error";
 
-export function ExplainStream({ request }: { request: ExplainRequest }) {
+/** A draft request may carry an optional coarse drafter-profile hint. It rides
+ *  the route-local draft schema (not the frozen contract), so it's widened here
+ *  rather than in ExplainRequest. */
+type DraftExplainRequest = Extract<ExplainRequest, { kind: "draft" }> & {
+  playerProfile?: string;
+};
+type ExplainStreamRequest = ExplainRequest | DraftExplainRequest;
+
+export function ExplainStream({ request }: { request: ExplainStreamRequest }) {
   const requestKey = JSON.stringify(request);
   const [text, setText] = useState("");
   const [status, setStatus] = useState<Status>("loading");
