@@ -42,7 +42,7 @@ export async function generateMetadata({
     if (!m) return { title: "Matchup not found" };
     return {
       title: `${m.teamA.teamName} vs ${m.teamB.teamName}`,
-      description: `Best-of-7 simulation: ${m.result.seriesScore[0]}–${m.result.seriesScore[1]}.`,
+      description: `Best-of-7: ${m.result.seriesScore[0]}–${m.result.seriesScore[1]}.`,
     };
   } catch {
     return { title: "Matchup" };
@@ -80,7 +80,7 @@ export default async function MatchupPage({ params }: PageProps<"/m/[id]">) {
     <main className="space-y-5">
       <div className="text-center">
         <p className="text-xs font-semibold tracking-widest text-primary uppercase">
-          Best-of-7 simulation
+          Best-of-7
         </p>
         <h1 className="sr-only">
           {teamA.teamName} vs {teamB.teamName}
