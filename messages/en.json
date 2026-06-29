@@ -179,9 +179,9 @@
       "hard": "Hard"
     },
     "difficultyHint": {
-      "easy": "$130 cap — like you're the Lakers",
-      "normal": "$100 cap — balanced",
-      "hard": "$75 cap — elite GMs only"
+      "easy": "wtf is an apron?",
+      "normal": "balanced",
+      "hard": "elite GMs only"
     },
     "howPricing": "Prices reflect each player's era-adjusted performance ($5–$35).",
     "budgetLabel": "Budget",
