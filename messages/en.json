@@ -171,7 +171,7 @@
   "budget": {
     "title": "Budget Draft",
     "subtitle": "Draft under a salary cap",
-    "intro": "Pick a difficulty, draft 6 players, then challenge historic teams head-to-head.",
+    "intro": "Pick a difficulty, draft your roster, then challenge historic teams head-to-head.",
     "backHome": "Back to home",
     "difficulty": {
       "easy": "Easy",
@@ -194,7 +194,9 @@
     "viewLeaderboard": "Budget Leaderboard",
     "allDifficulties": "All",
     "backToSummary": "Back to summary",
-    "nameOptionalPlaceholder": "Name your team (optional)"
+    "nameOptionalPlaceholder": "Name your team (optional)",
+    "rosterSize": "Roster",
+    "rosterSizeN": "{n}-man"
   },
   "sound": {
     "mute": "Mute sound",

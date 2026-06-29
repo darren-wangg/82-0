@@ -171,7 +171,7 @@
   "budget": {
     "title": "バジェットドラフト",
     "subtitle": "サラリーキャップ内でドラフト",
-    "intro": "難易度を選び、サラリーキャップ内で6人をドラフトして、歴史的な名チームに挑戦しよう。",
+    "intro": "難易度を選び、ロスターを編成して、歴史的なチームと直接対決しよう。",
     "backHome": "ホームに戻る",
     "difficulty": {
       "easy": "かんたん",
@@ -194,7 +194,9 @@
     "viewLeaderboard": "バジェットリーダーボード",
     "allDifficulties": "すべて",
     "backToSummary": "サマリーに戻る",
-    "nameOptionalPlaceholder": "チーム名（任意）"
+    "nameOptionalPlaceholder": "チーム名（任意）",
+    "rosterSize": "ロスター",
+    "rosterSizeN": "{n}人"
   },
   "sound": {
     "mute": "ミュート",

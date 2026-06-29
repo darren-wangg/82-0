@@ -77,6 +77,14 @@ const BUDGET_BENCH: BenchSlotDef[] = [
   { key: "B6", label: "6th", accepts: [...POSITIONS] },
 ];
 
+/** Budget 8-man: three flexible bench slots (5 starters + 3 bench), keeping the
+ *  "spend anywhere" feel of the 6-man bench at the larger size. */
+const BUDGET8_BENCH: BenchSlotDef[] = [
+  { key: "B6", label: "6th", accepts: [...POSITIONS] },
+  { key: "B7", label: "7th", accepts: [...POSITIONS] },
+  { key: "B8", label: "8th", accepts: [...POSITIONS] },
+];
+
 /** 10-man: a strict positional bench (a second of each position). */
 const TEN_BENCH: BenchSlotDef[] = [
   { key: "bPG", label: "PG", accepts: ["PG"] },
@@ -146,11 +154,30 @@ export const BUDGET_MODE: GameMode = {
   simPath: "/budget/sim",
 };
 
+/**
+ * Budget 8-man: same /budget/* routes as the 6-man budget mode (the active mode
+ * is chosen by the budget-size cookie in the (budget) layout), but an 8-man
+ * roster with its own storage key so the two sizes never clobber each other.
+ */
+export const BUDGET8_MODE: GameMode = {
+  id: "budget8",
+  label: "Budget 8",
+  draftRounds: 8,
+  teamSkips: TEAM_SKIPS_PER_GAME,
+  eraSkips: ERA_SKIPS_PER_GAME,
+  benchSlots: BUDGET8_BENCH,
+  allSlots: [...POSITIONS, ...BUDGET8_BENCH.map((b) => b.key)],
+  storageKey: "eighty-two-zero/budget8/v1",
+  playPath: "/budget/play",
+  simPath: "/budget/sim",
+};
+
 export const MODES: Record<string, GameMode> = {
   [CLASSIC_MODE.id]: CLASSIC_MODE,
   [TEN_MODE.id]: TEN_MODE,
   [FIVE_MODE.id]: FIVE_MODE,
   [BUDGET_MODE.id]: BUDGET_MODE,
+  [BUDGET8_MODE.id]: BUDGET8_MODE,
 };
 
 /** Bench-slot defs across every mode, keyed by their (globally unique) key. */

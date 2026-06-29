@@ -14,7 +14,7 @@ import {
   type ReactNode,
 } from "react";
 import type { BudgetDifficulty } from "@/lib/budget";
-import { BUDGET_CAP } from "@/lib/budget";
+import { budgetCap, DEFAULT_BUDGET_SIZE } from "@/lib/budget";
 
 export interface BudgetContextValue {
   /** Salary cap for this game (e.g. 100 for Normal). */
@@ -36,13 +36,16 @@ export function BudgetProvider({
   difficulty,
   priceMap,
   spent,
+  size = DEFAULT_BUDGET_SIZE,
 }: {
   children: ReactNode;
   difficulty: BudgetDifficulty;
   priceMap: Map<string, number> | null;
   spent: number;
+  /** Roster size (6 or 8) — scales the cap. */
+  size?: number;
 }) {
-  const cap = BUDGET_CAP[difficulty];
+  const cap = budgetCap(size, difficulty);
   return (
     <BudgetContext.Provider
       value={{ cap, difficulty, priceMap, spent, remaining: cap - spent }}

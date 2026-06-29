@@ -171,7 +171,7 @@
   "budget": {
     "title": "Budget Draft",
     "subtitle": "Unter dem Gehaltsdeckel draften",
-    "intro": "Wähle eine Schwierigkeit, drafe 6 Spieler unter der Gehaltsgrenze und fordere eines der besten Teams der Geschichte heraus.",
+    "intro": "Wähle einen Schwierigkeitsgrad, stelle deinen Kader zusammen und fordere historische Teams direkt heraus.",
     "backHome": "Zurück zur Startseite",
     "difficulty": {
       "easy": "Einfach",
@@ -194,7 +194,9 @@
     "viewLeaderboard": "Budget-Bestenliste",
     "allDifficulties": "Alle",
     "backToSummary": "Zurück zur Übersicht",
-    "nameOptionalPlaceholder": "Benenne dein Team (optional)"
+    "nameOptionalPlaceholder": "Benenne dein Team (optional)",
+    "rosterSize": "Kader",
+    "rosterSizeN": "{n} Spieler"
   },
   "sound": {
     "mute": "Ton aus",

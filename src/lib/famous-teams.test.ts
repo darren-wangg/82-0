@@ -10,7 +10,12 @@
 import { describe, it, expect } from "vitest";
 import { POSITIONS } from "@/lib/contracts";
 import { getPlayerMap, getSnapshot } from "./snapshot";
-import { FAMOUS_TEAMS } from "./famous-teams";
+import {
+  BENCH8_ADDITIONS,
+  famousRosterForSize,
+  famousSlugForSize,
+  FAMOUS_TEAMS,
+} from "./famous-teams";
 
 const snapshot = getSnapshot();
 const players = getPlayerMap(snapshot);
@@ -65,6 +70,31 @@ describe("FAMOUS_TEAMS", () => {
         expect(team.era.length).toBeGreaterThan(0);
         expect(team.blurb.length).toBeGreaterThan(0);
       });
+
+      it("has two 8-man bench additions, all valid and distinct", () => {
+        const extra = BENCH8_ADDITIONS[team.slug];
+        expect(extra, `no 8-man additions for ${team.slug}`).toBeDefined();
+        expect(extra).toHaveLength(2);
+        for (const id of extra) {
+          expect(players.has(id), `Player "${id}" not in snapshot`).toBe(true);
+        }
+        // No overlap with the 6-man roster, and the two additions differ.
+        const eight = famousRosterForSize(team, 8);
+        const ids = [...Object.values(eight.starters), ...eight.bench];
+        expect(new Set(ids).size).toBe(ids.length);
+        expect(ids).toHaveLength(8);
+      });
     });
   }
+
+  it("famousRosterForSize returns 6-man as-is and 8-man padded", () => {
+    const t = FAMOUS_TEAMS[0];
+    expect(famousRosterForSize(t, 6).bench).toHaveLength(1);
+    expect(famousRosterForSize(t, 8).bench).toHaveLength(3);
+  });
+
+  it("famousSlugForSize suffixes only the 8-man slug", () => {
+    expect(famousSlugForSize("famous-96-bulls", 6)).toBe("famous-96-bulls");
+    expect(famousSlugForSize("famous-96-bulls", 8)).toBe("famous-96-bulls-8");
+  });
 });

@@ -171,7 +171,7 @@
   "budget": {
     "title": "Draft Budget",
     "subtitle": "Dratta sotto il tetto salariale",
-    "intro": "Scegli una difficoltà, dratta 6 giocatori entro il tetto salariale, poi sfida una delle migliori squadre della storia.",
+    "intro": "Scegli una difficoltà, costruisci la tua rosa e sfida squadre storiche testa a testa.",
     "backHome": "Torna alla home",
     "difficulty": {
       "easy": "Facile",
@@ -194,7 +194,9 @@
     "viewLeaderboard": "Classifica Budget",
     "allDifficulties": "Tutte",
     "backToSummary": "Torna al riepilogo",
-    "nameOptionalPlaceholder": "Dai un nome alla squadra (facoltativo)"
+    "nameOptionalPlaceholder": "Dai un nome alla squadra (facoltativo)",
+    "rosterSize": "Rosa",
+    "rosterSizeN": "{n} giocatori"
   },
   "sound": {
     "mute": "Disattiva audio",

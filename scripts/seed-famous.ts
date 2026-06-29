@@ -18,9 +18,14 @@ import "dotenv/config";
 
 import { PrismaPg } from "@prisma/adapter-pg";
 import { PrismaClient } from "../src/generated/prisma/client";
+import type { Roster } from "../src/lib/contracts";
 import { getEngine } from "../src/lib/engine-provider";
 import { getBaselines, getPlayerMap, getSnapshot } from "../src/lib/snapshot";
-import { FAMOUS_TEAMS } from "../src/lib/famous-teams";
+import {
+  famousRosterForSize,
+  famousSlugForSize,
+  FAMOUS_TEAMS,
+} from "../src/lib/famous-teams";
 
 async function main() {
   const url = process.env.DATABASE_URL;
@@ -36,61 +41,65 @@ async function main() {
   const baselines = getBaselines(snapshot);
   const engine = getEngine();
 
-  console.log(`Seeding ${FAMOUS_TEAMS.length} famous teams…`);
+  // Each famous team is seeded at BOTH budget sizes: the 6-man roster under its
+  // base slug and the 8-man (5+3) roster under "<slug>-8", so a budget team of
+  // either size faces a size-matched opponent.
+  console.log(`Seeding ${FAMOUS_TEAMS.length} famous teams × 2 sizes…`);
 
-  for (const ft of FAMOUS_TEAMS) {
-    // Validate all player IDs exist in the current snapshot.
-    const allIds = [...Object.values(ft.roster.starters), ...ft.roster.bench];
+  const upsertPreset = async (
+    slug: string,
+    name: string,
+    era: string,
+    roster: Roster
+  ) => {
+    const allIds = [...Object.values(roster.starters), ...roster.bench];
     for (const id of allIds) {
       if (!players.has(id)) {
-        throw new Error(`Famous team ${ft.slug}: unknown player id "${id}"`);
+        throw new Error(`Famous team ${slug}: unknown player id "${id}"`);
       }
     }
 
     // Re-run the engine server-side (server authoritative).
-    const rating = engine.teamRating(ft.roster, players, baselines);
+    const rating = engine.teamRating(roster, players, baselines);
     const season = engine.projectSeason(rating);
-    // Famous teams are 6-man (5 starters + 1 bench), matching budget rosters.
-    const teamSize = 5 + ft.roster.bench.length;
+    const teamSize = 5 + roster.bench.length;
+
+    const fields = {
+      teamName: name,
+      ownerName: era,
+      roster: roster as object,
+      snapshotVersion: snapshot.version,
+      teamSize,
+      ovr: rating.ovr,
+      offRating: rating.offRating,
+      defRating: rating.defRating,
+      catProfile: rating.catProfile as object,
+      wins: season.wins,
+      losses: season.losses,
+      gatedCategory: season.gatedCategory,
+      isPreset: true,
+    };
 
     await prisma.team.upsert({
-      where: { slug: ft.slug },
-      create: {
-        slug: ft.slug,
-        teamName: ft.name,
-        ownerName: ft.era,
-        roster: ft.roster as object,
-        snapshotVersion: snapshot.version,
-        teamSize,
-        ovr: rating.ovr,
-        offRating: rating.offRating,
-        defRating: rating.defRating,
-        catProfile: rating.catProfile as object,
-        wins: season.wins,
-        losses: season.losses,
-        gatedCategory: season.gatedCategory,
-        isPreset: true,
-      },
-      update: {
-        teamName: ft.name,
-        ownerName: ft.era,
-        roster: ft.roster as object,
-        snapshotVersion: snapshot.version,
-        teamSize,
-        ovr: rating.ovr,
-        offRating: rating.offRating,
-        defRating: rating.defRating,
-        catProfile: rating.catProfile as object,
-        wins: season.wins,
-        losses: season.losses,
-        gatedCategory: season.gatedCategory,
-        isPreset: true,
-      },
+      where: { slug },
+      create: { slug, ...fields },
+      update: fields,
     });
 
     console.log(
-      `  ${ft.slug}: ${season.wins}-${season.losses} (OVR ${rating.ovr})`
+      `  ${slug}: ${season.wins}-${season.losses} (OVR ${rating.ovr}, ${teamSize}-man)`
     );
+  };
+
+  for (const ft of FAMOUS_TEAMS) {
+    for (const size of [6, 8] as const) {
+      await upsertPreset(
+        famousSlugForSize(ft.slug, size),
+        ft.name,
+        ft.era,
+        famousRosterForSize(ft, size)
+      );
+    }
   }
 
   console.log("Done.");

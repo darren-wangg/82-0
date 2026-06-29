@@ -7,15 +7,22 @@
 
 import type { Metadata } from "next";
 import Link from "next/link";
+import { cookies } from "next/headers";
 import { getTranslations } from "next-intl/server";
 import { ChevronLeft } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { BUDGET_CAP, BUDGET_DIFFICULTIES } from "@/lib/budget";
+import {
+  BUDGET_CAP,
+  BUDGET_DIFFICULTIES,
+  BUDGET_SIZE_COOKIE,
+  resolveBudgetSize,
+} from "@/lib/budget";
+import { BudgetSizeSwitch } from "@/components/budget-size-switch";
 
 export const metadata: Metadata = {
   title: "Budget Draft — 82-0",
   description:
-    "Draft a 6-man roster under a salary cap, then challenge a famous historical team.",
+    "Draft a roster under a salary cap, then challenge a famous historical team.",
 };
 
 const DIFFICULTY_STYLES = {
@@ -26,6 +33,10 @@ const DIFFICULTY_STYLES = {
 
 export default async function BudgetPage() {
   const t = await getTranslations("budget");
+  const size = resolveBudgetSize(
+    (await cookies()).get(BUDGET_SIZE_COOKIE)?.value
+  );
+  const caps = BUDGET_CAP[size];
 
   return (
     <div className="dark flex min-h-dvh flex-1 flex-col bg-background text-foreground">
@@ -46,7 +57,17 @@ export default async function BudgetPage() {
           </div>
         </div>
 
-        <p className="text-sm text-muted-foreground">{t("intro")}</p>
+        {/* Roster-size toggle (6 / 8), mirroring the home screen control. The
+            chosen size sets the caps below and the draft roster size. */}
+        <div className="flex items-center justify-between gap-3">
+          <p className="text-sm text-muted-foreground">{t("intro")}</p>
+          <div className="flex shrink-0 flex-col items-center gap-1">
+            <span className="font-arcade text-[8px] text-muted-foreground uppercase">
+              {t("rosterSize")}
+            </span>
+            <BudgetSizeSwitch value={size} />
+          </div>
+        </div>
 
         <div className="flex flex-col gap-3">
           {BUDGET_DIFFICULTIES.map((diff) => (
@@ -64,9 +85,7 @@ export default async function BudgetPage() {
                 </p>
                 <p className="text-xs opacity-70">{t(`difficultyHint.${diff}`)}</p>
               </div>
-              <span className="font-mono text-2xl font-bold">
-                ${BUDGET_CAP[diff]}
-              </span>
+              <span className="font-mono text-2xl font-bold">${caps[diff]}</span>
             </Link>
           ))}
         </div>

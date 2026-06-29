@@ -596,6 +596,69 @@ export const FAMOUS_TEAM_BY_SLUG = new Map(
 );
 
 /**
+ * Two extra bench players per team, used to fill a famous roster out to 8 men
+ * (5 starters + 3 bench) for the 8-player budget mode. Same dataset caveat as
+ * the 6-man set above: each id is a real member of that franchise in that era,
+ * picked for best-available stats — not a precise title-year box score.
+ *
+ * Keyed by the 6-man slug; the 8-man roster is `starters + bench + these`.
+ */
+export const BENCH8_ADDITIONS: Record<string, [string, string]> = {
+  "famous-96-bulls":    ["kerrst01-CHI-1990s", "wennibi01-CHI-1990s"], // Steve Kerr, Bill Wennington
+  "famous-86-celtics":  ["wedmasc01-BOS-1980s", "sichtje01-BOS-1980s"], // Scott Wedman, Jerry Sichting
+  "famous-87-lakers":   ["rambiku01-LAL-1980s", "thompmy01-LAL-1980s"], // Kurt Rambis, Mychal Thompson
+  "famous-00-lakers":   ["foxri01-LAL-2000s", "georgde01-LAL-2000s"],   // Rick Fox, Devean George
+  "famous-73-knicks":   ["jacksph01-NYK-1970s", "barnedi01-NYK-1970s"], // Phil Jackson, Dick Barnett
+  "famous-95-rockets":  ["eliema01-HOU-1990s", "brownch01-HOU-1990s"],  // Mario Elie, Chucky Brown
+  "famous-17-warriors": ["westda01-GSW-2010s", "looneke01-GSW-2010s"],  // David West, Kevon Looney
+  "famous-13-heat":     ["anderch01-MIA-2010s", "hasleud01-MIA-2010s"], // Chris Andersen, Udonis Haslem
+  "famous-05-spurs":    ["barrybr01-SAS-2000s", "mohamna01-SAS-2000s"], // Brent Barry, Nazr Mohammed
+  "famous-97-jazz":     ["andersh01-UTA-1990s", "eisleho01-UTA-1990s"], // Shandon Anderson, Howard Eisley
+  "famous-89-pistons":  ["sallejo01-DET-1980s", "mahorri01-DET-1980s"], // John Salley, Rick Mahorn
+  "famous-83-sixers":   ["jonesca01-PHI-1980s", "mixst01-PHI-1980s"],   // Caldwell Jones, Steve Mix
+  "famous-08-celtics":  ["battito01-BOS-2000s", "gomesry01-BOS-2000s"], // Tony Battie, Ryan Gomes
+  "famous-16-cavs":     ["mozgoti01-CLE-2010s", "varejan01-CLE-2010s"], // Timofey Mozgov, Anderson Varejão
+  "famous-14-spurs":    ["millspa02-SAS-2010s", "diawbo01-SAS-2010s"],  // Patty Mills, Boris Diaw
+  "famous-04-pistons":  ["okurme01-DET-2000s", "hunteli01-DET-2000s"],  // Mehmet Okur, Lindsey Hunter
+  "famous-12-thunder":  ["collini01-OKC-2010s", "jacksre01-OKC-2010s"], // Nick Collison, Reggie Jackson
+  "famous-23-nuggets":  ["braunch01-DEN-2020s", "greenje02-DEN-2020s"], // Christian Braun, Jeff Green
+  "famous-21-bucks":    ["connapa01-MIL-2020s", "forbebr01-MIL-2020s"], // Pat Connaughton, Bryn Forbes
+  "famous-93-suns":     ["aingeda01-PHX-1990s", "chambto01-PHX-1990s"], // Danny Ainge, Tom Chambers
+  "famous-72-lakers":   ["bayloel01-LAL-1970s", "garredi01-LAL-1970s"], // Elgin Baylor, Dick Garrett
+  "famous-99-spurs":    ["perduwi01-SAS-1990s", "delnevi01-SAS-1990s"], // Will Perdue, Vinny Del Negro
+  "famous-77-blazers":  ["steella01-POR-1970s", "nealll01-POR-1970s"],  // Larry Steele, Lloyd Neal
+  "famous-71-bucks":    ["allenlu01-MIL-1970s", "abdulza01-MIL-1970s"], // Lucius Allen, Zaid Abdul-Aziz
+  "famous-19-raptors":  ["valanjo01-TOR-2010s", "wrighde01-TOR-2010s"], // Jonas Valančiūnas, Delon Wright
+  "famous-11-mavericks":["cartevi01-DAL-2010s", "goodedr01-DAL-2010s"], // Vince Carter, Drew Gooden
+  "famous-24-celtics":  ["pritcpa01-BOS-2020s", "hausesa01-BOS-2020s"], // Payton Pritchard, Sam Hauser
+  "famous-06-heat":     ["jonesed02-MIA-2000s", "jonesda01-MIA-2000s"], // Eddie Jones, Damon Jones
+  "famous-67-sixers":   ["costela01-PHI-1960s", "guokama02-PHI-1960s"], // Larry Costello, Matt Guokas
+  "famous-65-celtics":  ["siegfla01-BOS-1960s", "ramsefr01-BOS-1960s"], // Larry Siegfried, Frank Ramsey
+  "famous-20-lakers":   ["kuzmaky01-LAL-2020s", "mcgeeja01-LAL-2020s"], // Kyle Kuzma, JaVale McGee
+};
+
+/** Suffix appended to a 6-man slug to address its 8-man preset row in the DB. */
+export const FAMOUS_8_SUFFIX = "-8";
+
+/** The DB slug for a famous team at a given budget size (6 → base, 8 → "-8"). */
+export function famousSlugForSize(slug: string, size: number): string {
+  return size === 8 ? `${slug}${FAMOUS_8_SUFFIX}` : slug;
+}
+
+/**
+ * The famous team's roster at a given budget size. Size 6 returns the curated
+ * 6-man roster as-is; size 8 appends the two BENCH8_ADDITIONS for a 5+3 lineup.
+ */
+export function famousRosterForSize(team: FamousTeam, size: number): Roster {
+  if (size !== 8) return team.roster;
+  const extra = BENCH8_ADDITIONS[team.slug] ?? [];
+  return {
+    starters: team.roster.starters,
+    bench: [...team.roster.bench, ...extra],
+  };
+}
+
+/**
  * The franchise behind a famous team (every preset is a single franchise×decade
  * composite). Parsed from a roster id (`{bbref}-{franchiseId}-{decade}`) so the
  * team logo can be looked up without an extra field on every entry.

@@ -158,20 +158,23 @@ describe("priceMapOf", () => {
     expect(spread).toBeLessThanOrEqual(2);
   });
 
-  it("lets a budget team field at least 2 stars on every difficulty", () => {
-    // Roster math: an 8-man team can pair its two priciest stars with six $5
-    // fillers, so the cheapest "2 stars" roster costs (s1 + s2) + 6·PRICE_MIN.
-    // With the $35 ceiling this must fit even the Hard cap — the property the
-    // pricing is tuned for. STAR = $20 (top ~8% of the pool).
+  it("lets a budget team field at least 2 stars on every size + difficulty", () => {
+    // Roster math: a team can pair its two priciest stars with (size-2) $5
+    // fillers, so the cheapest "2 stars" roster costs (s1 + s2) + (size-2)·
+    // PRICE_MIN. This must fit even the Hard cap at each size — the property the
+    // pricing + caps are tuned for. STAR = $20 (top ~8% of the pool).
     const STAR = 20;
     const map = priceMapOf(snapshot);
     const starPrices = [...map.values()]
       .filter((p) => p >= STAR)
       .sort((a, b) => a - b);
     expect(starPrices.length).toBeGreaterThanOrEqual(2);
-    const minTwoStarRoster = starPrices[0] + starPrices[1] + 6 * PRICE_MIN;
-    for (const cap of Object.values(BUDGET_CAP)) {
-      expect(minTwoStarRoster).toBeLessThanOrEqual(cap);
+    const twoStars = starPrices[0] + starPrices[1];
+    for (const [size, tiers] of Object.entries(BUDGET_CAP)) {
+      const minTwoStarRoster = twoStars + (Number(size) - 2) * PRICE_MIN;
+      for (const cap of Object.values(tiers)) {
+        expect(minTwoStarRoster).toBeLessThanOrEqual(cap);
+      }
     }
   });
 

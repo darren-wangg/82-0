@@ -22,7 +22,12 @@ import { ClaimTeamButton } from "@/components/social/claim-team";
 import { Unavailable } from "@/components/social/unavailable";
 import { TeamSizeSwitch } from "@/components/team-size-switch";
 import { resolveTeamSize, TEAM_SIZE_COOKIE } from "@/lib/team-size";
-import { BUDGET_DIFFICULTIES, type BudgetDifficulty } from "@/lib/budget";
+import {
+  BUDGET_DIFFICULTIES,
+  BUDGET_SIZES,
+  resolveBudgetSize,
+  type BudgetDifficulty,
+} from "@/lib/budget";
 import { cn } from "@/lib/utils";
 
 export const metadata: Metadata = {
@@ -43,9 +48,14 @@ export default async function LeaderboardPage({
     : undefined;
   const t = await getTranslations("home");
   const tBudget = await getTranslations("budget");
-  const teamSize = resolveTeamSize(
+  // Budget boards are scoped by budget size (6 / 8) from the URL; classic
+  // boards use the 5 / 8 / 10 size from the session cookie. The query uses
+  // whichever applies; the classic team-size switch always shows classicSize.
+  const budgetSize = resolveBudgetSize(params.size);
+  const classicSize = resolveTeamSize(
     (await cookies()).get(TEAM_SIZE_COOKIE)?.value
   );
+  const teamSize: number = modeParm === "budget" ? budgetSize : classicSize;
 
   // 1-based page in the URL; clamped to the real range after we know the count.
   const pageParam = Array.isArray(params.page) ? params.page[0] : params.page;
@@ -77,10 +87,20 @@ export default async function LeaderboardPage({
   /** Build a leaderboard href preserving active params. */
   const boardHref = (overrides: Record<string, string | undefined>) => {
     const sp = new URLSearchParams();
-    const merged = { scope, mode: modeParm, difficulty: difficultyParam, ...overrides };
+    const merged = {
+      scope,
+      mode: modeParm,
+      difficulty: difficultyParam,
+      size: String(budgetSize),
+      ...overrides,
+    };
     if (merged.scope === "weekly") sp.set("scope", "weekly");
     if (merged.mode === "budget") sp.set("mode", "budget");
     if (merged.difficulty) sp.set("difficulty", merged.difficulty);
+    // Size only matters on budget boards (and only when not the 6-man default).
+    if (merged.mode === "budget" && merged.size && merged.size !== "6") {
+      sp.set("size", merged.size);
+    }
     if (overrides.page && overrides.page !== "1") sp.set("page", overrides.page);
     const qs = sp.toString();
     return qs ? `/leaderboard?${qs}` : "/leaderboard";
@@ -99,7 +119,7 @@ export default async function LeaderboardPage({
             <span className="text-sm font-semibold tracking-wide text-muted-foreground uppercase">
               {t("teamSize")}
             </span>
-            <TeamSizeSwitch value={teamSize} />
+            <TeamSizeSwitch value={classicSize} />
           </div>
         )}
       </div>
@@ -141,31 +161,48 @@ export default async function LeaderboardPage({
         </Link>
       </div>
 
-      {/* Budget difficulty sub-filter */}
+      {/* Budget sub-filters: roster size (6 / 8) then difficulty. Sizes have
+          different caps, so their boards are separate. */}
       {modeParm === "budget" && (
-        <div className="mt-2 grid grid-cols-4 gap-1 rounded-xl bg-muted/40 p-1 text-center text-xs font-semibold">
-          <Link
-            href={boardHref({ mode: "budget", difficulty: undefined, page: "1" })}
-            className={cn(
-              "rounded-lg py-1",
-              !difficultyParam ? "bg-card text-foreground" : "text-muted-foreground"
-            )}
-          >
-            {tBudget("allDifficulties")}
-          </Link>
-          {BUDGET_DIFFICULTIES.map((d) => (
+        <>
+          <div className="mt-2 grid grid-cols-2 gap-1 rounded-xl bg-muted/40 p-1 text-center text-xs font-semibold">
+            {BUDGET_SIZES.map((s) => (
+              <Link
+                key={s}
+                href={boardHref({ mode: "budget", size: String(s), page: "1" })}
+                className={cn(
+                  "rounded-lg py-1 tabular-nums",
+                  budgetSize === s ? "bg-card text-foreground" : "text-muted-foreground"
+                )}
+              >
+                {tBudget("rosterSizeN", { n: s })}
+              </Link>
+            ))}
+          </div>
+          <div className="mt-2 grid grid-cols-4 gap-1 rounded-xl bg-muted/40 p-1 text-center text-xs font-semibold">
             <Link
-              key={d}
-              href={boardHref({ mode: "budget", difficulty: d, page: "1" })}
+              href={boardHref({ mode: "budget", difficulty: undefined, page: "1" })}
               className={cn(
-                "rounded-lg py-1 capitalize",
-                difficultyParam === d ? "bg-card text-foreground" : "text-muted-foreground"
+                "rounded-lg py-1",
+                !difficultyParam ? "bg-card text-foreground" : "text-muted-foreground"
               )}
             >
-              {tBudget(`difficulty.${d}`)}
+              {tBudget("allDifficulties")}
             </Link>
-          ))}
-        </div>
+            {BUDGET_DIFFICULTIES.map((d) => (
+              <Link
+                key={d}
+                href={boardHref({ mode: "budget", difficulty: d, page: "1" })}
+                className={cn(
+                  "rounded-lg py-1 capitalize",
+                  difficultyParam === d ? "bg-card text-foreground" : "text-muted-foreground"
+                )}
+              >
+                {tBudget(`difficulty.${d}`)}
+              </Link>
+            ))}
+          </div>
+        </>
       )}
 
       {/* Scope tab (Global / This week) — shown below mode tabs */}

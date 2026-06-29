@@ -17,7 +17,7 @@ import { getSnapshot } from "@/lib/snapshot";
 import { prisma } from "@/lib/db";
 import { getOrCreateAnonId } from "@/lib/auth";
 import { makeTeamSlug } from "@/components/social/hashing";
-import { BUDGET_CAP, BUDGET_DIFFICULTIES, type BudgetDifficulty } from "@/lib/budget";
+import { budgetCap, BUDGET_DIFFICULTIES, type BudgetDifficulty } from "@/lib/budget";
 import { priceMapOf } from "@/lib/pricing";
 import {
   computeTeamOutputs,
@@ -87,7 +87,9 @@ export async function POST(request: Request) {
     }
     totalSpend += price;
   }
-  const cap = BUDGET_CAP[difficulty as BudgetDifficulty];
+  // Cap scales with roster size; the size is taken from the roster itself
+  // (5 starters + bench), so it can't be spoofed independently of the team.
+  const cap = budgetCap(teamSizeOf(roster), difficulty as BudgetDifficulty);
   if (totalSpend > cap) {
     return jsonError(
       422,

@@ -171,7 +171,7 @@
   "budget": {
     "title": "Draft Budget",
     "subtitle": "Draftez sous un plafond salarial",
-    "intro": "Choisissez une difficulté, draftez 6 joueurs sous le plafond, puis défiez une des meilleures équipes de l'histoire.",
+    "intro": "Choisis une difficulté, constitue ton effectif, puis défie des équipes historiques en duel.",
     "backHome": "Retour à l'accueil",
     "difficulty": {
       "easy": "Facile",
@@ -194,7 +194,9 @@
     "viewLeaderboard": "Classement Budget",
     "allDifficulties": "Tous",
     "backToSummary": "Retour au résumé",
-    "nameOptionalPlaceholder": "Nommez votre équipe (facultatif)"
+    "nameOptionalPlaceholder": "Nommez votre équipe (facultatif)",
+    "rosterSize": "Effectif",
+    "rosterSizeN": "{n} joueurs"
   },
   "sound": {
     "mute": "Couper le son",

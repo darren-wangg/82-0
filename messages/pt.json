@@ -171,7 +171,7 @@
   "budget": {
     "title": "Draft Orçamento",
     "subtitle": "Drafe sob o limite salarial",
-    "intro": "Escolha a dificuldade, drafe 6 jogadores dentro do limite, depois desafie uma das melhores equipes da história.",
+    "intro": "Escolha uma dificuldade, monte seu elenco e desafie times históricos frente a frente.",
     "backHome": "Voltar ao início",
     "difficulty": {
       "easy": "Fácil",
@@ -194,7 +194,9 @@
     "viewLeaderboard": "Classificação Orçamento",
     "allDifficulties": "Todos",
     "backToSummary": "Voltar ao resumo",
-    "nameOptionalPlaceholder": "Nomeie sua equipe (opcional)"
+    "nameOptionalPlaceholder": "Nomeie sua equipe (opcional)",
+    "rosterSize": "Elenco",
+    "rosterSizeN": "{n} jogadores"
   },
   "sound": {
     "mute": "Silenciar",

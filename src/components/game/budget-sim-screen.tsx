@@ -156,10 +156,13 @@ export function BudgetSimScreen() {
     }
     setError(null);
 
+    // Roster size (6 or 8) rides along so the opponent picker challenges the
+    // matching famous-team preset and links to the right leaderboard board.
+    const size = ctx.mode?.draftRounds ?? 6;
     const goTo = (slug: string) =>
       router.push(
         `/budget/challenge?team=${encodeURIComponent(slug)}` +
-          `&name=${encodeURIComponent(name)}&difficulty=${difficulty}`
+          `&name=${encodeURIComponent(name)}&difficulty=${difficulty}&size=${size}`
       );
 
     // Already saved (user came back to re-pick) — skip the duplicate write.

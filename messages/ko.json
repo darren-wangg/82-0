@@ -171,7 +171,7 @@
   "budget": {
     "title": "예산 드래프트",
     "subtitle": "샐러리캡 내에서 드래프트",
-    "intro": "난이도를 선택하고, 샐러리캡 내에서 6명을 드래프트한 후, 역사상 최고의 팀에 도전하세요.",
+    "intro": "난이도를 고르고 로스터를 구성한 뒤 역사적인 팀들과 정면 대결하세요.",
     "backHome": "홈으로 돌아가기",
     "difficulty": {
       "easy": "쉬움",
@@ -194,7 +194,9 @@
     "viewLeaderboard": "예산 리더보드",
     "allDifficulties": "전체",
     "backToSummary": "요약으로 돌아가기",
-    "nameOptionalPlaceholder": "팀 이름 (선택)"
+    "nameOptionalPlaceholder": "팀 이름 (선택)",
+    "rosterSize": "로스터",
+    "rosterSizeN": "{n}인"
   },
   "sound": {
     "mute": "음소거",

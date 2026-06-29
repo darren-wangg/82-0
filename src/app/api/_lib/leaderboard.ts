@@ -27,11 +27,10 @@ function boardWhere(
 ) {
   return {
     snapshotVersion,
-    // Each classic roster size has its own board (5 / 8 / 10), selected via the
-    // team-size switch — sizes aren't ranked against each other. Budget teams
-    // are all the same size (6-man), so the budget board ignores teamSize and
-    // groups purely by difficulty instead.
-    ...(mode === "budget" ? {} : { teamSize }),
+    // Every board is size-scoped — sizes aren't ranked against each other.
+    // Classic uses 5 / 8 / 10; budget uses 6 / 8 (each with its own caps), so
+    // the caller passes the budget roster size as teamSize for budget boards.
+    teamSize,
     // Preset famous teams never appear on any leaderboard.
     isPreset: false,
     // Mode filter: null/undefined means "classic" boards (exclude budget);

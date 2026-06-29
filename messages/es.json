@@ -171,7 +171,7 @@
   "budget": {
     "title": "Draft Presupuesto",
     "subtitle": "Fichar bajo límite salarial",
-    "intro": "Elige la dificultad, elige 6 jugadores con el tope salarial y desafía a uno de los mejores equipos de la historia.",
+    "intro": "Elige una dificultad, arma tu plantilla y desafía a equipos históricos mano a mano.",
     "backHome": "Volver al inicio",
     "difficulty": {
       "easy": "Fácil",
@@ -194,7 +194,9 @@
     "viewLeaderboard": "Clasificación Budget",
     "allDifficulties": "Todas",
     "backToSummary": "Volver al resumen",
-    "nameOptionalPlaceholder": "Nombra tu equipo (opcional)"
+    "nameOptionalPlaceholder": "Nombra tu equipo (opcional)",
+    "rosterSize": "Plantilla",
+    "rosterSizeN": "{n} jugadores"
   },
   "sound": {
     "mute": "Silenciar",

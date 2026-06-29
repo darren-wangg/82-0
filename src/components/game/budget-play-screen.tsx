@@ -38,7 +38,7 @@ import { SlotReel } from "./slot-reel";
 import { usePhaseGuard } from "./use-phase-guard";
 import { BudgetMeter } from "./budget-meter";
 import type { BudgetDifficulty } from "@/lib/budget";
-import { BUDGET_CAP, isBudgetDifficulty } from "@/lib/budget";
+import { budgetCap, isBudgetDifficulty } from "@/lib/budget";
 import { priceMapOf, PRICE_MIN } from "@/lib/pricing";
 import { getSnapshot } from "@/lib/snapshot-client";
 
@@ -75,7 +75,8 @@ export function BudgetPlayScreen() {
   const difficulty: BudgetDifficulty = isBudgetDifficulty(difficultyParam)
     ? difficultyParam
     : "normal";
-  const cap = BUDGET_CAP[difficulty];
+  // Roster size (6 or 8) comes from the mounted mode; cap scales with it.
+  const cap = budgetCap(rounds, difficulty);
 
   // Persist difficulty in localStorage so /budget/sim can read it after redirect.
   useEffect(() => {

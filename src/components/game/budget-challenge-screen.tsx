@@ -20,7 +20,14 @@ import type { MatchupResponse } from "@/lib/contracts";
 import { getEngine } from "@/lib/engine-provider";
 import { getBaselines, getPlayerMap } from "@/lib/snapshot-client";
 import { cn } from "@/lib/utils";
-import { FAMOUS_TEAMS, famousTeamFranchise, type FamousTeam } from "@/lib/famous-teams";
+import {
+  famousRosterForSize,
+  famousSlugForSize,
+  FAMOUS_TEAMS,
+  famousTeamFranchise,
+  type FamousTeam,
+} from "@/lib/famous-teams";
+import { resolveBudgetSize } from "@/lib/budget";
 import { TeamLogo } from "@/components/social/team-logo";
 
 export function BudgetChallengeScreen() {
@@ -30,11 +37,14 @@ export function BudgetChallengeScreen() {
   const teamSlug = params.get("team") ?? "";
   const teamName = params.get("name") ?? "";
   const difficulty = params.get("difficulty") ?? "normal";
+  // Budget roster size (6 or 8): picks the size-matched famous preset + OVR.
+  const size = resolveBudgetSize(params.get("size"));
   const [pending, setPending] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
 
-  // Strength hint: compute each famous team's OVR once, client-side. Memoized
-  // and wrapped so a snapshot-not-ready race just drops the badges.
+  // Strength hint: compute each famous team's OVR once, client-side, at the
+  // player's roster size. Memoized and wrapped so a snapshot-not-ready race
+  // just drops the badges.
   const ovrBySlug = useMemo(() => {
     const map = new Map<string, number>();
     try {
@@ -42,13 +52,14 @@ export function BudgetChallengeScreen() {
       const players = getPlayerMap();
       const baselines = getBaselines();
       for (const ft of FAMOUS_TEAMS) {
-        map.set(ft.slug, engine.teamRating(ft.roster, players, baselines).ovr);
+        const roster = famousRosterForSize(ft, size);
+        map.set(ft.slug, engine.teamRating(roster, players, baselines).ovr);
       }
     } catch {
       // snapshot not ready — badges hide
     }
     return map;
-  }, []);
+  }, [size]);
 
   // Strongest opponents first. Teams whose OVR couldn't be computed (snapshot
   // race) sort last but keep their authored order.
@@ -70,7 +81,10 @@ export function BudgetChallengeScreen() {
       const res = await fetch("/api/matchups", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ teamSlugA: teamSlug, teamSlugB: opponent.slug }),
+        body: JSON.stringify({
+          teamSlugA: teamSlug,
+          teamSlugB: famousSlugForSize(opponent.slug, size),
+        }),
       });
       if (!res.ok) throw new Error(`matchup failed: ${res.status}`);
       const data: MatchupResponse = await res.json();
@@ -155,7 +169,7 @@ export function BudgetChallengeScreen() {
       </ul>
 
       <Link
-        href={`/leaderboard?mode=budget&difficulty=${difficulty}`}
+        href={`/leaderboard?mode=budget&difficulty=${difficulty}&size=${size}`}
         className="mt-2 flex items-center justify-center gap-1.5 text-sm font-semibold text-muted-foreground hover:text-foreground"
       >
         <Trophy className="size-4" /> {t("viewLeaderboard")}
