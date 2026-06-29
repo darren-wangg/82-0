@@ -1,9 +1,6 @@
 /**
  * /leaderboard — top 50 teams (global or weekly), wins desc then OVR desc,
  * scoped to the current snapshot version. Rows link to the team pages.
- *
- * Budget tab: ?mode=budget filters to budget-drafted teams; additionally
- * ?difficulty=easy|normal|hard sub-filters by cap tier.
  */
 
 import type { Metadata } from "next";
@@ -22,12 +19,6 @@ import { ClaimTeamButton } from "@/components/social/claim-team";
 import { Unavailable } from "@/components/social/unavailable";
 import { TeamSizeSwitch } from "@/components/team-size-switch";
 import { resolveTeamSize, TEAM_SIZE_COOKIE } from "@/lib/team-size";
-import {
-  BUDGET_DIFFICULTIES,
-  BUDGET_SIZES,
-  resolveBudgetSize,
-  type BudgetDifficulty,
-} from "@/lib/budget";
 import { cn } from "@/lib/utils";
 
 export const metadata: Metadata = {
@@ -40,22 +31,10 @@ export default async function LeaderboardPage({
 }: PageProps<"/leaderboard">) {
   const params = await searchParams;
   const scope = params.scope === "weekly" ? "weekly" : "global";
-  const modeParm = params.mode === "budget" ? "budget" : undefined;
-  const difficultyParam = BUDGET_DIFFICULTIES.includes(
-    params.difficulty as BudgetDifficulty
-  )
-    ? (params.difficulty as BudgetDifficulty)
-    : undefined;
   const t = await getTranslations("home");
-  const tBudget = await getTranslations("budget");
-  // Budget boards are scoped by budget size (6 / 8) from the URL; classic
-  // boards use the 5 / 8 / 10 size from the session cookie. The query uses
-  // whichever applies; the classic team-size switch always shows classicSize.
-  const budgetSize = resolveBudgetSize(params.size);
-  const classicSize = resolveTeamSize(
+  const teamSize = resolveTeamSize(
     (await cookies()).get(TEAM_SIZE_COOKIE)?.value
   );
-  const teamSize: number = modeParm === "budget" ? budgetSize : classicSize;
 
   // 1-based page in the URL; clamped to the real range after we know the count.
   const pageParam = Array.isArray(params.page) ? params.page[0] : params.page;
@@ -65,21 +44,10 @@ export default async function LeaderboardPage({
   let totalPages: number;
   let page: number;
   try {
-    const total = await loadLeaderboardCount(
-      scope,
-      teamSize,
-      modeParm,
-      difficultyParam
-    );
+    const total = await loadLeaderboardCount(scope, teamSize);
     totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE));
     page = Math.min(requestedPage, totalPages);
-    entries = await loadLeaderboardEntries(
-      scope,
-      teamSize,
-      page - 1,
-      modeParm,
-      difficultyParam
-    );
+    entries = await loadLeaderboardEntries(scope, teamSize, page - 1);
   } catch {
     return <Unavailable what="the leaderboard" />;
   }
@@ -87,20 +55,8 @@ export default async function LeaderboardPage({
   /** Build a leaderboard href preserving active params. */
   const boardHref = (overrides: Record<string, string | undefined>) => {
     const sp = new URLSearchParams();
-    const merged = {
-      scope,
-      mode: modeParm,
-      difficulty: difficultyParam,
-      size: String(budgetSize),
-      ...overrides,
-    };
+    const merged = { scope, ...overrides };
     if (merged.scope === "weekly") sp.set("scope", "weekly");
-    if (merged.mode === "budget") sp.set("mode", "budget");
-    if (merged.difficulty) sp.set("difficulty", merged.difficulty);
-    // Size only matters on budget boards (and only when not the 6-man default).
-    if (merged.mode === "budget" && merged.size && merged.size !== "6") {
-      sp.set("size", merged.size);
-    }
     if (overrides.page && overrides.page !== "1") sp.set("page", overrides.page);
     const qs = sp.toString();
     return qs ? `/leaderboard?${qs}` : "/leaderboard";
@@ -112,132 +68,36 @@ export default async function LeaderboardPage({
     <main className="flex flex-1 flex-col">
       <div className="flex items-start justify-between gap-3">
         <h1 className="font-display text-3xl tracking-wide">Leaderboard</h1>
-        {/* Team-size switch only applies to the classic boards; budget teams
-            are all 6-man and grouped by difficulty instead. */}
-        {!modeParm && (
-          <div className="flex items-center gap-2">
-            <span className="text-sm font-semibold tracking-wide text-muted-foreground uppercase">
-              {t("teamSize")}
-            </span>
-            <TeamSizeSwitch value={classicSize} />
-          </div>
-        )}
+        <div className="flex items-center gap-2">
+          <span className="text-sm font-semibold tracking-wide text-muted-foreground uppercase">
+            {t("teamSize")}
+          </span>
+          <TeamSizeSwitch value={teamSize} />
+        </div>
       </div>
 
-      {/* Mode tab: Classic vs Budget */}
-      <div className="mt-4 grid grid-cols-2 gap-1 rounded-xl bg-muted/60 p-1 text-center text-sm font-semibold">
-        <Link
-          href={boardHref({ mode: undefined, difficulty: undefined, page: "1" })}
-          className={cn(
-            "rounded-lg py-1.5",
-            !modeParm
-              ? "bg-primary text-primary-foreground"
-              : "text-muted-foreground"
-          )}
-        >
-          Classic
-        </Link>
-        <Link
-          href={boardHref({ mode: "budget", difficulty: undefined, page: "1" })}
-          className={cn(
-            "flex items-center justify-center gap-1.5 rounded-lg py-1.5",
-            modeParm === "budget"
-              ? "bg-primary text-primary-foreground"
-              : "text-muted-foreground"
-          )}
-        >
-          Budget
-          <Badge
-            variant="outline"
+      {/* Scope tab (Global / This week) */}
+      <div className="mt-4 grid grid-cols-2 gap-1 rounded-xl bg-muted/40 p-1 text-center text-xs font-semibold">
+        {(["global", "weekly"] as const).map((s) => (
+          <Link
+            key={s}
+            href={boardHref({ scope: s, page: "1" })}
             className={cn(
-              "px-1 py-0 text-[9px] font-bold",
-              modeParm === "budget"
-                ? "border-primary-foreground/40 text-primary-foreground"
-                : "border-violet-400/60 bg-violet-400/10 text-violet-300"
+              "rounded-lg py-1 capitalize",
+              scope === s ? "bg-card text-foreground" : "text-muted-foreground"
             )}
           >
-            Beta
-          </Badge>
-        </Link>
+            {s === "weekly" ? "This week" : "All time"}
+          </Link>
+        ))}
       </div>
-
-      {/* Budget sub-filters: roster size (6 / 8) then difficulty. Sizes have
-          different caps, so their boards are separate. */}
-      {modeParm === "budget" && (
-        <>
-          <div className="mt-2 grid grid-cols-2 gap-1 rounded-xl bg-muted/40 p-1 text-center text-xs font-semibold">
-            {BUDGET_SIZES.map((s) => (
-              <Link
-                key={s}
-                href={boardHref({ mode: "budget", size: String(s), page: "1" })}
-                className={cn(
-                  "rounded-lg py-1 tabular-nums",
-                  budgetSize === s ? "bg-card text-foreground" : "text-muted-foreground"
-                )}
-              >
-                {tBudget("rosterSizeN", { n: s })}
-              </Link>
-            ))}
-          </div>
-          <div className="mt-2 grid grid-cols-4 gap-1 rounded-xl bg-muted/40 p-1 text-center text-xs font-semibold">
-            <Link
-              href={boardHref({ mode: "budget", difficulty: undefined, page: "1" })}
-              className={cn(
-                "rounded-lg py-1",
-                !difficultyParam ? "bg-card text-foreground" : "text-muted-foreground"
-              )}
-            >
-              {tBudget("allDifficulties")}
-            </Link>
-            {BUDGET_DIFFICULTIES.map((d) => (
-              <Link
-                key={d}
-                href={boardHref({ mode: "budget", difficulty: d, page: "1" })}
-                className={cn(
-                  "rounded-lg py-1 capitalize",
-                  difficultyParam === d ? "bg-card text-foreground" : "text-muted-foreground"
-                )}
-              >
-                {tBudget(`difficulty.${d}`)}
-              </Link>
-            ))}
-          </div>
-        </>
-      )}
-
-      {/* Scope tab (Global / This week) — shown below mode tabs */}
-      {!modeParm && (
-        <div className="mt-2 grid grid-cols-2 gap-1 rounded-xl bg-muted/40 p-1 text-center text-xs font-semibold">
-          {(["global", "weekly"] as const).map((s) => (
-            <Link
-              key={s}
-              href={boardHref({ scope: s, page: "1" })}
-              className={cn(
-                "rounded-lg py-1 capitalize",
-                scope === s ? "bg-card text-foreground" : "text-muted-foreground"
-              )}
-            >
-              {s === "weekly" ? "This week" : "All time"}
-            </Link>
-          ))}
-        </div>
-      )}
 
       {entries.length === 0 ? (
         <div className="mt-10 text-center text-sm text-muted-foreground">
           <p>No teams on the board yet.</p>
-          {modeParm === "budget" ? (
-            <Link
-              href="/budget"
-              className="mt-2 inline-block font-semibold text-primary"
-            >
-              Draft a budget team →
-            </Link>
-          ) : (
-            <Link href="/play" className="mt-2 inline-block font-semibold text-primary">
-              Be the first →
-            </Link>
-          )}
+          <Link href="/play" className="mt-2 inline-block font-semibold text-primary">
+            Be the first →
+          </Link>
         </div>
       ) : (
         <ol className="mt-4 space-y-1.5">

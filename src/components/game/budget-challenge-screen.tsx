@@ -15,7 +15,7 @@ import { useMemo, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { useTranslations } from "next-intl";
-import { ChevronLeft, ChevronRight, Loader2, Trophy } from "lucide-react";
+import { ChevronLeft, ChevronRight, Loader2 } from "lucide-react";
 import type { MatchupResponse } from "@/lib/contracts";
 import { getEngine } from "@/lib/engine-provider";
 import { getBaselines, getPlayerMap } from "@/lib/snapshot-client";
@@ -36,7 +36,6 @@ export function BudgetChallengeScreen() {
   const params = useSearchParams();
   const teamSlug = params.get("team") ?? "";
   const teamName = params.get("name") ?? "";
-  const difficulty = params.get("difficulty") ?? "normal";
   // Budget roster size (6 or 8): picks the size-matched famous preset + OVR.
   const size = resolveBudgetSize(params.get("size"));
   const [pending, setPending] = useState<string | null>(null);
@@ -124,7 +123,7 @@ export function BudgetChallengeScreen() {
         </p>
       )}
 
-      <ul className="flex flex-1 flex-col gap-2 overflow-y-auto overscroll-contain pb-4">
+      <ul className="flex flex-col gap-2 pb-4">
         {orderedTeams.map((team) => {
           const ovr = ovrBySlug.get(team.slug);
           const loading = pending === team.slug;
@@ -167,13 +166,6 @@ export function BudgetChallengeScreen() {
           );
         })}
       </ul>
-
-      <Link
-        href={`/leaderboard?mode=budget&difficulty=${difficulty}&size=${size}`}
-        className="mt-2 flex items-center justify-center gap-1.5 text-sm font-semibold text-muted-foreground hover:text-foreground"
-      >
-        <Trophy className="size-4" /> {t("viewLeaderboard")}
-      </Link>
     </main>
   );
 }
