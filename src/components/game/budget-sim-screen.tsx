@@ -326,6 +326,21 @@ export function BudgetSimScreen() {
     router.push(`${ctx.mode?.playPath ?? "/budget/play"}?difficulty=normal`);
   };
 
+  // The name inputs sit at the very bottom of the page, so iOS Safari scrolls
+  // the document *past its end* to lift them above the keyboard — and often
+  // strands it there when the keyboard closes, leaving a tall blank stretch
+  // "below" the page. Snap the scroll back into range once the input blurs
+  // (delayed a beat so the keyboard dismissal finishes first).
+  const clampScrollAfterKeyboard = () => {
+    window.setTimeout(() => {
+      const max = Math.max(
+        0,
+        document.documentElement.scrollHeight - window.innerHeight
+      );
+      if (window.scrollY > max) window.scrollTo({ top: max });
+    }, 80);
+  };
+
   if (!state || !allowed || !sim) return <SimSkeleton />;
 
   const { roster, rating, season, cost } = sim;
@@ -433,6 +448,7 @@ export function BudgetSimScreen() {
             aria-label={tSim("playerNameAria")}
             className="h-11 rounded-xl border-border bg-card dark:bg-card"
             onChange={(e) => setPlayerName(e.target.value)}
+            onBlur={clampScrollAfterKeyboard}
           />
         )}
         <Input
@@ -445,6 +461,7 @@ export function BudgetSimScreen() {
             setTeamName(e.target.value);
             if (error) setError(null);
           }}
+          onBlur={clampScrollAfterKeyboard}
         />
         {error && (
           <p role="alert" className="text-sm font-medium text-destructive">
