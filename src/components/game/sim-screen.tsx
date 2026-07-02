@@ -36,7 +36,6 @@ import { containsProfanity } from "@/lib/profanity";
 import { getEngine } from "@/lib/engine-provider";
 import { getBaselines } from "@/lib/snapshot-client";
 import { cn } from "@/lib/utils";
-import { SoundToggle } from "@/components/sound-toggle";
 import { DownloadCardButton } from "@/components/social/download-card";
 import { analyzeCost } from "./cost-analysis";
 import { Confetti } from "./confetti";
@@ -366,7 +365,6 @@ export function SimScreen() {
 
       {/* download image + save (device) + share icons, top right */}
       <div className="flex justify-end gap-2">
-        <SoundToggle className="mr-auto" />
         <DownloadCardButton
           cardUrl={cardUrl}
           fileName="ultimate-draft-team-card.png"

@@ -19,11 +19,11 @@
     "steps": {
       "spin": {
         "title": "Girar",
-        "body": "Gira para un equipo y una era al azar. La misma combinación de equipo y era nunca sale dos veces."
+        "body": "Gira para un equipo y una era al azar. La misma combinación de equipo y era nunca sale dos veces en una partida."
       },
       "reSpins": {
         "title": "Regiros",
-        "body": "{teamSkips} regiro de equipo y {eraSkips} regiro de era. Un regiro solo cambia ese eje."
+        "body": "{teamSkips} regiro de equipo y {eraSkips} regiro de era."
       },
       "pick": {
         "title": "Elegir",
@@ -197,11 +197,7 @@
     "allDifficulties": "Todas",
     "backToSummary": "Volver al resumen",
     "nameOptionalPlaceholder": "Nombra tu equipo (opcional)",
-    "rosterSize": "Plantilla",
+    "rosterSize": "Tamaño del equipo",
     "rosterSizeN": "{n} jugadores"
-  },
-  "sound": {
-    "mute": "Silenciar",
-    "unmute": "Activar sonido"
   }
 }

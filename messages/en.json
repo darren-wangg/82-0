@@ -19,11 +19,11 @@
     "steps": {
       "spin": {
         "title": "Spin",
-        "body": "Spin for a random team and era. The same team-era combo never comes up twice."
+        "body": "Spin for a random team and era. The same team-era combo never comes up twice in a game."
       },
       "reSpins": {
         "title": "Re-spins",
-        "body": "{teamSkips} Team re-spin and {eraSkips} Era re-spin. A re-spin rolls only that axis."
+        "body": "{teamSkips} Team re-spin and {eraSkips} Era re-spin."
       },
       "pick": {
         "title": "Pick",
@@ -197,11 +197,7 @@
     "allDifficulties": "All",
     "backToSummary": "Back to summary",
     "nameOptionalPlaceholder": "Name your team (optional)",
-    "rosterSize": "Roster",
+    "rosterSize": "Team size",
     "rosterSizeN": "{n}-man"
-  },
-  "sound": {
-    "mute": "Mute sound",
-    "unmute": "Unmute sound"
   }
 }

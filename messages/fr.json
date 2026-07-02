@@ -19,11 +19,11 @@
     "steps": {
       "spin": {
         "title": "Tourner",
-        "body": "Tournez pour une équipe et une ère au hasard. La même combinaison équipe-ère ne sort jamais deux fois."
+        "body": "Tournez pour une équipe et une ère au hasard. La même combinaison équipe-ère ne sort jamais deux fois dans une partie."
       },
       "reSpins": {
         "title": "Relances",
-        "body": "{teamSkips} relance d'équipe et {eraSkips} relance d'ère. Une relance ne change que cet axe."
+        "body": "{teamSkips} relance d'équipe et {eraSkips} relance d'ère."
       },
       "pick": {
         "title": "Choisir",
@@ -197,11 +197,7 @@
     "allDifficulties": "Tous",
     "backToSummary": "Retour au résumé",
     "nameOptionalPlaceholder": "Nommez votre équipe (facultatif)",
-    "rosterSize": "Effectif",
+    "rosterSize": "Taille de l'équipe",
     "rosterSizeN": "{n} joueurs"
-  },
-  "sound": {
-    "mute": "Couper le son",
-    "unmute": "Activer le son"
   }
 }

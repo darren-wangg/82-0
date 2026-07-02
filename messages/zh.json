@@ -19,11 +19,11 @@
     "steps": {
       "spin": {
         "title": "转动",
-        "body": "随机转出一支球队和一个年代。同一组球队-年代组合绝不会出现两次。"
+        "body": "随机转出一支球队和一个年代。同一组球队-年代组合在一局中绝不会出现两次。"
       },
       "reSpins": {
         "title": "重转",
-        "body": "{teamSkips} 次球队重转和 {eraSkips} 次年代重转。重转只会改变该轴。"
+        "body": "{teamSkips} 次球队重转和 {eraSkips} 次年代重转。"
       },
       "pick": {
         "title": "选择",
@@ -197,11 +197,7 @@
     "allDifficulties": "全部",
     "backToSummary": "返回总结",
     "nameOptionalPlaceholder": "为你的球队命名（可选）",
-    "rosterSize": "阵容",
+    "rosterSize": "球队人数",
     "rosterSizeN": "{n}人"
-  },
-  "sound": {
-    "mute": "静音",
-    "unmute": "取消静音"
   }
 }

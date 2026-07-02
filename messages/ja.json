@@ -19,11 +19,11 @@
     "steps": {
       "spin": {
         "title": "回す",
-        "body": "ランダムなチームと時代を引き当てます。同じチームと時代の組み合わせは二度と出ません。"
+        "body": "ランダムなチームと時代を引き当てます。同じチームと時代の組み合わせは1ゲーム中に二度と出ません。"
       },
       "reSpins": {
         "title": "再抽選",
-        "body": "チームの再抽選 {teamSkips} 回と時代の再抽選 {eraSkips} 回。再抽選はその軸だけを回し直します。"
+        "body": "チームの再抽選 {teamSkips} 回と時代の再抽選 {eraSkips} 回。"
       },
       "pick": {
         "title": "選ぶ",
@@ -197,11 +197,7 @@
     "allDifficulties": "すべて",
     "backToSummary": "サマリーに戻る",
     "nameOptionalPlaceholder": "チーム名（任意）",
-    "rosterSize": "ロスター",
+    "rosterSize": "チーム人数",
     "rosterSizeN": "{n}人"
-  },
-  "sound": {
-    "mute": "ミュート",
-    "unmute": "ミュート解除"
   }
 }

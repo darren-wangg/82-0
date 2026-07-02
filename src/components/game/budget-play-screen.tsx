@@ -21,9 +21,7 @@ import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { DECADES, DRAFT_ROUNDS } from "@/lib/contracts";
 import { cn } from "@/lib/utils";
-import { playSound } from "@/lib/sfx";
 import { haptic } from "@/lib/haptics";
-import { SoundToggle } from "@/components/sound-toggle";
 import {
   canSkipEra,
   canSkipTeam,
@@ -171,10 +169,8 @@ export function BudgetPlayScreen() {
   useEffect(() => {
     if (!hasSpin || prevSpunNonce.current === spinNonce) return;
     prevSpunNonce.current = spinNonce;
-    playSound("spin");
     haptic("medium");
     const id = window.setTimeout(() => {
-      playSound("reelStop");
       haptic("light");
     }, REEL_MS - 80);
     return () => window.clearTimeout(id);
@@ -245,7 +241,6 @@ export function BudgetPlayScreen() {
                 <RotateCcw />
               </Button>
             )}
-            <SoundToggle className="size-7 border-transparent bg-transparent backdrop-blur-none" />
           </div>
         </div>
         <div className="flex shrink-0 items-center gap-1.5">

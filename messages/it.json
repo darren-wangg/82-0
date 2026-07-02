@@ -19,11 +19,11 @@
     "steps": {
       "spin": {
         "title": "Gira",
-        "body": "Gira per una squadra e un'era casuali. La stessa combinazione squadra-era non esce mai due volte."
+        "body": "Gira per una squadra e un'era casuali. La stessa combinazione squadra-era non esce mai due volte in una partita."
       },
       "reSpins": {
         "title": "Rilanci",
-        "body": "{teamSkips} rilancio squadra e {eraSkips} rilancio era. Un rilancio cambia solo quell'asse."
+        "body": "{teamSkips} rilancio squadra e {eraSkips} rilancio era."
       },
       "pick": {
         "title": "Scegli",
@@ -197,11 +197,7 @@
     "allDifficulties": "Tutte",
     "backToSummary": "Torna al riepilogo",
     "nameOptionalPlaceholder": "Dai un nome alla squadra (facoltativo)",
-    "rosterSize": "Rosa",
+    "rosterSize": "Dimensione squadra",
     "rosterSizeN": "{n} giocatori"
-  },
-  "sound": {
-    "mute": "Disattiva audio",
-    "unmute": "Attiva audio"
   }
 }

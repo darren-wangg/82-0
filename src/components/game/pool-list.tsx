@@ -7,7 +7,6 @@ import { Search, X } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import type { NineCat, PlayerStatLine } from "@/lib/contracts";
 import { cn } from "@/lib/utils";
-import { playSound } from "@/lib/sfx";
 import { haptic } from "@/lib/haptics";
 import { ONE_DECIMAL, isEstimated, SORT_OPTIONS } from "./format";
 import { isLegendary } from "./legends";
@@ -253,7 +252,6 @@ export function PoolList({
                 onClick={() => {
                   const next = selected ? null : p.id;
                   if (next) {
-                    playSound(legendary ? "cash" : "select");
                     haptic("select");
                   }
                   onSelect(next);

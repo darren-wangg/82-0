@@ -7,7 +7,6 @@ import { DollarSign, MessageSquarePlus, Shirt, Trophy, UsersRound } from "lucide
 import { buttonVariants } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { HowToPlayDialog } from "@/components/game/how-to-play";
-import { SoundToggle } from "@/components/sound-toggle";
 import { LanguageSwitcher } from "@/components/i18n/language-switcher";
 import { TeamSizeSwitch } from "@/components/team-size-switch";
 import { PLAY_PATH, resolveTeamSize, TEAM_SIZE_COOKIE } from "@/lib/team-size";
@@ -78,9 +77,6 @@ export default async function Home() {
         className="pointer-events-none absolute top-1/3 -right-28 size-72 animate-float rounded-full bg-sky-500/10 blur-3xl"
       />
       <main className="relative mx-auto flex w-full max-w-md flex-1 flex-col items-center justify-center gap-8 px-6 pt-16 pb-10">
-        <div className="absolute right-5 top-[max(1rem,env(safe-area-inset-top))] z-10">
-          <SoundToggle />
-        </div>
         <div className="flex animate-in flex-col items-center gap-4 text-center duration-700 fade-in slide-in-from-bottom-4">
           {/* NBA Jam fire: yellow → orange → red sweep */}
           <h1 className="animate-gradient-x bg-gradient-to-r from-amber-300 via-primary to-red-500 bg-[length:200%_auto] bg-clip-text text-center font-display text-6xl leading-[0.95] tracking-tight text-transparent uppercase">

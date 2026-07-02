@@ -25,7 +25,6 @@ import {
 } from "@/lib/contracts";
 import { displayCatValue } from "@/lib/cat-display";
 import { cn } from "@/lib/utils";
-import { playSound } from "@/lib/sfx";
 import { haptic } from "@/lib/haptics";
 import { CatProfileInfo } from "@/components/social/cat-profile-info";
 import { ExplainStream } from "@/components/social/explain-stream";
@@ -138,18 +137,15 @@ export function RecordReveal({ season }: { season: SeasonResult }) {
   const losses = Math.round((season.losses * gamesPlayed) / SEASON_GAMES);
   const wins = gamesPlayed - losses;
 
-  // The payoff sound + buzz, fired the moment the record lands: a triumphant
-  // arpeggio for 82-0, a bright swish for a winning record, a muted buzzer
-  // otherwise. Centralized here so both sim screens sound identical.
+  // The payoff buzz, fired the moment the record lands. Centralized here so
+  // both sim screens feel identical.
   const winningRecord = season.wins >= season.losses;
-  const resultSound = perfect ? "perfect" : winningRecord ? "win" : "lose";
 
   // True once the count-up settles — gates the landing pop / ball burst.
   const [landed, setLanded] = useState(false);
   useEffect(() => {
     const land = () => {
       setLanded(true);
-      playSound(resultSound);
       haptic(winningRecord ? "success" : "error");
     };
     if (reducedMotion) {
@@ -158,7 +154,7 @@ export function RecordReveal({ season }: { season: SeasonResult }) {
     }
     const timer = window.setTimeout(land, COUNT_UP_SECONDS * 1000);
     return () => window.clearTimeout(timer);
-  }, [reducedMotion, resultSound, winningRecord]);
+  }, [reducedMotion, winningRecord]);
 
   return (
     <div className="relative flex flex-col items-center text-center">
@@ -408,6 +404,22 @@ export function TeamRevealBody({
   const t = useTranslations("sim");
   const catT = useTranslations("cats");
   const format = useFormatter();
+  const reducedMotion = useReducedMotion();
+
+  // The "what cost you" + scouting cards reveal only after the record lands.
+  // They're kept out of the layout until then (mounted late / display:none
+  // rather than opacity:0) so the page doesn't show a tall blank stretch
+  // under the team summary during the count-up.
+  const [landed, setLanded] = useState(false);
+  useEffect(() => {
+    if (reducedMotion) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- settle instantly instead of animating
+      setLanded(true);
+      return;
+    }
+    const timer = window.setTimeout(() => setLanded(true), COUNT_UP_SECONDS * 1000);
+    return () => window.clearTimeout(timer);
+  }, [reducedMotion]);
 
   // Drafter memory: read the blurb from PRIOR drafts first (so this draft never
   // personalizes its own summary), then fold this draft in for next time.
@@ -492,11 +504,11 @@ export function TeamRevealBody({
       </Card>
 
       {/* what cost you (absent on a perfect season) */}
-      {cost && (
+      {cost && landed && (
         <motion.div
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: COUNT_UP_SECONDS + 0.4 }}
+          transition={{ delay: 0.2 }}
         >
           <Card className="mt-3 gap-1.5 border-border/60 bg-card/80 p-4">
             <p className="font-arcade text-[9px] text-muted-foreground uppercase">
@@ -547,11 +559,15 @@ export function TeamRevealBody({
 
       {/* AI scouting report on the unsaved draft (server re-runs the engine).
           Works in both modes — the /api/explain draft path accepts the
-          10-player roster via a route-local schema. */}
-      <motion.div
-        initial={{ opacity: 0, y: 10 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: COUNT_UP_SECONDS + 0.6 }}
+          10-player roster via a route-local schema. Stays mounted while hidden
+          so the AI request fires immediately; only the reveal waits for the
+          record to land. */}
+      <div
+        className={cn(
+          landed
+            ? "animate-in delay-300 duration-500 fill-mode-both fade-in slide-in-from-bottom-2"
+            : "hidden"
+        )}
       >
         <Card className="mt-3 gap-1.5 border-border/60 bg-card/80 p-4">
           <p className="font-arcade text-[9px] text-muted-foreground uppercase">
@@ -576,7 +592,7 @@ export function TeamRevealBody({
             </div>
           )}
         </Card>
-      </motion.div>
+      </div>
     </>
   );
 }

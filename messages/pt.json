@@ -19,11 +19,11 @@
     "steps": {
       "spin": {
         "title": "Girar",
-        "body": "Gire por um time e uma era aleatórios. A mesma combinação de time e era nunca aparece duas vezes."
+        "body": "Gire por um time e uma era aleatórios. A mesma combinação de time e era nunca aparece duas vezes em uma partida."
       },
       "reSpins": {
         "title": "Regiros",
-        "body": "{teamSkips} regiro de time e {eraSkips} regiro de era. Um regiro muda apenas esse eixo."
+        "body": "{teamSkips} regiro de time e {eraSkips} regiro de era."
       },
       "pick": {
         "title": "Escolher",
@@ -197,11 +197,7 @@
     "allDifficulties": "Todos",
     "backToSummary": "Voltar ao resumo",
     "nameOptionalPlaceholder": "Nomeie sua equipe (opcional)",
-    "rosterSize": "Elenco",
+    "rosterSize": "Tamanho do time",
     "rosterSizeN": "{n} jogadores"
-  },
-  "sound": {
-    "mute": "Silenciar",
-    "unmute": "Ativar som"
   }
 }

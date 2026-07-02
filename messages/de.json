@@ -19,11 +19,11 @@
     "steps": {
       "spin": {
         "title": "Drehen",
-        "body": "Dreh für ein zufälliges Team und eine zufällige Ära. Dieselbe Team-Ära-Kombi kommt nie zweimal vor."
+        "body": "Dreh für ein zufälliges Team und eine zufällige Ära. Dieselbe Team-Ära-Kombi kommt in einem Spiel nie zweimal vor."
       },
       "reSpins": {
         "title": "Neudrehs",
-        "body": "{teamSkips} Team-Neudreh und {eraSkips} Ära-Neudreh. Ein Neudreh dreht nur diese Achse."
+        "body": "{teamSkips} Team-Neudreh und {eraSkips} Ära-Neudreh."
       },
       "pick": {
         "title": "Wählen",
@@ -197,11 +197,7 @@
     "allDifficulties": "Alle",
     "backToSummary": "Zurück zur Übersicht",
     "nameOptionalPlaceholder": "Benenne dein Team (optional)",
-    "rosterSize": "Kader",
+    "rosterSize": "Teamgröße",
     "rosterSizeN": "{n} Spieler"
-  },
-  "sound": {
-    "mute": "Ton aus",
-    "unmute": "Ton an"
   }
 }
