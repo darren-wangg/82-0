@@ -139,7 +139,9 @@
     "blurb8": "Clásico",
     "blurb10": "Banca amplia",
     "live": "Draft en vivo",
-    "liveHint": "Todos draftean a la vez y lo ven en directo. Sin repeticiones."
+    "liveHint": "Todos draftean a la vez y lo ven en directo. Sin repeticiones.",
+    "budget": "Draft con presupuesto",
+    "budgetHint": "Todos draftean bajo el mismo tope salarial."
   },
   "myTeams": {
     "empty": "Aún no hay equipos de {size} guardados — termina una temporada y pulsa Guardar.",

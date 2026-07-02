@@ -14,7 +14,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { useReducedMotion } from "framer-motion";
-import { Check, ChevronRight, Loader2, RotateCcw, Save as SaveIcon } from "lucide-react";
+import { Check, ChevronRight, Loader2, LogOut, RotateCcw, Save as SaveIcon, Users } from "lucide-react";
 import { Button, buttonVariants } from "@/components/ui/button";
 import {
   Dialog,
@@ -38,7 +38,7 @@ import { DownloadCardButton } from "@/components/social/download-card";
 import { analyzeCost } from "./cost-analysis";
 import { Confetti } from "./confetti";
 import { toRoster } from "./draft-state";
-import { useGame } from "./game-provider";
+import { freshSeed, useGame } from "./game-provider";
 import { saveLocalTeam } from "./local-teams";
 import { usePhaseGuard } from "./use-phase-guard";
 import { COUNT_UP_SECONDS, TeamRevealBody } from "./team-reveal";
@@ -52,6 +52,12 @@ function readDifficulty(): BudgetDifficulty {
     return "normal";
   }
 }
+
+/** Lobby entrants get one re-draft (async lobbies only — live drafts have no
+ *  redos). Same per-lobby localStorage key the classic sim screen uses, so a
+ *  retry burned in either mode counts once. */
+const MAX_LOBBY_RETRIES = 1;
+const lobbyRetryKey = (code: string) => `ud:lobby-retries:${code}`;
 
 function SimSkeleton() {
   return (
@@ -71,19 +77,25 @@ function SimSkeleton() {
 export function BudgetSimScreen() {
   const t = useTranslations("budget");
   const tSim = useTranslations("sim");
-  const { state, ctx, players } = useGame();
+  const { state, dispatch, ctx, players } = useGame();
   const allowed = usePhaseGuard(["locked"]);
   const router = useRouter();
   const reducedMotion = useReducedMotion();
 
   const [teamName, setTeamName] = useState("");
-  const [difficulty, setDifficulty] = useState<BudgetDifficulty>("normal");
+  // Lobby entries carry the entrant's name so the standings show whose team
+  // is whose; remembered per device so it's typed once.
+  const [playerName, setPlayerName] = useState("");
+  const [difficultyState, setDifficulty] = useState<BudgetDifficulty>("normal");
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const savingRef = useRef(false);
   // Cache the saved slug so navigating back and re-tapping Challenge reuses the
   // same persisted team instead of creating a duplicate row each time.
   const savedSlugRef = useRef<string | null>(null);
+  // Lobby re-draft: one per device per lobby (async only), tracked in
+  // localStorage so it survives the NEW_GAME reset. null until read.
+  const [lobbyRetriesUsed, setLobbyRetriesUsed] = useState<number | null>(null);
 
   // Save-to-device dialog (mirrors the classic sim screen).
   const [localOpen, setLocalOpen] = useState(false);
@@ -91,10 +103,35 @@ export function BudgetSimScreen() {
   const [localSaved, setLocalSaved] = useState(false);
   const [deviceError, setDeviceError] = useState<string | null>(null);
 
-  // Hydrate difficulty from localStorage once on the client.
+  // Hydrate difficulty + player name from localStorage once on the client.
   useEffect(() => {
     setDifficulty(readDifficulty());
+    try {
+      const stored = window.localStorage.getItem("ud:player-name");
+       
+      if (stored) setPlayerName(stored);
+    } catch {
+      // storage unavailable (private mode) — start blank
+    }
   }, []);
+
+  // Budget lobbies always play at Normal difficulty (the shared cap everyone
+  // in the lobby drafts under), whatever a previous solo run left in storage.
+  const lobbyCode = state?.lobbyCode ?? null;
+  const difficulty: BudgetDifficulty = lobbyCode ? "normal" : difficultyState;
+
+  // Read how many lobby re-drafts this device has already used (per lobby).
+  useEffect(() => {
+    if (!lobbyCode) return;
+    let used = 0;
+    try {
+      used = Number(window.localStorage.getItem(lobbyRetryKey(lobbyCode))) || 0;
+    } catch {
+      // storage unavailable — treat as no retries used
+    }
+     
+    setLobbyRetriesUsed(used);
+  }, [lobbyCode]);
 
   const sim = useMemo(() => {
     if (!state || state.status !== "locked") return null;
@@ -143,8 +180,39 @@ export function BudgetSimScreen() {
     setLocalSaved(true);
   };
 
-  // Save the budget team (server validates the cap), then route to the dedicated
-  // opponent-picker screen. The matchup itself is created there, on pick.
+  // Save the budget team (server validates the cap). Returns the persisted
+  // slug, reusing a previous save so navigating back and re-tapping doesn't
+  // create a duplicate row. Null = failed (error state already set).
+  const saveBudgetTeam = async (): Promise<string | null> => {
+    if (!state || !sim) return null;
+    if (savedSlugRef.current) return savedSlugRef.current;
+    const saveRes = await fetch("/api/budget/teams", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        teamName: teamName.trim(),
+        roster: sim.roster,
+        snapshotVersion: state.snapshotVersion,
+        difficulty,
+      }),
+    });
+    if (saveRes.status === 409) {
+      setError(tSim("toastStaleData"));
+      return null;
+    }
+    if (saveRes.status === 422) {
+      const data = (await saveRes.json().catch(() => null)) as { error?: string } | null;
+      setError(data?.error ?? t("budgetExceeded"));
+      return null;
+    }
+    if (!saveRes.ok) throw new Error(`save failed: ${saveRes.status}`);
+    const saveData: SaveTeamResponse = await saveRes.json();
+    savedSlugRef.current = saveData.team.slug;
+    return saveData.team.slug;
+  };
+
+  // Solo flow: save, then route to the dedicated opponent-picker screen. The
+  // matchup itself is created there, on pick.
   const saveAndGoToChallenge = async () => {
     if (savingRef.current || !state || !sim) return;
     // Name is optional for budget challenges — only needed to appear named on
@@ -156,53 +224,108 @@ export function BudgetSimScreen() {
     }
     setError(null);
 
-    // Roster size (6 or 8) rides along so the opponent picker challenges the
-    // matching famous-team preset and links to the right leaderboard board.
-    const size = ctx.mode?.draftRounds ?? 6;
-    const goTo = (slug: string) =>
-      router.push(
-        `/budget/challenge?team=${encodeURIComponent(slug)}` +
-          `&name=${encodeURIComponent(name)}&difficulty=${difficulty}&size=${size}`
-      );
-
-    // Already saved (user came back to re-pick) — skip the duplicate write.
-    if (savedSlugRef.current) {
-      goTo(savedSlugRef.current);
-      return;
-    }
+    // Roster size (5 / 8 / 10) rides along so the opponent picker challenges
+    // the matching famous-team preset.
+    const size = ctx.mode?.draftRounds ?? 8;
 
     savingRef.current = true;
     setSaving(true);
     try {
-      const saveRes = await fetch("/api/budget/teams", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          teamName: name,
-          roster: sim.roster,
-          snapshotVersion: state.snapshotVersion,
-          difficulty,
-        }),
-      });
-      if (saveRes.status === 409) {
-        setError(tSim("toastStaleData"));
-        return;
+      const slug = await saveBudgetTeam();
+      if (slug) {
+        router.push(
+          `/budget/challenge?team=${encodeURIComponent(slug)}` +
+            `&name=${encodeURIComponent(name)}&difficulty=${difficulty}&size=${size}`
+        );
       }
-      if (saveRes.status === 422) {
-        const data = (await saveRes.json().catch(() => null)) as { error?: string } | null;
-        setError(data?.error ?? t("budgetExceeded"));
-        return;
-      }
-      if (!saveRes.ok) throw new Error(`save failed: ${saveRes.status}`);
-      const saveData: SaveTeamResponse = await saveRes.json();
-      savedSlugRef.current = saveData.team.slug;
-      goTo(saveData.team.slug);
     } catch {
       setError(t("challengeFailed"));
     } finally {
       savingRef.current = false;
       setSaving(false);
     }
+  };
+
+  // Lobby flow: save, then enter the lobby (async) or finish the live draft,
+  // mirroring the classic sim screen's lobby submission.
+  const saveAndEnterLobby = async () => {
+    if (savingRef.current || !state || !sim || !state.lobbyCode) return;
+    const name = teamName.trim();
+    if (name && containsProfanity(name)) {
+      setError(tSim("nameRejected"));
+      return;
+    }
+    const displayName = playerName.trim().slice(0, 24) || undefined;
+    if (displayName && containsProfanity(displayName)) {
+      setError(tSim("nameRejected"));
+      return;
+    }
+    setError(null);
+    if (displayName) {
+      try {
+        window.localStorage.setItem("ud:player-name", displayName);
+      } catch {
+        // best-effort persistence only
+      }
+    }
+
+    savingRef.current = true;
+    setSaving(true);
+    try {
+      const slug = await saveBudgetTeam();
+      if (!slug) return;
+      const l = state.lobbyLive
+        ? await fetch(`/api/lobbies/${encodeURIComponent(state.lobbyCode)}/finish`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ teamSlug: slug, displayName }),
+          })
+        : await fetch("/api/lobbies/enter", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ code: state.lobbyCode, teamSlug: slug, displayName }),
+          });
+      if (l.ok) {
+        // The team is locked into the lobby — clear the stored draft so this
+        // "locked" game can't bounce the user back into the summary, then jump
+        // to the lobby page (standings / live tracker).
+        try {
+          if (ctx.mode?.storageKey) {
+            window.localStorage.removeItem(ctx.mode.storageKey);
+          }
+        } catch {
+          // storage unavailable — nothing persisted to clear
+        }
+        router.push(`/l/${state.lobbyCode}`);
+        return;
+      }
+      const err = (await l.json().catch(() => null)) as { error?: string } | null;
+      setError(err?.error ?? tSim("toastLobbyEnterFailed"));
+    } catch {
+      setError(tSim("toastLobbyEnterFailed"));
+    } finally {
+      savingRef.current = false;
+      setSaving(false);
+    }
+  };
+
+  // One re-draft per async lobby: scrap this team and draft a fresh one for
+  // the same lobby (consumes the persisted retry). Live drafts have no redos.
+  const reDraftForLobby = () => {
+    const code = state?.lobbyCode;
+    if (!code || !window.confirm(tSim("confirmReDraft"))) return;
+    try {
+      window.localStorage.setItem(
+        lobbyRetryKey(code),
+        String((lobbyRetriesUsed ?? 0) + 1)
+      );
+    } catch {
+      // storage unavailable — the retry still proceeds this session
+    }
+    setLobbyRetriesUsed((n) => (n ?? 0) + 1);
+    savedSlugRef.current = null;
+    dispatch({ type: "NEW_GAME", seed: freshSeed(), lobbyCode: code });
+    router.push(`${ctx.mode?.playPath ?? "/budget/play"}?difficulty=normal`);
   };
 
   if (!state || !allowed || !sim) return <SimSkeleton />;
@@ -316,6 +439,16 @@ export function BudgetSimScreen() {
           </p>
         )}
 
+        {lobbyCode && (
+          <Input
+            value={playerName}
+            maxLength={24}
+            placeholder={tSim("playerNamePlaceholder")}
+            aria-label={tSim("playerNameAria")}
+            className="h-11 rounded-xl border-border bg-card dark:bg-card"
+            onChange={(e) => setPlayerName(e.target.value)}
+          />
+        )}
         <Input
           value={teamName}
           maxLength={40}
@@ -335,43 +468,91 @@ export function BudgetSimScreen() {
             {error}
           </p>
         )}
-        <Button
-          className="h-14 w-full rounded-2xl font-display text-lg tracking-wide shadow-lg shadow-primary/30"
-          disabled={saving}
-          onClick={saveAndGoToChallenge}
-        >
-          {saving ? (
-            <Loader2 className="size-5 animate-spin" />
-          ) : (
-            <>
-              {t("challengeCta")} <ChevronRight className="size-5" />
-            </>
-          )}
-        </Button>
-        <Button
-          variant="outline"
-          className="h-12 w-full rounded-2xl text-sm font-bold"
-          disabled={saving}
-          onClick={() => {
-            // Back to the difficulty selector for a fresh run. We clear the
-            // persisted budget game instead of dispatching NEW_GAME here: a
-            // reset flips the phase to "draft", and this screen's phase guard
-            // ("locked") would then race us to /budget/play at the default $100
-            // cap before our push to the selector lands. Clearing storage lets
-            // the next /budget/play mount start a brand-new draft at the cap the
-            // user re-picks.
-            try {
-              if (ctx.mode?.storageKey) {
-                window.localStorage.removeItem(ctx.mode.storageKey);
-              }
-            } catch {
-              // storage unavailable — a fresh game is still created on mount
-            }
-            router.push("/budget");
-          }}
-        >
-          {t("redraft")} <RotateCcw className="size-4" />
-        </Button>
+        {lobbyCode ? (
+          <>
+            <Button
+              className="h-14 w-full rounded-2xl font-display text-lg tracking-wide shadow-lg shadow-primary/30"
+              disabled={saving}
+              onClick={saveAndEnterLobby}
+            >
+              {saving ? (
+                <Loader2 className="size-5 animate-spin" />
+              ) : (
+                <>
+                  <Users className="size-5" /> {tSim("submitTeam")}
+                </>
+              )}
+            </Button>
+            {/* One re-draft per async lobby — hidden once used. Live lobbies
+                are synced (everyone drafts at once), so there are no redos. */}
+            {!state.lobbyLive &&
+              lobbyRetriesUsed !== null &&
+              lobbyRetriesUsed < MAX_LOBBY_RETRIES && (
+                <Button
+                  variant="outline"
+                  className="h-12 w-full rounded-2xl text-sm font-bold"
+                  disabled={saving}
+                  onClick={reDraftForLobby}
+                >
+                  <RotateCcw className="size-4" />{" "}
+                  {tSim("reDraft", { left: MAX_LOBBY_RETRIES - lobbyRetriesUsed })}
+                </Button>
+              )}
+            {/* Escape hatch: a stale lobby draft shouldn't trap the team. */}
+            <Button
+              variant="outline"
+              className="h-12 w-full rounded-2xl text-sm font-bold"
+              disabled={saving}
+              onClick={() => {
+                if (window.confirm(tSim("confirmExitLobby", { code: lobbyCode }))) {
+                  dispatch({ type: "LEAVE_LOBBY" });
+                }
+              }}
+            >
+              <LogOut className="size-4" /> {tSim("exitLobby")}
+            </Button>
+          </>
+        ) : (
+          <>
+            <Button
+              className="h-14 w-full rounded-2xl font-display text-lg tracking-wide shadow-lg shadow-primary/30"
+              disabled={saving}
+              onClick={saveAndGoToChallenge}
+            >
+              {saving ? (
+                <Loader2 className="size-5 animate-spin" />
+              ) : (
+                <>
+                  {t("challengeCta")} <ChevronRight className="size-5" />
+                </>
+              )}
+            </Button>
+            <Button
+              variant="outline"
+              className="h-12 w-full rounded-2xl text-sm font-bold"
+              disabled={saving}
+              onClick={() => {
+                // Back to the difficulty selector for a fresh run. We clear the
+                // persisted budget game instead of dispatching NEW_GAME here: a
+                // reset flips the phase to "draft", and this screen's phase guard
+                // ("locked") would then race us to /budget/play at the default $100
+                // cap before our push to the selector lands. Clearing storage lets
+                // the next /budget/play mount start a brand-new draft at the cap the
+                // user re-picks.
+                try {
+                  if (ctx.mode?.storageKey) {
+                    window.localStorage.removeItem(ctx.mode.storageKey);
+                  }
+                } catch {
+                  // storage unavailable — a fresh game is still created on mount
+                }
+                router.push("/budget");
+              }}
+            >
+              {t("redraft")} <RotateCcw className="size-4" />
+            </Button>
+          </>
+        )}
       </div>
     </div>
   );

@@ -54,6 +54,7 @@ export async function loadLiveLobbyState(
     name: lobby.name,
     phase: lobbyPhase(lobby),
     rosterSize: lobby.teamSize,
+    isBudget: lobby.isBudget,
     teamLimit: lobby.teamLimit,
     startedAt: lobby.startedAt?.toISOString() ?? null,
     participants,
@@ -173,6 +174,7 @@ export async function loadLobbyViewer(code: string): Promise<{
   teamLimit: number | null;
   teamSize: number;
   isLive: boolean;
+  isBudget: boolean;
 }> {
   const anonId = await getAnonIdFromCookie();
   const [lobby, entry] = await Promise.all([
@@ -183,6 +185,7 @@ export async function loadLobbyViewer(code: string): Promise<{
         teamLimit: true,
         teamSize: true,
         isLive: true,
+        isBudget: true,
       },
     }),
     anonId
@@ -198,5 +201,6 @@ export async function loadLobbyViewer(code: string): Promise<{
     teamLimit: lobby?.teamLimit ?? null,
     teamSize: lobby?.teamSize ?? 8,
     isLive: lobby?.isLive ?? false,
+    isBudget: lobby?.isBudget ?? false,
   };
 }

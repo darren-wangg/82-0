@@ -49,6 +49,8 @@ export interface LiveLobbyState {
   phase: LobbyPhase;
   /** Picks each player makes = the lobby's roster size (5 / 8 / 10). */
   rosterSize: number;
+  /** Budget lobby: everyone drafts under the same salary cap. */
+  isBudget: boolean;
   teamLimit: number | null;
   startedAt: string | null;
   participants: LiveParticipant[];

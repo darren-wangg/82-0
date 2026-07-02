@@ -27,7 +27,7 @@ import {
   famousTeamFranchise,
   type FamousTeam,
 } from "@/lib/famous-teams";
-import { resolveBudgetSize } from "@/lib/budget";
+import { resolveTeamSize } from "@/lib/team-size";
 import { TeamLogo } from "@/components/social/team-logo";
 
 export function BudgetChallengeScreen() {
@@ -36,8 +36,8 @@ export function BudgetChallengeScreen() {
   const params = useSearchParams();
   const teamSlug = params.get("team") ?? "";
   const teamName = params.get("name") ?? "";
-  // Budget roster size (6 or 8): picks the size-matched famous preset + OVR.
-  const size = resolveBudgetSize(params.get("size"));
+  // Budget roster size (5 / 8 / 10): picks the size-matched famous preset + OVR.
+  const size = resolveTeamSize(params.get("size"));
   const [pending, setPending] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
 

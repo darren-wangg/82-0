@@ -69,6 +69,14 @@ export async function POST(
     if (team.teamSize !== lobby.teamSize) {
       return jsonError(422, `This is a ${lobby.teamSize}-man lobby — draft a ${lobby.teamSize}-man team.`);
     }
+    // Same mode gate as /api/lobbies/enter: budget lobbies take only budget
+    // teams built under the shared (Normal) cap, classic lobbies only classic.
+    if (lobby.isBudget && (team.mode !== "budget" || team.difficulty !== "normal")) {
+      return jsonError(422, "This is a budget lobby — draft a budget team from the lobby page.");
+    }
+    if (!lobby.isBudget && team.mode !== null) {
+      return jsonError(422, "Budget teams can't enter a classic lobby.");
+    }
 
     // Record the entry (idempotent: re-finishing the same team is a no-op; a
     // different team from this device is rejected). Mirrors /api/lobbies/enter.

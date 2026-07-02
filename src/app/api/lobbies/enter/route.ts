@@ -64,6 +64,17 @@ export async function POST(request: Request) {
         `This is a ${lobby.teamSize}-man lobby — draft a ${lobby.teamSize}-man team.`
       );
     }
+    // Budget lobbies take only budget teams built under the shared (Normal)
+    // cap; classic lobbies take only classic teams. Keeps the cap fair.
+    if (lobby.isBudget && (team.mode !== "budget" || team.difficulty !== "normal")) {
+      return jsonError(
+        422,
+        "This is a budget lobby — draft a budget team from the lobby page."
+      );
+    }
+    if (!lobby.isBudget && team.mode !== null) {
+      return jsonError(422, "Budget teams can't enter a classic lobby.");
+    }
 
     // Team cap: only blocks NEW entrants — a device already in the lobby can
     // still re-submit (idempotent / name refresh below).

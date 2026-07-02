@@ -32,6 +32,7 @@ import {
 } from "./draft-state";
 import { DECADE_COLORS } from "./format";
 import { freshSeed, useGame } from "./game-provider";
+import { LobbyBanner } from "./lobby-banner";
 import { PoolList } from "./pool-list";
 import { RosterBoard } from "./roster-board";
 import { SlotReel } from "./slot-reel";
@@ -86,6 +87,45 @@ export function BudgetPlayScreen() {
       // storage unavailable — best-effort
     }
   }, [difficulty]);
+
+  // /budget/play?lobby={code}[&live=1] starts a budget draft destined for that
+  // lobby (reached via /budget/join, which pins the size cookie first). Mirrors
+  // the classic play screen: a fresh or already-matching game adopts it
+  // silently; an in-progress draft asks before being scrapped.
+  const lobbyParam = searchParams.get("lobby");
+  const liveParam = searchParams.get("live") === "1";
+  const stateLobby = state?.lobbyCode ?? null;
+  const statePicks = state?.picks.length ?? 0;
+  const stateReady = state !== null;
+  useEffect(() => {
+    if (!stateReady) return;
+    if (!lobbyParam || lobbyParam === stateLobby) return;
+    if (statePicks > 0 && !window.confirm(t("confirmRetargetLobby"))) return;
+    dispatch({
+      type: "NEW_GAME",
+      seed: freshSeed(),
+      lobbyCode: lobbyParam,
+      lobbyLive: liveParam,
+    });
+  }, [stateReady, lobbyParam, liveParam, stateLobby, statePicks, dispatch, t]);
+
+  // Live lobby: report this device's pick count after each placement so
+  // opponents see the bar fill in near-real-time. Same fire-and-forget,
+  // deduped pattern as the classic play screen.
+  const liveLobbyCode = state?.lobbyLive ? state.lobbyCode : null;
+  const lastReportedPicks = useRef(-1);
+  useEffect(() => {
+    if (!liveLobbyCode) return;
+    if (statePicks === lastReportedPicks.current) return;
+    lastReportedPicks.current = statePicks;
+    void fetch(`/api/lobbies/${encodeURIComponent(liveLobbyCode)}/progress`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ picksCount: statePicks }),
+    }).catch(() => {
+      // Transient — the next pick (or the opponent's poll) will catch up.
+    });
+  }, [liveLobbyCode, statePicks]);
 
   // Compute price map once snapshot is available (client-side).
   const priceMap = useMemo(() => {
@@ -193,15 +233,18 @@ export function BudgetPlayScreen() {
                 })}
               </motion.span>
             </p>
-            <Button
-              variant="ghost"
-              size="icon-sm"
-              aria-label={t("newDraftAria")}
-              className="text-muted-foreground"
-              onClick={newGame}
-            >
-              <RotateCcw />
-            </Button>
+            {/* Lobby drafts are one-shot — no restarting into a fresh pool. */}
+            {!state.lobbyCode && (
+              <Button
+                variant="ghost"
+                size="icon-sm"
+                aria-label={t("newDraftAria")}
+                className="text-muted-foreground"
+                onClick={newGame}
+              >
+                <RotateCcw />
+              </Button>
+            )}
             <SoundToggle className="size-7 border-transparent bg-transparent backdrop-blur-none" />
           </div>
         </div>
@@ -226,6 +269,17 @@ export function BudgetPlayScreen() {
           </Button>
         </div>
       </div>
+
+      {state.lobbyCode && (
+        <LobbyBanner
+          code={state.lobbyCode}
+          onLeave={() => {
+            if (window.confirm(t("confirmLeave", { code: state.lobbyCode ?? "" }))) {
+              dispatch({ type: "LEAVE_LOBBY" });
+            }
+          }}
+        />
+      )}
 
       {/* Budget meter — always visible during the budget draft */}
       <BudgetMeter spent={spent} cap={cap} className="mt-1.5" />

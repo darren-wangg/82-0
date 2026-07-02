@@ -41,10 +41,11 @@ async function main() {
   const baselines = getBaselines(snapshot);
   const engine = getEngine();
 
-  // Each famous team is seeded at BOTH budget sizes: the 6-man roster under its
-  // base slug and the 8-man (5+3) roster under "<slug>-8", so a budget team of
-  // either size faces a size-matched opponent.
-  console.log(`Seeding ${FAMOUS_TEAMS.length} famous teams × 2 sizes…`);
+  // Each famous team is seeded at every budget size (5 / 8 / 10, matching the
+  // global team-size preference) under "<slug>-5" / "<slug>-8" / "<slug>-10",
+  // so a budget team of any size faces a size-matched opponent. Legacy 6-man
+  // rows under the base slug are left in place but no longer addressed.
+  console.log(`Seeding ${FAMOUS_TEAMS.length} famous teams × 3 sizes…`);
 
   const upsertPreset = async (
     slug: string,
@@ -92,7 +93,7 @@ async function main() {
   };
 
   for (const ft of FAMOUS_TEAMS) {
-    for (const size of [6, 8] as const) {
+    for (const size of [5, 8, 10] as const) {
       await upsertPreset(
         famousSlugForSize(ft.slug, size),
         ft.name,

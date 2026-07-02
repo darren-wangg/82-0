@@ -192,6 +192,10 @@ model Lobby {
   // is derived from (isLive, startedAt, closedAt) — see lobbyPhase().
   isLive    Boolean   @default(false)
   startedAt DateTime?
+  // Budget lobbies: everyone drafts under the same salary cap (Normal
+  // difficulty at the lobby's roster size). Entrants must submit budget-mode
+  // teams (enforced in enter/finish).
+  isBudget  Boolean   @default(false)
   entries   LobbyEntry[]
   participants LobbyParticipant[]
 }

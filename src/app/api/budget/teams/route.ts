@@ -89,7 +89,11 @@ export async function POST(request: Request) {
   }
   // Cap scales with roster size; the size is taken from the roster itself
   // (5 starters + bench), so it can't be spoofed independently of the team.
-  const cap = budgetCap(teamSizeOf(roster), difficulty as BudgetDifficulty);
+  const size = teamSizeOf(roster);
+  if (size !== 5 && size !== 8 && size !== 10) {
+    return jsonError(422, `Budget rosters are 5, 8, or 10 players (got ${size})`);
+  }
+  const cap = budgetCap(size, difficulty as BudgetDifficulty);
   if (totalSpend > cap) {
     return jsonError(
       422,

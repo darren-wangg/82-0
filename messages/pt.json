@@ -139,7 +139,9 @@
     "blurb8": "Clássico",
     "blurb10": "Banco profundo",
     "live": "Draft ao vivo",
-    "liveHint": "Todos draftam ao mesmo tempo e assistem ao vivo. Sem repetições."
+    "liveHint": "Todos draftam ao mesmo tempo e assistem ao vivo. Sem repetições.",
+    "budget": "Draft com orçamento",
+    "budgetHint": "Todos draftam sob o mesmo teto salarial."
   },
   "myTeams": {
     "empty": "Nenhum time de {size} salvo ainda — termine uma temporada e toque em Salvar.",

@@ -68,13 +68,17 @@ export async function POST(request: Request) {
   // contract like the team limit / size).
   const isLive = (body as { isLive?: unknown }).isLive === true;
 
+  // Budget lobbies: everyone drafts under the same salary cap (Normal
+  // difficulty at the lobby's roster size). Also off the frozen contract.
+  const isBudget = (body as { isBudget?: unknown }).isBudget === true;
+
   try {
     const creatorAnonId = await getOrCreateAnonId();
     for (let attempt = 0; attempt < CODE_ATTEMPTS; attempt++) {
       const code = makeLobbyCode();
       try {
         const lobby = await prisma.lobby.create({
-          data: { code, name: parsed.data.name, teamLimit, teamSize, creatorAnonId, isLive },
+          data: { code, name: parsed.data.name, teamLimit, teamSize, creatorAnonId, isLive, isBudget },
         });
         const response: LobbyResponse = {
           code: lobby.code,

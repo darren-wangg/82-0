@@ -12,6 +12,7 @@ import { notFound } from "next/navigation";
 import { Trophy, UserRoundPlus } from "lucide-react";
 import { LobbyResponse } from "@/lib/contracts";
 import { loadLobbyResponse, loadLobbyViewer } from "@/app/api/_lib/lobbies";
+import { budgetCap } from "@/lib/budget";
 import { PLAY_PATH, resolveTeamSize } from "@/lib/team-size";
 import { buttonVariants } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -77,8 +78,15 @@ export default async function LobbyPage({ params }: PageProps<"/l/[code]">) {
   const entered = viewer.entryTeamSlug !== null;
   const teamCount = lobby.standings.length;
   const limit = viewer.teamLimit;
-  // Draft through the flow matching the lobby's size (5 / 8 / 10).
-  const draftPath = PLAY_PATH[resolveTeamSize(String(viewer.teamSize))];
+  // Draft through the flow matching the lobby's size (5 / 8 / 10). Budget
+  // lobbies route through /budget/join, which pins the size cookie so the
+  // budget layout mounts the lobby's roster size (cap: Normal at that size).
+  const draftPath = viewer.isBudget
+    ? `/budget/join?size=${viewer.teamSize}`
+    : PLAY_PATH[resolveTeamSize(String(viewer.teamSize))];
+  const draftHref = viewer.isBudget
+    ? `${draftPath}&lobby=${encodeURIComponent(lobby.code)}`
+    : `${draftPath}?lobby=${encodeURIComponent(lobby.code)}`;
   const full = limit !== null && teamCount >= limit;
   const placementIdx = entered
     ? lobby.standings.findIndex((s) => s.teamSlug === viewer.entryTeamSlug)
@@ -105,10 +113,15 @@ export default async function LobbyPage({ params }: PageProps<"/l/[code]">) {
             <span className="ml-1.5 font-bold text-amber-400 uppercase">· Full</span>
           )}
         </p>
-        <p className="mt-1.5 flex justify-center">
+        <p className="mt-1.5 flex justify-center gap-1.5">
           <span className="rounded-md bg-muted px-2 py-0.5 text-[10px] font-bold tracking-wide text-muted-foreground uppercase">
             {viewer.teamSize}-man
           </span>
+          {viewer.isBudget && (
+            <span className="rounded-md bg-violet-400/15 px-2 py-0.5 text-[10px] font-bold tracking-wide text-violet-300 uppercase">
+              Budget · ${budgetCap(viewer.teamSize, "normal")}
+            </span>
+          )}
         </p>
       </div>
 
@@ -185,7 +198,7 @@ export default async function LobbyPage({ params }: PageProps<"/l/[code]">) {
         ) : (
           <div className="space-y-2">
             <Link
-              href={`${draftPath}?lobby=${encodeURIComponent(lobby.code)}`}
+              href={draftHref}
               className={cn(
                 buttonVariants({ size: "lg" }),
                 "h-14 w-full rounded-2xl font-display text-xl tracking-wide shadow-lg shadow-primary/30"

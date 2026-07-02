@@ -139,7 +139,9 @@
     "blurb8": "Classic",
     "blurb10": "Deep bench",
     "live": "Live draft",
-    "liveHint": "Everyone drafts at once and watches it live. No redos."
+    "liveHint": "Everyone live drafts. No redos.",
+    "budget": "Budget draft",
+    "budgetHint": "Everyone drafts under the same salary cap."
   },
   "myTeams": {
     "empty": "No saved {size}-man teams yet — draft a team and hit Save.",

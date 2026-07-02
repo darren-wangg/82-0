@@ -20,6 +20,7 @@ export function CreateLobbyForm({
   const [teamSize, setTeamSize] = useState<TeamSize>(defaultSize);
   const [capped, setCapped] = useState(false);
   const [limit, setLimit] = useState("8");
+  const [budget, setBudget] = useState(false);
   const [live, setLive] = useState(false);
   const [pending, setPending] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -38,7 +39,7 @@ export function CreateLobbyForm({
       const res = await fetch("/api/lobbies", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name: trimmed, limit: parsedLimit, teamSize, isLive: live }),
+        body: JSON.stringify({ name: trimmed, limit: parsedLimit, teamSize, isBudget: budget, isLive: live }),
       });
       if (!res.ok) throw new Error(String(res.status));
       const lobby: LobbyResponse = await res.json();
@@ -85,11 +86,29 @@ export function CreateLobbyForm({
                     : "border-border/70 text-muted-foreground hover:bg-muted/50"
                 )}
               >
-                <span className="font-bold">{t("manCount", { size })}</span>
+                <span className="font-bold tabular-nums">{size}</span>
               </button>
             );
           })}
         </div>
+      </div>
+
+      <div className="rounded-xl border border-border/70 px-3 py-2.5">
+        <label className="flex items-center justify-between gap-3 text-sm">
+          <span>
+            <span className="font-medium">{t("budget")}</span>
+            <span className="block text-xs text-muted-foreground">
+              {t("budgetHint")}
+            </span>
+          </span>
+          <input
+            type="checkbox"
+            checked={budget}
+            onChange={(e) => setBudget(e.target.checked)}
+            className="size-4 accent-primary"
+            aria-label={t("budget")}
+          />
+        </label>
       </div>
 
       <div className="rounded-xl border border-border/70 px-3 py-2.5">

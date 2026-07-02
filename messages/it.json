@@ -139,7 +139,9 @@
     "blurb8": "Classico",
     "blurb10": "Panchina lunga",
     "live": "Draft dal vivo",
-    "liveHint": "Tutti scelgono insieme e guardano dal vivo. Niente ripetizioni."
+    "liveHint": "Tutti scelgono insieme e guardano dal vivo. Niente ripetizioni.",
+    "budget": "Draft con budget",
+    "budgetHint": "Tutti draftano sotto lo stesso tetto salariale."
   },
   "myTeams": {
     "empty": "Ancora nessuna squadra da {size} salvata — completa una stagione e premi Salva.",

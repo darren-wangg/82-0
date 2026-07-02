@@ -139,7 +139,9 @@
     "blurb8": "Klassisch",
     "blurb10": "Tiefe Bank",
     "live": "Live-Draft",
-    "liveHint": "Alle draften gleichzeitig und schauen live zu. Keine Wiederholung."
+    "liveHint": "Alle draften gleichzeitig und schauen live zu. Keine Wiederholung.",
+    "budget": "Budget-Draft",
+    "budgetHint": "Alle draften unter derselben Gehaltsobergrenze."
   },
   "myTeams": {
     "empty": "Noch keine gespeicherten {size}-Mann-Teams — beende eine Saison und tippe auf Speichern.",

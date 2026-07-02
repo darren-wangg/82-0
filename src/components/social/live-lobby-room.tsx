@@ -23,6 +23,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { CopyCode } from "@/components/social/copy-code";
 import { ShareButton } from "@/components/social/share-button";
 import type { LiveLobbyState } from "@/lib/live-lobby";
+import { budgetCap } from "@/lib/budget";
 import { PLAY_PATH, resolveTeamSize } from "@/lib/team-size";
 import { cn } from "@/lib/utils";
 import { useLiveLobby } from "./use-live-lobby";
@@ -54,8 +55,15 @@ export function LiveLobbyRoom({ code, name }: { code: string; name: string }) {
   return (
     <main className="space-y-5">
       <div className="text-center">
-        <p className="inline-flex items-center gap-1.5 rounded-full border border-primary/40 bg-primary/10 px-2.5 py-0.5 text-[11px] font-bold tracking-wide text-primary uppercase">
-          <Radio className="size-3" /> Live
+        <p className="inline-flex items-center gap-1.5">
+          <span className="inline-flex items-center gap-1.5 rounded-full border border-primary/40 bg-primary/10 px-2.5 py-0.5 text-[11px] font-bold tracking-wide text-primary uppercase">
+            <Radio className="size-3" /> Live
+          </span>
+          {state.isBudget && (
+            <span className="rounded-full border border-violet-400/40 bg-violet-400/10 px-2.5 py-0.5 text-[11px] font-bold tracking-wide text-violet-300 uppercase">
+              Budget · ${budgetCap(state.rosterSize, "normal")}
+            </span>
+          )}
         </p>
         <h1 className="mt-1.5 text-2xl font-black tracking-tight">{name}</h1>
         <p className="mt-1.5 flex items-center justify-center gap-2 text-xs text-muted-foreground">
@@ -221,8 +229,11 @@ function DraftTracker({
 }) {
   // Draft through the flow matching the lobby's roster size (5 / 8 / 10), same
   // as the async lobby page; the play screen reports progress back as it fills.
-  const draftPath = PLAY_PATH[resolveTeamSize(String(state.rosterSize))];
-  const draftHref = `${draftPath}?lobby=${encodeURIComponent(code)}&live=1`;
+  // Budget lobbies route through /budget/join, which pins the size cookie so
+  // the budget layout mounts the lobby's roster size.
+  const draftHref = state.isBudget
+    ? `/budget/join?size=${state.rosterSize}&lobby=${encodeURIComponent(code)}&live=1`
+    : `${PLAY_PATH[resolveTeamSize(String(state.rosterSize))]}?lobby=${encodeURIComponent(code)}&live=1`;
 
   return (
     <>

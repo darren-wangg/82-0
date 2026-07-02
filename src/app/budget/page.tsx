@@ -11,13 +11,9 @@ import { cookies } from "next/headers";
 import { getTranslations } from "next-intl/server";
 import { ChevronLeft } from "lucide-react";
 import { cn } from "@/lib/utils";
-import {
-  BUDGET_CAP,
-  BUDGET_DIFFICULTIES,
-  BUDGET_SIZE_COOKIE,
-  resolveBudgetSize,
-} from "@/lib/budget";
-import { BudgetSizeSwitch } from "@/components/budget-size-switch";
+import { BUDGET_CAP, BUDGET_DIFFICULTIES } from "@/lib/budget";
+import { resolveTeamSize, TEAM_SIZE_COOKIE } from "@/lib/team-size";
+import { TeamSizeSwitch } from "@/components/team-size-switch";
 
 export const metadata: Metadata = {
   title: "Budget Draft — 82-0",
@@ -33,8 +29,8 @@ const DIFFICULTY_STYLES = {
 
 export default async function BudgetPage() {
   const t = await getTranslations("budget");
-  const size = resolveBudgetSize(
-    (await cookies()).get(BUDGET_SIZE_COOKIE)?.value
+  const size = resolveTeamSize(
+    (await cookies()).get(TEAM_SIZE_COOKIE)?.value
   );
   const caps = BUDGET_CAP[size];
 
@@ -57,15 +53,16 @@ export default async function BudgetPage() {
           </div>
         </div>
 
-        {/* Roster-size toggle (6 / 8), mirroring the home screen control. The
-            chosen size sets the caps below and the draft roster size. */}
+        {/* Global roster-size toggle (5 / 8 / 10) — the same preference as the
+            home screen. The chosen size sets the caps below and the draft
+            roster size. */}
         <div className="flex items-center justify-between gap-3">
           <p className="text-sm text-muted-foreground">{t("intro")}</p>
           <div className="flex shrink-0 flex-col items-center gap-1">
             <span className="font-arcade text-[8px] text-muted-foreground uppercase">
               {t("rosterSize")}
             </span>
-            <BudgetSizeSwitch value={size} />
+            <TeamSizeSwitch value={size} />
           </div>
         </div>
 

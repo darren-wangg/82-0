@@ -71,18 +71,18 @@ const CLASSIC_BENCH: BenchSlotDef[] = [
   { key: "BC", label: "C", accepts: ["C"] },
 ];
 
-/** Budget: a single flexible 6th-man bench slot (accepts any position), so a
- *  budget roster is 5 starters + 1 bench = 6 players. */
-const BUDGET_BENCH: BenchSlotDef[] = [
-  { key: "B6", label: "6th", accepts: [...POSITIONS] },
-];
-
-/** Budget 8-man: three flexible bench slots (5 starters + 3 bench), keeping the
- *  "spend anywhere" feel of the 6-man bench at the larger size. */
+/** Budget benches are flexible (any position, "spend anywhere"): 8-man is
+ *  5 starters + 3 bench, 10-man is 5 + 5. The 5-man budget mode has no bench. */
 const BUDGET8_BENCH: BenchSlotDef[] = [
   { key: "B6", label: "6th", accepts: [...POSITIONS] },
   { key: "B7", label: "7th", accepts: [...POSITIONS] },
   { key: "B8", label: "8th", accepts: [...POSITIONS] },
+];
+
+const BUDGET10_BENCH: BenchSlotDef[] = [
+  ...BUDGET8_BENCH,
+  { key: "B9", label: "9th", accepts: [...POSITIONS] },
+  { key: "B10", label: "10th", accepts: [...POSITIONS] },
 ];
 
 /** 10-man: a strict positional bench (a second of each position). */
@@ -136,29 +136,26 @@ export const FIVE_MODE: GameMode = {
 };
 
 /**
- * Budget mode: a 6-man roster (5 starters + 1 flexible bench), routed to
- * /budget/* paths so the phase guard navigates between the budget draft and
- * budget sim screens. The salary cap is NOT part of the GameMode — it is
- * tracked separately in BudgetContext from the ?difficulty= URL param.
+ * Budget modes: one per roster size (5 / 8 / 10, following the global team-size
+ * preference), all routed to the same /budget/* paths — the (budget) layout
+ * picks the active mode from the ud:team-size cookie. Each size has its own
+ * storage key so drafts at different sizes never clobber each other. The
+ * salary cap is NOT part of the GameMode — it comes from the ?difficulty=
+ * URL param + roster size (see budgetCap in src/lib/budget.ts).
  */
-export const BUDGET_MODE: GameMode = {
-  id: "budget",
-  label: "Budget",
-  draftRounds: 6,
+export const BUDGET5_MODE: GameMode = {
+  id: "budget5",
+  label: "Budget 5",
+  draftRounds: 5,
   teamSkips: TEAM_SKIPS_PER_GAME,
   eraSkips: ERA_SKIPS_PER_GAME,
-  benchSlots: BUDGET_BENCH,
-  allSlots: [...POSITIONS, ...BUDGET_BENCH.map((b) => b.key)],
-  storageKey: "eighty-two-zero/budget/v2",
+  benchSlots: [],
+  allSlots: [...POSITIONS],
+  storageKey: "eighty-two-zero/budget5/v1",
   playPath: "/budget/play",
   simPath: "/budget/sim",
 };
 
-/**
- * Budget 8-man: same /budget/* routes as the 6-man budget mode (the active mode
- * is chosen by the budget-size cookie in the (budget) layout), but an 8-man
- * roster with its own storage key so the two sizes never clobber each other.
- */
 export const BUDGET8_MODE: GameMode = {
   id: "budget8",
   label: "Budget 8",
@@ -172,12 +169,31 @@ export const BUDGET8_MODE: GameMode = {
   simPath: "/budget/sim",
 };
 
+export const BUDGET10_MODE: GameMode = {
+  id: "budget10",
+  label: "Budget 10",
+  draftRounds: 10,
+  teamSkips: 1,
+  eraSkips: 1,
+  benchSlots: BUDGET10_BENCH,
+  allSlots: [...POSITIONS, ...BUDGET10_BENCH.map((b) => b.key)],
+  storageKey: "eighty-two-zero/budget10/v1",
+  playPath: "/budget/play",
+  simPath: "/budget/sim",
+};
+
+/** Budget mode for a roster size (5 / 8 / 10; unknown sizes fall back to 8). */
+export function budgetModeForSize(size: number): GameMode {
+  return size === 5 ? BUDGET5_MODE : size === 10 ? BUDGET10_MODE : BUDGET8_MODE;
+}
+
 export const MODES: Record<string, GameMode> = {
   [CLASSIC_MODE.id]: CLASSIC_MODE,
   [TEN_MODE.id]: TEN_MODE,
   [FIVE_MODE.id]: FIVE_MODE,
-  [BUDGET_MODE.id]: BUDGET_MODE,
+  [BUDGET5_MODE.id]: BUDGET5_MODE,
   [BUDGET8_MODE.id]: BUDGET8_MODE,
+  [BUDGET10_MODE.id]: BUDGET10_MODE,
 };
 
 /** Bench-slot defs across every mode, keyed by their (globally unique) key. */

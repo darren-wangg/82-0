@@ -139,7 +139,9 @@
     "blurb8": "Classique",
     "blurb10": "Banc profond",
     "live": "Draft en direct",
-    "liveHint": "Tout le monde drafte en même temps, en direct. Sans reprise."
+    "liveHint": "Tout le monde drafte en même temps, en direct. Sans reprise.",
+    "budget": "Draft à budget",
+    "budgetHint": "Tout le monde drafte sous le même plafond salarial."
   },
   "myTeams": {
     "empty": "Aucune équipe à {size} enregistrée — terminez une saison et appuyez sur Enregistrer.",
