@@ -5,7 +5,7 @@
  * SimScreen (animated record count-up, roster headshots, OVR/OFF/DEF, 9-cat
  * profile, "what cost you", streamed AI scouting, plus download-card and
  * save-to-device actions) via the shared <TeamRevealBody>. The only budget
- * additions are the spend summary and the famous-team challenge flow:
+ * additions are the famous-team challenge / lobby submission flow:
  * name → pick a historical opponent → save to /api/budget/teams (server
  * validates the cap) → POST /api/matchups → redirect to /m/[id].
  */
@@ -29,11 +29,10 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { SEASON_GAMES, type SaveTeamResponse } from "@/lib/contracts";
 import { containsProfanity } from "@/lib/profanity";
 import { getEngine } from "@/lib/engine-provider";
-import { getBaselines, getSnapshot } from "@/lib/snapshot-client";
+import { getBaselines } from "@/lib/snapshot-client";
 import { cn } from "@/lib/utils";
 import { SoundToggle } from "@/components/sound-toggle";
 import { isBudgetDifficulty, type BudgetDifficulty } from "@/lib/budget";
-import { priceMapOf } from "@/lib/pricing";
 import { DownloadCardButton } from "@/components/social/download-card";
 import { analyzeCost } from "./cost-analysis";
 import { Confetti } from "./confetti";
@@ -105,6 +104,7 @@ export function BudgetSimScreen() {
 
   // Hydrate difficulty + player name from localStorage once on the client.
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- one-time localStorage hydration
     setDifficulty(readDifficulty());
     try {
       const stored = window.localStorage.getItem("ud:player-name");
@@ -130,6 +130,7 @@ export function BudgetSimScreen() {
       // storage unavailable — treat as no retries used
     }
      
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- one-time localStorage hydration
     setLobbyRetriesUsed(used);
   }, [lobbyCode]);
 
@@ -143,15 +144,7 @@ export function BudgetSimScreen() {
     const cost = analyzeCost(roster, rating, season, players, getBaselines(), {
       considerBench: roster.bench.length > 3,
     });
-    let totalSpend = 0;
-    try {
-      const prices = priceMapOf(getSnapshot());
-      const allIds = [...Object.values(roster.starters), ...roster.bench];
-      totalSpend = allIds.reduce((s, id) => s + (prices.get(id) ?? 0), 0);
-    } catch {
-      // snapshot not ready — spend line just hides
-    }
-    return { roster, rating, season, cost, totalSpend };
+    return { roster, rating, season, cost };
   }, [state, players]);
 
   const saveToDevice = () => {
@@ -250,8 +243,14 @@ export function BudgetSimScreen() {
   // mirroring the classic sim screen's lobby submission.
   const saveAndEnterLobby = async () => {
     if (savingRef.current || !state || !sim || !state.lobbyCode) return;
+    // Lobby standings list teams by name, so a team name is required here
+    // (unlike the solo challenge flow, where it's optional).
     const name = teamName.trim();
-    if (name && containsProfanity(name)) {
+    if (name.length === 0 || name.length > 40) {
+      setError(tSim("toastNameRequired"));
+      return;
+    }
+    if (containsProfanity(name)) {
       setError(tSim("nameRejected"));
       return;
     }
@@ -330,7 +329,7 @@ export function BudgetSimScreen() {
 
   if (!state || !allowed || !sim) return <SimSkeleton />;
 
-  const { roster, rating, season, cost, totalSpend } = sim;
+  const { roster, rating, season, cost } = sim;
   const perfect = season.wins === SEASON_GAMES;
   const cardUrl = `/api/draft-card?r=${encodeURIComponent(JSON.stringify(roster))}`;
 
@@ -424,21 +423,10 @@ export function BudgetSimScreen() {
         snapshotVersion={state.snapshotVersion}
       />
 
-      {/* budget footer: spend summary + famous-team challenge flow.
-          Solid surface so the spend line, name field, and CTAs stay readable
-          over the scrolling reveal; a thin fade strip above the top edge keeps
-          the reveal dissolving in gracefully instead of meeting a hard line. */}
-      <div className="sticky bottom-0 mt-6 flex flex-col gap-3 border-t border-border/60 bg-background pt-4 pb-[max(1rem,env(safe-area-inset-bottom))]">
-        <div className="pointer-events-none absolute inset-x-0 bottom-full h-8 bg-gradient-to-t from-background to-transparent" />
-        {totalSpend > 0 && (
-          <p className="text-center text-xs text-muted-foreground">
-            {t("totalSpend", {
-              spend: totalSpend,
-              difficulty: t(`difficulty.${difficulty}`),
-            })}
-          </p>
-        )}
-
+      {/* budget footer: name field(s) + famous-team challenge / lobby flow.
+          Flows after the reveal (not pinned) so the team stats keep the full
+          viewport — scroll down to name and submit. */}
+      <div className="mt-6 flex flex-col gap-3 border-t border-border/60 pt-4 pb-[max(1rem,env(safe-area-inset-bottom))]">
         {lobbyCode && (
           <Input
             value={playerName}
@@ -452,11 +440,8 @@ export function BudgetSimScreen() {
         <Input
           value={teamName}
           maxLength={40}
-          placeholder={t("nameOptionalPlaceholder")}
+          placeholder={lobbyCode ? tSim("teamNamePlaceholder") : t("nameOptionalPlaceholder")}
           aria-label={tSim("teamNameAria")}
-          // Solid surface: the footer sits over the scrolling reveal, so the
-          // input's default translucent fill let content bleed through and made
-          // typed text unreadable. Force an opaque card background.
           className="h-11 rounded-xl border-border bg-card dark:bg-card"
           onChange={(e) => {
             setTeamName(e.target.value);

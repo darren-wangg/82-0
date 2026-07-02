@@ -68,8 +68,8 @@ export default async function LeaderboardPage({
     <main className="flex flex-1 flex-col">
       <div className="flex items-start justify-between gap-3">
         <h1 className="font-display text-3xl tracking-wide">Leaderboard</h1>
-        <div className="flex items-center gap-2">
-          <span className="text-sm font-semibold tracking-wide text-muted-foreground uppercase">
+        <div className="flex shrink-0 flex-col items-center gap-1">
+          <span className="font-arcade text-[8px] text-muted-foreground uppercase">
             {t("teamSize")}
           </span>
           <TeamSizeSwitch value={teamSize} />

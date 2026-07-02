@@ -1,8 +1,8 @@
 /**
  * /l/[code] — group lobby: anyone with the link drafts a fresh team while
  * the lobby is open (until the creator ends it), one team per device.
- * Standings run every entry head-to-head (manual refresh via the status
- * chip); the leader is crowned champion when the creator closes the lobby.
+ * Standings run every entry head-to-head (kept fresh by LobbyAutoRefresh);
+ * the leader is crowned champion when the creator closes the lobby.
  * Team rows link to full details (roster, 9-cat, OFF/DEF).
  */
 
@@ -25,7 +25,6 @@ import { LiveLobbyRoom } from "@/components/social/live-lobby-room";
 import { LobbyCelebration } from "@/components/social/lobby-celebration";
 import { LobbyCloseNotifier } from "@/components/social/lobby-close-notifier";
 import { LobbyLimitEditor } from "@/components/social/lobby-limit-editor";
-import { LobbyRefresh } from "@/components/social/lobby-refresh";
 import { ShareButton } from "@/components/social/share-button";
 import { StandingsTable } from "@/components/social/standings-table";
 import { Unavailable } from "@/components/social/unavailable";
@@ -99,11 +98,7 @@ export default async function LobbyPage({ params }: PageProps<"/l/[code]">) {
         <h1 className="text-2xl font-black tracking-tight">{lobby.name}</h1>
         <p className="mt-1.5 flex items-center justify-center gap-2 text-xs text-muted-foreground">
           <CopyCode code={lobby.code} />
-          {open ? (
-            <LobbyRefresh />
-          ) : (
-            <span className="font-semibold text-amber-400">Closed</span>
-          )}
+          {!open && <span className="font-semibold text-amber-400">Closed</span>}
         </p>
         <p className="mt-1 text-xs font-medium text-muted-foreground tabular-nums">
           {teamCount}
@@ -207,8 +202,7 @@ export default async function LobbyPage({ params }: PageProps<"/l/[code]">) {
               Draft your team
             </Link>
             <p className="text-center text-[11px] text-muted-foreground">
-              Draft your team — you get one re-draft.
-              {limit !== null && ` ${limit - teamCount} spot${limit - teamCount === 1 ? "" : "s"} left.`}
+              You get one re-draft.
             </p>
           </div>
         ))}

@@ -35,10 +35,9 @@ export function CloseLobbyButton({ code }: { code: string }) {
   };
 
   return (
-    <div className="space-y-1">
+    <div className="w-full space-y-1">
       <Button
-        variant="outline"
-        className="w-full border-amber-500/50 text-amber-400"
+        className="h-12 w-full rounded-xl bg-emerald-500 text-base font-bold text-emerald-950 hover:bg-emerald-400"
         disabled={pending}
         onClick={close}
       >
