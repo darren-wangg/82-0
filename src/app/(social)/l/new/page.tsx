@@ -26,7 +26,7 @@ export default async function NewLobbyPage() {
           Group Lobby
         </p>
         <p className="mx-auto mt-2 max-w-xs text-sm text-muted-foreground">
-          Create a lobby and share the link. Everyone drafts a team. Matchups run head-to-head, and the lobby
+          Everyone drafts a team. Matchups run head-to-head, and the lobby
           stays open until you crown the champ.
         </p>
       </div>
