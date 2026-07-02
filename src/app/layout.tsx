@@ -73,7 +73,11 @@ export default async function RootLayout({
       // attributes (same pattern as next-themes) — real mismatches in the tree
       // still surface. A fresh request renders the cookie's locale directly.
       suppressHydrationWarning
-      className={`${spaceGrotesk.variable} ${geistMono.variable} ${anton.variable} ${pressStart.variable} h-full antialiased`}
+      // `dark` lives on <html>: every route wraps itself in a dark surface, so
+      // the document itself must be dark too — otherwise iOS overscroll,
+      // keyboard resizes, and any reveal that grows the page mid-scroll expose
+      // a white body under/around the app.
+      className={`${spaceGrotesk.variable} ${geistMono.variable} ${anton.variable} ${pressStart.variable} dark h-full antialiased`}
     >
       {/* Browser extensions (e.g. Grammarly) inject attributes on <body> after
           SSR; suppress the resulting one-level hydration warning. */}

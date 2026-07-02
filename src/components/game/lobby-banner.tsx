@@ -6,11 +6,32 @@ import { motion } from "framer-motion";
 import { Users } from "lucide-react";
 import { cn } from "@/lib/utils";
 
+const NAME_CACHE_PREFIX = "ud:lobby-name:";
+
+/** Session-cache a lobby's name so the draft banner shows it on first render
+ *  instead of flashing the raw code while the lookup below resolves. The lobby
+ *  page seeds this on every visit (the normal path into a lobby draft). */
+export function cacheLobbyName(code: string, name: string) {
+  try {
+    window.sessionStorage.setItem(NAME_CACHE_PREFIX + code, name);
+  } catch {
+    // storage unavailable — the banner falls back to fetching by code
+  }
+}
+
+function loadCachedLobbyName(code: string): string | null {
+  try {
+    return window.sessionStorage.getItem(NAME_CACHE_PREFIX + code);
+  } catch {
+    return null;
+  }
+}
+
 /**
- * Compact banner shown while drafting into a group lobby. Fetches the lobby's
- * name so the header reads by name; falls back to the code (styled as a code)
- * until — and unless — that resolves, since the draft still enters the lobby
- * from the code alone.
+ * Compact banner shown while drafting into a group lobby. Reads the lobby's
+ * name from the session cache (seeded by the lobby page) so the first render
+ * already shows it; only drafts entered without visiting the lobby page fall
+ * back to a fetch, showing the code (styled as a code) until that resolves.
  */
 export function LobbyBanner({
   code,
@@ -20,20 +41,26 @@ export function LobbyBanner({
   onLeave: () => void;
 }) {
   const t = useTranslations("play");
-  const [name, setName] = useState<string | null>(null);
+  const [name, setName] = useState<string | null>(() =>
+    loadCachedLobbyName(code)
+  );
 
   useEffect(() => {
+    if (name !== null) return; // seeded via cacheLobbyName — nothing to fetch
     let cancelled = false;
     fetch(`/api/lobbies/${encodeURIComponent(code)}`)
       .then((r) => (r.ok ? r.json() : null))
       .then((lobby: { name?: string } | null) => {
-        if (!cancelled && lobby?.name) setName(lobby.name);
+        if (!cancelled && lobby?.name) {
+          setName(lobby.name);
+          cacheLobbyName(code, lobby.name);
+        }
       })
       .catch(() => {});
     return () => {
       cancelled = true;
     };
-  }, [code]);
+  }, [code, name]);
 
   return (
     <motion.div

@@ -25,6 +25,7 @@ import { LiveLobbyRoom } from "@/components/social/live-lobby-room";
 import { LobbyCelebration } from "@/components/social/lobby-celebration";
 import { LobbyCloseNotifier } from "@/components/social/lobby-close-notifier";
 import { LobbyLimitEditor } from "@/components/social/lobby-limit-editor";
+import { LobbyNameSeed } from "@/components/social/lobby-name-seed";
 import { ShareButton } from "@/components/social/share-button";
 import { StandingsTable } from "@/components/social/standings-table";
 import { Unavailable } from "@/components/social/unavailable";
@@ -71,7 +72,12 @@ export default async function LobbyPage({ params }: PageProps<"/l/[code]">) {
   // Once it closes (results), fall through to the shared standings view below,
   // which works identically for live lobbies (LobbyEntry rows exist).
   if (viewer.isLive && open) {
-    return <LiveLobbyRoom code={lobby.code} name={lobby.name} />;
+    return (
+      <>
+        <LobbyNameSeed code={lobby.code} name={lobby.name} />
+        <LiveLobbyRoom code={lobby.code} name={lobby.name} />
+      </>
+    );
   }
 
   const entered = viewer.entryTeamSlug !== null;
@@ -94,6 +100,7 @@ export default async function LobbyPage({ params }: PageProps<"/l/[code]">) {
 
   return (
     <main className="space-y-5">
+      <LobbyNameSeed code={lobby.code} name={lobby.name} />
       <div className="text-center">
         <h1 className="text-2xl font-black tracking-tight">{lobby.name}</h1>
         <p className="mt-1.5 flex items-center justify-center gap-2 text-xs text-muted-foreground">

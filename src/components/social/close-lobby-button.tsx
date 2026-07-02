@@ -37,7 +37,7 @@ export function CloseLobbyButton({ code }: { code: string }) {
   return (
     <div className="w-full space-y-1">
       <Button
-        className="h-12 w-full rounded-xl bg-emerald-500 text-base font-bold text-emerald-950 hover:bg-emerald-400"
+        className="h-12 w-full rounded-xl bg-emerald-600/90 text-base font-bold text-emerald-50 hover:bg-emerald-600"
         disabled={pending}
         onClick={close}
       >
