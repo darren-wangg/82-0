@@ -209,7 +209,7 @@ export function BudgetPlayScreen() {
   };
 
   return (
-    <div className="flex h-dvh flex-col overflow-hidden px-4 pt-[max(0.75rem,env(safe-area-inset-top))]">
+    <div className="flex h-svh flex-col overflow-hidden px-4 pt-[max(0.75rem,env(safe-area-inset-top))]">
       {/* header: progress + respins */}
       <div className="flex items-start justify-between gap-2">
         <div className="min-w-0">

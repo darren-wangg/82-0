@@ -9,7 +9,7 @@ import { TEN_MODE } from "@/components/game/draft-state";
  */
 export default function TenGameLayout({ children }: { children: ReactNode }) {
   return (
-    <div className="dark flex min-h-dvh flex-1 flex-col bg-background text-foreground">
+    <div className="dark flex min-h-svh flex-1 flex-col bg-background text-foreground">
       <GameProvider mode={TEN_MODE}>
         <div className="mx-auto flex w-full max-w-md flex-1 flex-col">
           {children}

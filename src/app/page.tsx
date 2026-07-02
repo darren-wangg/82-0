@@ -59,7 +59,7 @@ export default async function Home() {
   // shows when a URL is configured, so there's no dead link in dev/preview.
   const feedbackUrl = process.env.NEXT_PUBLIC_FEEDBACK_URL;
   return (
-    <div className="dark relative flex min-h-dvh flex-1 flex-col overflow-hidden bg-background text-foreground">
+    <div className="dark relative flex min-h-svh flex-1 flex-col overflow-hidden bg-background text-foreground">
       {/* ambient court glow — pure CSS, decorative only; the blobs drift slowly
           (disabled under prefers-reduced-motion) for a subtle living backdrop */}
       <div

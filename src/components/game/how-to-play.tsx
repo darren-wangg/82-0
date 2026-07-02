@@ -27,7 +27,7 @@ export function HowToPlayDialog() {
       >
         {t("trigger")}
       </DialogTrigger>
-      <DialogContent className="dark max-h-[85dvh] overflow-y-auto border-border bg-background text-foreground">
+      <DialogContent className="dark max-h-[85svh] overflow-y-auto border-border bg-background text-foreground">
         <DialogHeader>
           <DialogTitle className="text-lg">{t("title")}</DialogTitle>
         </DialogHeader>

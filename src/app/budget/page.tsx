@@ -35,7 +35,7 @@ export default async function BudgetPage() {
   const caps = BUDGET_CAP[size];
 
   return (
-    <div className="dark flex min-h-dvh flex-1 flex-col bg-background text-foreground">
+    <div className="dark flex min-h-svh flex-1 flex-col bg-background text-foreground">
       <main className="mx-auto flex w-full max-w-md flex-1 flex-col gap-6 px-6 pt-12 pb-10">
         <div className="flex items-center gap-3">
           <Link

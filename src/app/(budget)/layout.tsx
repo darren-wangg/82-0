@@ -21,7 +21,7 @@ export default async function BudgetGameLayout({
   );
   const mode = budgetModeForSize(size);
   return (
-    <div className="dark flex min-h-dvh flex-1 flex-col bg-background text-foreground">
+    <div className="dark flex min-h-svh flex-1 flex-col bg-background text-foreground">
       <GameProvider mode={mode}>
         <div className="mx-auto flex w-full max-w-md flex-1 flex-col">
           {children}

@@ -16,7 +16,7 @@ export default function RootError({
   unstable_retry: () => void;
 }) {
   return (
-    <div className="dark flex min-h-dvh flex-1 flex-col items-center justify-center gap-4 bg-background px-6 text-center font-sans text-foreground">
+    <div className="dark flex min-h-svh flex-1 flex-col items-center justify-center gap-4 bg-background px-6 text-center font-sans text-foreground">
       <p className="font-display text-7xl tracking-tight text-muted-foreground">
         Foul
       </p>
