@@ -40,9 +40,21 @@ export async function generateMetadata({
   try {
     const m = await loadMatchupResponse(id);
     if (!m) return { title: "Matchup not found" };
+    const winner = m.result.winner === "A" ? m.teamA : m.teamB;
+    const loser = m.result.winner === "A" ? m.teamB : m.teamA;
+    const [aWins, bWins] = m.result.seriesScore;
+    const score =
+      m.result.winner === "A" ? `${aWins}–${bWins}` : `${bWins}–${aWins}`;
+    const title = `${m.teamA.teamName} vs ${m.teamB.teamName}`;
+    const description = `${winner.teamName} takes the best-of-7 over ${loser.teamName}, ${score}. See the category battle — then run your own challenge.`;
+    // openGraph/twitter must be set here too: metadata merges shallowly, so
+    // without them the root layout's static og:title/og:description win and
+    // every shared matchup link unfurls identically.
     return {
-      title: `${m.teamA.teamName} vs ${m.teamB.teamName}`,
-      description: `Best-of-7: ${m.result.seriesScore[0]}–${m.result.seriesScore[1]}.`,
+      title,
+      description,
+      openGraph: { title, description, siteName: "Ultimate Draft", type: "website" },
+      twitter: { card: "summary_large_image", title, description },
     };
   } catch {
     return { title: "Matchup" };

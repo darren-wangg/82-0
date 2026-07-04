@@ -3,6 +3,7 @@ import { Anton, Geist_Mono, Press_Start_2P, Space_Grotesk } from "next/font/goog
 import { NextIntlClientProvider } from "next-intl";
 import { getLocale } from "next-intl/server";
 import { AppMotion } from "@/components/app-motion";
+import { siteUrl } from "@/lib/site-url";
 import "./globals.css";
 import { Analytics } from "@vercel/analytics/next";
 import { SpeedInsights } from "@vercel/speed-insights/next";
@@ -40,6 +41,9 @@ const SITE_DESCRIPTION =
 
 // The og/twitter images come from the opengraph-image.jpg file convention.
 export const metadata: Metadata = {
+  // Makes og:image / twitter:image URLs absolute against the production host
+  // instead of whatever host served the request.
+  metadataBase: new URL(siteUrl()),
   title: SITE_TITLE,
   description: SITE_DESCRIPTION,
   openGraph: {
