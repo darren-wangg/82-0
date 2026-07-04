@@ -117,6 +117,39 @@ export async function loadActiveLobbies(
   }));
 }
 
+/** Cheap lobby facts for share metadata (og tags + OG image): one indexed
+ *  lookup, no entries loaded, no round-robin. */
+export interface LobbyShareSummary {
+  name: string;
+  teamSize: number;
+  isBudget: boolean;
+  open: boolean;
+  entrantCount: number;
+}
+
+export async function loadLobbyShareSummary(
+  code: string
+): Promise<LobbyShareSummary | null> {
+  const lobby = await prisma.lobby.findUnique({
+    where: { code },
+    select: {
+      name: true,
+      teamSize: true,
+      isBudget: true,
+      closedAt: true,
+      _count: { select: { entries: true } },
+    },
+  });
+  if (!lobby) return null;
+  return {
+    name: lobby.name,
+    teamSize: lobby.teamSize,
+    isBudget: lobby.isBudget,
+    open: lobbyIsOpen(lobby),
+    entrantCount: lobby._count.entries,
+  };
+}
+
 export async function loadLobbyResponse(code: string): Promise<LobbyResponse | null> {
   const lobby = await prisma.lobby.findUnique({
     where: { code },

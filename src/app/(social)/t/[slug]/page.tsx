@@ -39,9 +39,16 @@ export async function generateMetadata({
   try {
     const team = await loadSavedTeam(slug);
     if (!team) return { title: "Team not found" };
+    const title = `${team.teamName} (${team.season.wins}–${team.season.losses})`;
+    const description = `An all-time ${5 + team.roster.bench.length}-player roster projected to go ${team.season.wins}–${team.season.losses}. Think you can beat it?`;
+    // openGraph/twitter must be set here too: metadata merges shallowly, so
+    // without them the root layout's static og:title/og:description win and
+    // every shared team link unfurls identically.
     return {
-      title: `${team.teamName} (${team.season.wins}–${team.season.losses})`,
-      description: `An all-time 8-player roster projected to go ${team.season.wins}–${team.season.losses}. Think you can beat it?`,
+      title,
+      description,
+      openGraph: { title, description, siteName: "Ultimate Draft", type: "website" },
+      twitter: { card: "summary_large_image", title, description },
     };
   } catch {
     return { title: "Team" };

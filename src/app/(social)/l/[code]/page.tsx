@@ -11,7 +11,11 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Trophy, UserRoundPlus } from "lucide-react";
 import { LobbyResponse } from "@/lib/contracts";
-import { loadLobbyResponse, loadLobbyViewer } from "@/app/api/_lib/lobbies";
+import {
+  loadLobbyResponse,
+  loadLobbyShareSummary,
+  loadLobbyViewer,
+} from "@/app/api/_lib/lobbies";
 import { budgetCap } from "@/lib/budget";
 import { PLAY_PATH, resolveTeamSize } from "@/lib/team-size";
 import { buttonVariants } from "@/components/ui/button";
@@ -41,13 +45,26 @@ export async function generateMetadata({
 }: PageProps<"/l/[code]">): Promise<Metadata> {
   const { code } = await params;
   try {
-    const lobby = await loadLobbyResponse(code);
-    return lobby
-      ? {
-          title: `${lobby.name} lobby`,
-          description: `Draft a fresh all-time roster for the "${lobby.name}" lobby and fight for the crown.`,
-        }
-      : { title: "Lobby" };
+    const lobby = await loadLobbyShareSummary(code);
+    if (!lobby) return { title: "Lobby" };
+    const title = `${lobby.name} — ${lobby.teamSize}-man ${lobby.isBudget ? "budget " : ""}lobby`;
+    const teams = `${lobby.entrantCount} ${lobby.entrantCount === 1 ? "team" : "teams"}`;
+    const description = lobby.open
+      ? `Draft ${lobby.teamSize === 8 ? "an" : "a"} ${lobby.teamSize}-man all-time NBA roster${
+          lobby.isBudget
+            ? ` under a $${budgetCap(lobby.teamSize, "normal")} cap`
+            : ""
+        } and fight for the crown — ${teams} in so far.`
+      : `This lobby has ended with ${teams} — see who took the crown.`;
+    // openGraph/twitter must be set here too: metadata merges shallowly, so
+    // without them the root layout's static og:title/og:description win and
+    // every shared lobby link unfurls identically.
+    return {
+      title,
+      description,
+      openGraph: { title, description, siteName: "Ultimate Draft", type: "website" },
+      twitter: { card: "summary_large_image", title, description },
+    };
   } catch {
     return { title: "Lobby" };
   }
