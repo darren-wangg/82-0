@@ -23,6 +23,9 @@ jobs:
           node-version: 24
           cache: npm
       - run: npm ci
+      # Generated route types (PageProps etc.) don't exist until a build —
+      # typegen creates them without one, per the Next CLI docs' CI recipe.
+      - run: npx next typegen
       - run: npx tsc --noEmit
       - run: npm run lint
       - run: npm test
