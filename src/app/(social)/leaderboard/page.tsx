@@ -1,6 +1,11 @@
 /**
  * /leaderboard — top 50 teams (global or weekly), wins desc then OVR desc,
  * scoped to the current snapshot version. Rows link to the team pages.
+ *
+ * Two boards: Classic (the default) and Budget (?board=budget). Budget teams
+ * are drafted under per-difficulty salary caps, so they're ranked only against
+ * teams built under the same cap (?difficulty=easy|normal|hard, default
+ * normal) — never mixed into the classic board or across caps.
  */
 
 import type { Metadata } from "next";
@@ -19,6 +24,11 @@ import { ClaimTeamButton } from "@/components/social/claim-team";
 import { Unavailable } from "@/components/social/unavailable";
 import { TeamSizeSwitch } from "@/components/team-size-switch";
 import { resolveTeamSize, TEAM_SIZE_COOKIE } from "@/lib/team-size";
+import {
+  BUDGET_DIFFICULTIES,
+  isBudgetDifficulty,
+  type BudgetDifficulty,
+} from "@/lib/budget";
 import { cn } from "@/lib/utils";
 
 export const metadata: Metadata = {
@@ -31,7 +41,15 @@ export default async function LeaderboardPage({
 }: PageProps<"/leaderboard">) {
   const params = await searchParams;
   const scope = params.scope === "weekly" ? "weekly" : "global";
+  const board = params.board === "budget" ? "budget" : "classic";
+  const difficultyParam = Array.isArray(params.difficulty)
+    ? params.difficulty[0]
+    : params.difficulty;
+  const difficulty: BudgetDifficulty = isBudgetDifficulty(difficultyParam)
+    ? difficultyParam
+    : "normal";
   const t = await getTranslations("home");
+  const tBudget = await getTranslations("budget");
   const teamSize = resolveTeamSize(
     (await cookies()).get(TEAM_SIZE_COOKIE)?.value
   );
@@ -43,11 +61,22 @@ export default async function LeaderboardPage({
   let entries: LeaderboardEntry[];
   let totalPages: number;
   let page: number;
+  // Budget boards filter by mode + cap difficulty; classic passes neither
+  // (the loader then excludes budget teams via mode: null).
+  const mode = board === "budget" ? "budget" : undefined;
+  const boardDifficulty = board === "budget" ? difficulty : undefined;
+
   try {
-    const total = await loadLeaderboardCount(scope, teamSize);
+    const total = await loadLeaderboardCount(scope, teamSize, mode, boardDifficulty);
     totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE));
     page = Math.min(requestedPage, totalPages);
-    entries = await loadLeaderboardEntries(scope, teamSize, page - 1);
+    entries = await loadLeaderboardEntries(
+      scope,
+      teamSize,
+      page - 1,
+      mode,
+      boardDifficulty
+    );
   } catch {
     return <Unavailable what="the leaderboard" />;
   }
@@ -55,7 +84,11 @@ export default async function LeaderboardPage({
   /** Build a leaderboard href preserving active params. */
   const boardHref = (overrides: Record<string, string | undefined>) => {
     const sp = new URLSearchParams();
-    const merged = { scope, ...overrides };
+    const merged = { scope, board, difficulty, ...overrides };
+    if (merged.board === "budget") {
+      sp.set("board", "budget");
+      if (merged.difficulty !== "normal") sp.set("difficulty", merged.difficulty);
+    }
     if (merged.scope === "weekly") sp.set("scope", "weekly");
     if (overrides.page && overrides.page !== "1") sp.set("page", overrides.page);
     const qs = sp.toString();
@@ -76,8 +109,24 @@ export default async function LeaderboardPage({
         </div>
       </div>
 
-      {/* Scope tab (Global / This week) */}
+      {/* Board tab (Classic / Budget) */}
       <div className="mt-4 grid grid-cols-2 gap-1 rounded-xl bg-muted/40 p-1 text-center text-xs font-semibold">
+        {(["classic", "budget"] as const).map((b) => (
+          <Link
+            key={b}
+            href={boardHref({ board: b, page: "1" })}
+            className={cn(
+              "rounded-lg py-1",
+              board === b ? "bg-card text-foreground" : "text-muted-foreground"
+            )}
+          >
+            {b === "budget" ? "Budget" : "Classic"}
+          </Link>
+        ))}
+      </div>
+
+      {/* Scope tab (Global / This week) */}
+      <div className="mt-2 grid grid-cols-2 gap-1 rounded-xl bg-muted/40 p-1 text-center text-xs font-semibold">
         {(["global", "weekly"] as const).map((s) => (
           <Link
             key={s}
@@ -92,10 +141,32 @@ export default async function LeaderboardPage({
         ))}
       </div>
 
+      {/* Budget cap difficulty — each cap is its own board (caps aren't ranked
+          against each other) */}
+      {board === "budget" && (
+        <div className="mt-2 grid grid-cols-3 gap-1 rounded-xl bg-muted/40 p-1 text-center text-xs font-semibold">
+          {BUDGET_DIFFICULTIES.map((d) => (
+            <Link
+              key={d}
+              href={boardHref({ difficulty: d, page: "1" })}
+              className={cn(
+                "rounded-lg py-1",
+                difficulty === d ? "bg-card text-foreground" : "text-muted-foreground"
+              )}
+            >
+              {tBudget(`difficulty.${d}`)}
+            </Link>
+          ))}
+        </div>
+      )}
+
       {entries.length === 0 ? (
         <div className="mt-10 text-center text-sm text-muted-foreground">
           <p>No teams on the board yet.</p>
-          <Link href="/play" className="mt-2 inline-block font-semibold text-primary">
+          <Link
+            href={board === "budget" ? "/budget" : "/play"}
+            className="mt-2 inline-block font-semibold text-primary"
+          >
             Be the first →
           </Link>
         </div>

@@ -87,6 +87,13 @@ export default async function BudgetPage() {
           ))}
         </div>
 
+        <Link
+          href="/leaderboard?board=budget"
+          className="text-center text-sm font-semibold text-primary underline-offset-2 hover:underline"
+        >
+          {t("viewLeaderboard")} →
+        </Link>
+
         <p className="mt-auto text-center text-xs text-muted-foreground">
           {t("howPricing")}
         </p>

@@ -12,9 +12,10 @@
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 import { useTranslations } from "next-intl";
 import { useReducedMotion } from "framer-motion";
-import { Check, ChevronRight, Loader2, LogOut, RotateCcw, Save as SaveIcon, Users } from "lucide-react";
+import { Check, ChevronRight, Copy, Loader2, LogOut, RotateCcw, Save as SaveIcon, Users } from "lucide-react";
 import { Button, buttonVariants } from "@/components/ui/button";
 import {
   Dialog,
@@ -91,6 +92,9 @@ export function BudgetSimScreen() {
   // Cache the saved slug so navigating back and re-tapping Challenge reuses the
   // same persisted team instead of creating a duplicate row each time.
   const savedSlugRef = useRef<string | null>(null);
+  // Explicit "save your team" result (solo flow): the /t/[slug] share link.
+  const [savedUrl, setSavedUrl] = useState<string | null>(null);
+  const [copied, setCopied] = useState(false);
   // Lobby re-draft: one per device per lobby (async only), tracked in
   // localStorage so it survives the NEW_GAME reset. null until read.
   const [lobbyRetriesUsed, setLobbyRetriesUsed] = useState<number | null>(null);
@@ -201,6 +205,40 @@ export function BudgetSimScreen() {
     const saveData: SaveTeamResponse = await saveRes.json();
     savedSlugRef.current = saveData.team.slug;
     return saveData.team.slug;
+  };
+
+  // Solo flow: persist the team without challenging anyone — it gets a share
+  // link and lands on the budget leaderboard for its cap difficulty. Tapping
+  // Challenge afterwards reuses the same saved row.
+  const saveTeamOnly = async () => {
+    if (savingRef.current || !state || !sim) return;
+    const name = teamName.trim();
+    if (name && containsProfanity(name)) {
+      setError(tSim("nameRejected"));
+      return;
+    }
+    setError(null);
+    savingRef.current = true;
+    setSaving(true);
+    try {
+      const slug = await saveBudgetTeam();
+      if (slug) setSavedUrl(`/t/${slug}`);
+    } catch {
+      setError(tSim("toastSaveUnavailable"));
+    } finally {
+      savingRef.current = false;
+      setSaving(false);
+    }
+  };
+
+  const copyLink = async (url: string) => {
+    try {
+      await navigator.clipboard.writeText(new URL(url, window.location.origin).href);
+      setCopied(true);
+      window.setTimeout(() => setCopied(false), 2000);
+    } catch {
+      // clipboard unavailable — the link itself is visible to long-press copy
+    }
   };
 
   // Solo flow: save, then route to the dedicated opponent-picker screen. The
@@ -456,6 +494,9 @@ export function BudgetSimScreen() {
           maxLength={40}
           placeholder={lobbyCode ? tSim("teamNamePlaceholder") : t("nameOptionalPlaceholder")}
           aria-label={tSim("teamNameAria")}
+          // Once explicitly saved, the name is committed with the team row —
+          // lock the field so edits don't look like they'd still apply.
+          disabled={savedUrl !== null}
           className="h-11 rounded-xl border-border bg-card dark:bg-card"
           onChange={(e) => {
             setTeamName(e.target.value);
@@ -527,6 +568,41 @@ export function BudgetSimScreen() {
                 </>
               )}
             </Button>
+            {/* Save without challenging: share link + budget-leaderboard entry
+                (ranked against teams built under the same cap). */}
+            {savedUrl ? (
+              <div className="flex flex-col gap-2 rounded-2xl border border-border/60 bg-card/60 p-3">
+                <p className="text-sm font-semibold">{tSim("shareLinkReady")}</p>
+                <div className="flex items-center gap-2">
+                  <code className="min-w-0 flex-1 truncate rounded-lg bg-muted px-2.5 py-2 font-mono text-xs">
+                    {savedUrl}
+                  </code>
+                  <Button
+                    variant="outline"
+                    className="h-10 shrink-0"
+                    onClick={() => copyLink(savedUrl)}
+                  >
+                    {copied ? <Check className="size-4" /> : <Copy className="size-4" />}
+                    {copied ? tSim("copied") : tSim("copy")}
+                  </Button>
+                </div>
+                <Link
+                  href={`/leaderboard?board=budget${difficulty === "normal" ? "" : `&difficulty=${difficulty}`}`}
+                  className="text-center text-xs font-semibold text-primary underline-offset-2 hover:underline"
+                >
+                  {t("viewLeaderboard")} →
+                </Link>
+              </div>
+            ) : (
+              <Button
+                variant="outline"
+                className="h-12 w-full rounded-2xl text-sm font-bold"
+                disabled={saving}
+                onClick={saveTeamOnly}
+              >
+                <SaveIcon className="size-4" /> {tSim("saveYourTeam")}
+              </Button>
+            )}
             <Button
               variant="outline"
               className="h-12 w-full rounded-2xl text-sm font-bold"
