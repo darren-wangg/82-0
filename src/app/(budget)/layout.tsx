@@ -2,6 +2,7 @@ import type { ReactNode } from "react";
 import { cookies } from "next/headers";
 import { GameProvider } from "@/components/game/game-provider";
 import { budgetModeForSize } from "@/components/game/draft-state";
+import { preloadGameData } from "@/lib/preload-game-data";
 import { resolveTeamSize, TEAM_SIZE_COOKIE } from "@/lib/team-size";
 
 /**
@@ -16,6 +17,8 @@ export default async function BudgetGameLayout({
 }: {
   children: ReactNode;
 }) {
+  // Deep links skip the home page's preload — warm the data here too.
+  preloadGameData();
   const size = resolveTeamSize(
     (await cookies()).get(TEAM_SIZE_COOKIE)?.value
   );

@@ -15,7 +15,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useTranslations } from "next-intl";
-import { AnimatePresence, motion } from "framer-motion";
+import { AnimatePresence, m } from "framer-motion";
 import { RefreshCcw, RotateCcw } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -216,7 +216,7 @@ export function BudgetPlayScreen() {
           <div className="flex items-center gap-1">
             <p className="text-sm font-semibold">
               {t("pick")}{" "}
-              <motion.span
+              <m.span
                 key={state.picks.length}
                 initial={{ scale: 1.5, color: "var(--primary)" }}
                 animate={{ scale: 1, color: "var(--foreground)" }}
@@ -227,7 +227,7 @@ export function BudgetPlayScreen() {
                   current: Math.min(state.picks.length + 1, rounds),
                   total: rounds,
                 })}
-              </motion.span>
+              </m.span>
             </p>
             {/* Lobby drafts are one-shot — no restarting into a fresh pool. */}
             {!state.lobbyCode && (
@@ -312,14 +312,14 @@ export function BudgetPlayScreen() {
       <div className="mt-2 flex min-h-0 flex-1 flex-col">
         <AnimatePresence mode="wait">
           {spin === null ? (
-            <motion.div
+            <m.div
               key="cta"
               initial={{ opacity: 0, scale: 0.92 }}
               animate={{ opacity: 1, scale: 1 }}
               exit={{ opacity: 0 }}
               className="flex flex-1 items-center justify-center"
             >
-              <motion.div
+              <m.div
                 animate={{ scale: [1, 1.04, 1] }}
                 transition={{ repeat: Infinity, duration: 1.6 }}
                 className="w-full"
@@ -330,10 +330,10 @@ export function BudgetPlayScreen() {
                 >
                   {t("spin")}
                 </Button>
-              </motion.div>
-            </motion.div>
+              </m.div>
+            </m.div>
           ) : spinning ? (
-            <motion.div
+            <m.div
               key="rolling"
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
@@ -341,18 +341,18 @@ export function BudgetPlayScreen() {
               className="flex flex-1 items-center justify-center gap-1.5"
             >
               {t("spinning").split("").map((ch, i) => (
-                <motion.span
+                <m.span
                   key={i}
                   animate={{ y: [0, -6, 0], opacity: [0.5, 1, 0.5] }}
                   transition={{ repeat: Infinity, duration: 0.9, delay: i * 0.08 }}
                   className="font-arcade text-sm text-primary/80"
                 >
                   {ch}
-                </motion.span>
+                </m.span>
               ))}
-            </motion.div>
+            </m.div>
           ) : (
-            <motion.div
+            <m.div
               key={`pool-${state.spinNonce}`}
               className="flex min-h-0 flex-1 flex-col"
             >
@@ -369,7 +369,7 @@ export function BudgetPlayScreen() {
                 priceMap={priceMap}
                 remainingBudget={spendableNow}
               />
-            </motion.div>
+            </m.div>
           )}
         </AnimatePresence>
       </div>

@@ -7,7 +7,7 @@
  * Callers must gate behind useReducedMotion themselves.
  */
 
-import { motion } from "framer-motion";
+import { m } from "framer-motion";
 import { mulberry32 } from "./draft-state";
 
 const COLORS = [
@@ -70,7 +70,7 @@ export function Confetti({
       className="pointer-events-none fixed inset-0 z-40 overflow-hidden"
     >
       {PIECES.slice(0, pieces).map((p, i) => (
-        <motion.span
+        <m.span
           key={i}
           className={
             p.ball
@@ -96,7 +96,7 @@ export function Confetti({
           }}
         >
           {p.ball ? "🏀" : null}
-        </motion.span>
+        </m.span>
       ))}
     </div>
   );

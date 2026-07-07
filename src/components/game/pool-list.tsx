@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo, useRef, useState } from "react";
-import { motion } from "framer-motion";
+import { m } from "framer-motion";
 import { useFormatter, useTranslations } from "next-intl";
 import { Search, X } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
@@ -146,7 +146,7 @@ export function PoolList({
   }, [pool, sortCat, query, showStats]);
 
   return (
-    <motion.div
+    <m.div
       initial={{ opacity: 0, y: 18 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.35, ease: "easeOut" }}
@@ -235,7 +235,7 @@ export function PoolList({
             remainingBudget !== undefined &&
             price > remainingBudget;
           return (
-            <motion.li
+            <m.li
               key={p.id}
               // Legendary pulls get a delayed, springy "jackpot" reveal.
               initial={legendary ? { opacity: 0, scale: 0.9 } : { opacity: 0, x: -14 }}
@@ -324,10 +324,10 @@ export function PoolList({
                   )}
                 </div>
               </button>
-            </motion.li>
+            </m.li>
           );
         })}
       </ul>
-    </motion.div>
+    </m.div>
   );
 }

@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
-import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
+import { AnimatePresence, m, useReducedMotion } from "framer-motion";
 import {
   Check,
   Copy,
@@ -259,7 +259,7 @@ export function SimScreen() {
       // Challenge draft: run the head-to-head and jump to the result page.
       if (state.challengeSlug) {
         try {
-          const m = await fetch("/api/matchups", {
+          const res = await fetch("/api/matchups", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({
@@ -267,8 +267,8 @@ export function SimScreen() {
               teamSlugB: state.challengeSlug,
             }),
           });
-          if (m.ok) {
-            const matchup: MatchupResponse = await m.json();
+          if (res.ok) {
+            const matchup: MatchupResponse = await res.json();
             router.push(`/m/${matchup.id}`);
             return;
           }
@@ -621,7 +621,7 @@ export function SimScreen() {
       {/* toast */}
       <AnimatePresence>
         {toast && (
-          <motion.div
+          <m.div
             initial={{ opacity: 0, y: 16 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: 16 }}
@@ -629,7 +629,7 @@ export function SimScreen() {
             className="fixed inset-x-4 bottom-24 z-50 mx-auto max-w-md rounded-xl border border-border bg-popover px-4 py-3 text-sm text-popover-foreground shadow-lg"
           >
             {toast}
-          </motion.div>
+          </m.div>
         )}
       </AnimatePresence>
     </div>

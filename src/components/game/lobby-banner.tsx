@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useTranslations } from "next-intl";
-import { motion } from "framer-motion";
+import { m } from "framer-motion";
 import { Users } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -63,7 +63,7 @@ export function LobbyBanner({
   }, [code, name]);
 
   return (
-    <motion.div
+    <m.div
       initial={{ opacity: 0, y: -8 }}
       animate={{ opacity: 1, y: 0 }}
       className="mt-2 flex items-center gap-2 rounded-lg border border-sky-400/40 bg-sky-400/10 px-2.5 py-1.5 text-xs"
@@ -89,6 +89,6 @@ export function LobbyBanner({
       >
         {t("leave")}
       </button>
-    </motion.div>
+    </m.div>
   );
 }

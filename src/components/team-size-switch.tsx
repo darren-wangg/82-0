@@ -10,7 +10,7 @@
 
 import { useTransition } from "react";
 import { useRouter } from "next/navigation";
-import { motion } from "framer-motion";
+import { m } from "framer-motion";
 import { TEAM_SIZES, TEAM_SIZE_COOKIE, type TeamSize } from "@/lib/team-size";
 import { cn } from "@/lib/utils";
 
@@ -64,7 +64,7 @@ export function TeamSizeSwitch({
             )}
           >
             {active && (
-              <motion.span
+              <m.span
                 layoutId="team-size-indicator"
                 className="absolute inset-0 rounded-md bg-primary shadow"
                 transition={{ type: "spring", stiffness: 500, damping: 32 }}

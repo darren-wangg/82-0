@@ -11,7 +11,7 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { AnimatePresence, motion } from "framer-motion";
+import { AnimatePresence, m } from "framer-motion";
 import { PartyPopper } from "lucide-react";
 
 const POLL_MS = 12_000;
@@ -113,7 +113,7 @@ export function LobbyCloseNotifier({
   return (
     <AnimatePresence>
       {toast && (
-        <motion.div
+        <m.div
           initial={{ opacity: 0, y: 16 }}
           animate={{ opacity: 1, y: 0 }}
           exit={{ opacity: 0, y: 16 }}
@@ -123,7 +123,7 @@ export function LobbyCloseNotifier({
         >
           <PartyPopper className="size-4 shrink-0 text-primary" />
           {toast}
-        </motion.div>
+        </m.div>
       )}
     </AnimatePresence>
   );

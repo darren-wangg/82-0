@@ -6,6 +6,7 @@
 
 import type { Metadata } from "next";
 import { LocalTeamView } from "@/components/social/local-team-view";
+import { preloadGameData } from "@/lib/preload-game-data";
 
 export const metadata: Metadata = {
   title: "My team",
@@ -13,6 +14,9 @@ export const metadata: Metadata = {
 };
 
 export default function LocalTeamPage() {
+  // LocalTeamView renders the roster from the client-fetched snapshot — start
+  // that download from the initial HTML instead of after hydration.
+  preloadGameData();
   return (
     <main className="flex flex-1 flex-col">
       <LocalTeamView />

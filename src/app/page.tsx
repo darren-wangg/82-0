@@ -1,7 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { cookies } from "next/headers";
-import { preload } from "react-dom";
 import { getTranslations } from "next-intl/server";
 import { DollarSign, MessageSquarePlus, Shirt, Trophy, UsersRound } from "lucide-react";
 import { buttonVariants } from "@/components/ui/button";
@@ -9,6 +8,7 @@ import { Badge } from "@/components/ui/badge";
 import { HowToPlayDialog } from "@/components/game/how-to-play";
 import { LanguageSwitcher } from "@/components/i18n/language-switcher";
 import { TeamSizeSwitch } from "@/components/team-size-switch";
+import { preloadGameData } from "@/lib/preload-game-data";
 import { PLAY_PATH, resolveTeamSize, TEAM_SIZE_COOKIE } from "@/lib/team-size";
 import { cn } from "@/lib/utils";
 
@@ -46,11 +46,10 @@ const NAV_TILES = [
 
 export default async function Home() {
   const t = await getTranslations("home");
-  // Warm the draft's data (~1.6 MB snapshot + fallback map, both cached
-  // immutably) while the user reads the home screen — tapping Start Draft
-  // then loads from the browser cache instead of fetching on /play mount.
-  preload("/data/snapshot-v1.json", { as: "fetch" });
-  preload("/data/headshot-fallbacks-v1.json", { as: "fetch" });
+  // Warm the draft's data while the user reads the home screen — tapping
+  // Start Draft then loads from the browser cache instead of fetching on
+  // /play mount.
+  preloadGameData();
   // Session team-size preference drives where Start Draft goes (5/8/10).
   const teamSize = resolveTeamSize(
     (await cookies()).get(TEAM_SIZE_COOKIE)?.value

@@ -9,7 +9,7 @@
 
 import { useEffect, useState } from "react";
 import { useFormatter, useTranslations } from "next-intl";
-import { animate, motion, useReducedMotion } from "framer-motion";
+import { animate, m, useReducedMotion } from "framer-motion";
 import { TriangleAlert } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -69,7 +69,7 @@ function DribbleLoader() {
   return (
     <div aria-hidden className="flex items-end gap-2.5">
       {[0, 1, 2].map((i) => (
-        <motion.span
+        <m.span
           key={i}
           animate={{ y: [0, -10, 0] }}
           transition={{
@@ -81,7 +81,7 @@ function DribbleLoader() {
           className="text-lg leading-none"
         >
           🏀
-        </motion.span>
+        </m.span>
       ))}
     </div>
   );
@@ -104,7 +104,7 @@ function BallBurst() {
       className="pointer-events-none absolute inset-0 flex items-center justify-center"
     >
       {BURST_BALLS.map((b, i) => (
-        <motion.span
+        <m.span
           key={i}
           className="absolute text-2xl leading-none"
           initial={{ x: 0, y: 0, scale: 0.4, opacity: 0 }}
@@ -118,7 +118,7 @@ function BallBurst() {
           transition={{ duration: 0.9, ease: "easeOut" }}
         >
           🏀
-        </motion.span>
+        </m.span>
       ))}
     </div>
   );
@@ -160,16 +160,16 @@ export function RecordReveal({ season }: { season: SeasonResult }) {
     <div className="relative flex flex-col items-center text-center">
       {/* outer: entrance spring; middle: pop when the count lands;
           inner: endless pulse for a perfect season */}
-      <motion.div
+      <m.div
         initial={{ scale: 0.7, opacity: 0 }}
         animate={{ scale: 1, opacity: 1 }}
         transition={{ type: "spring", stiffness: 220, damping: 18 }}
       >
-        <motion.div
+        <m.div
           animate={landed && !reducedMotion ? { scale: [1, 1.18, 1] } : undefined}
           transition={{ duration: 0.55, ease: "easeOut" }}
         >
-          <motion.p
+          <m.p
             animate={perfect ? { scale: [1, 1.06, 1] } : undefined}
             transition={
               perfect
@@ -186,9 +186,9 @@ export function RecordReveal({ season }: { season: SeasonResult }) {
             aria-label={t("finalRecordAria", { wins: season.wins, losses: season.losses })}
           >
             {wins}-{losses}
-          </motion.p>
-        </motion.div>
-      </motion.div>
+          </m.p>
+        </m.div>
+      </m.div>
       {landed && !reducedMotion && <BallBurst />}
       {/* fixed-height slot so the loader leaving doesn't shift the layout */}
       <div className="flex h-7 items-center">
@@ -197,14 +197,14 @@ export function RecordReveal({ season }: { season: SeasonResult }) {
         ) : (
           landed &&
           perfect && (
-            <motion.p
+            <m.p
               initial={reducedMotion ? false : { scale: 0, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
               transition={{ type: "spring", stiffness: 300, damping: 14 }}
               className="font-arcade text-xs text-amber-300"
             >
               {t("onFire")}
-            </motion.p>
+            </m.p>
           )
         )}
       </div>
@@ -228,7 +228,7 @@ function OvrDial({ ovr }: { ovr: number }) {
           strokeWidth="8"
           className="stroke-muted"
         />
-        <motion.circle
+        <m.circle
           cx="52"
           cy="52"
           r={r}
@@ -273,7 +273,7 @@ function RatingBar({
         {label}
       </span>
       <div className="h-2 flex-1 overflow-hidden rounded-full bg-muted">
-        <motion.div
+        <m.div
           className="h-full rounded-full bg-primary"
           initial={{ width: 0 }}
           animate={{ width: `${Math.max(0, Math.min(100, value))}%` }}
@@ -307,7 +307,7 @@ function CatBar({
       </span>
       <div className="relative h-2.5 flex-1 rounded-full bg-muted">
         <div className="absolute top-0 left-1/2 h-full w-px bg-border" />
-        <motion.div
+        <m.div
           className={cn(
             "absolute top-0 h-full",
             positive
@@ -351,7 +351,7 @@ function TeamView({
         const player = players.get(id);
         const bench = i >= POSITIONS.length;
         return (
-          <motion.div
+          <m.div
             key={`${label}-${id}`}
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
@@ -373,7 +373,7 @@ function TeamView({
             <span className="text-[8px] font-bold tracking-wider text-primary/70">
               {label}
             </span>
-          </motion.div>
+          </m.div>
         );
       })}
     </div>
@@ -451,7 +451,7 @@ export function TeamRevealBody({
 
       {/* gate callout */}
       {season.gatedCategory && (
-        <motion.div
+        <m.div
           initial={{ opacity: 0, y: 8 }}
           animate={{ opacity: 1, y: 0, x: [0, -5, 5, -3, 3, 0] }}
           transition={{
@@ -468,7 +468,7 @@ export function TeamRevealBody({
               b: (chunks) => <span className="font-semibold">{chunks}</span>,
             })}
           </p>
-        </motion.div>
+        </m.div>
       )}
 
       {/* ratings */}
@@ -505,7 +505,7 @@ export function TeamRevealBody({
 
       {/* what cost you (absent on a perfect season) */}
       {cost && landed && (
-        <motion.div
+        <m.div
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.2 }}
@@ -554,7 +554,7 @@ export function TeamRevealBody({
               </p>
             )}
           </Card>
-        </motion.div>
+        </m.div>
       )}
 
       {/* AI scouting report on the unsaved draft (server re-runs the engine).

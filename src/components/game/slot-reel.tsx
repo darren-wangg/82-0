@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo } from "react";
-import { motion } from "framer-motion";
+import { m } from "framer-motion";
 import { cn } from "@/lib/utils";
 import { mulberry32 } from "./draft-state";
 
@@ -73,7 +73,7 @@ export function SlotReel({
           {idleLabel}
         </div>
       ) : (
-        <motion.div
+        <m.div
           key={value}
           initial={{ y: 0 }}
           animate={{ y: -(rows.length - 1) * ROW_H }}
@@ -88,7 +88,7 @@ export function SlotReel({
               {label}
             </div>
           ))}
-        </motion.div>
+        </m.div>
       )}
       {/* fade masks for the slot window */}
       <div className="pointer-events-none absolute inset-x-0 top-0 h-3 bg-gradient-to-b from-card to-transparent" />

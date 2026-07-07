@@ -12,6 +12,7 @@ import { getTranslations } from "next-intl/server";
 import { ChevronLeft } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { BUDGET_CAP, BUDGET_DIFFICULTIES } from "@/lib/budget";
+import { preloadGameData } from "@/lib/preload-game-data";
 import { resolveTeamSize, TEAM_SIZE_COOKIE } from "@/lib/team-size";
 import { TeamSizeSwitch } from "@/components/team-size-switch";
 
@@ -28,6 +29,8 @@ const DIFFICULTY_STYLES = {
 } as const;
 
 export default async function BudgetPage() {
+  // Warm the draft's data while the user picks a difficulty.
+  preloadGameData();
   const t = await getTranslations("budget");
   const size = resolveTeamSize(
     (await cookies()).get(TEAM_SIZE_COOKIE)?.value

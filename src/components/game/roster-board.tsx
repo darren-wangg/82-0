@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { motion } from "framer-motion";
+import { m } from "framer-motion";
 import { useFormatter, useTranslations } from "next-intl";
 import { POSITIONS } from "@/lib/contracts";
 import { cn } from "@/lib/utils";
@@ -40,7 +40,7 @@ function SlotCircle({
   return (
     <div className="flex min-w-0 flex-1 flex-col items-center gap-1">
       {player ? (
-        <motion.button
+        <m.button
           type="button"
           aria-label={`${t("slotFilled", { name: player.name, slot: SLOT_LABELS[slot] })} — ${
             highlighted
@@ -72,9 +72,9 @@ function SlotCircle({
           )}
         >
           <PlayerHeadshot player={player} className="size-full" />
-        </motion.button>
+        </m.button>
       ) : (
-        <motion.button
+        <m.button
           type="button"
           aria-label={t("placeAt", { slot: SLOT_LABELS[slot] })}
           disabled={!highlighted}
@@ -92,7 +92,7 @@ function SlotCircle({
           )}
         >
           {SLOT_LABELS[slot]}
-        </motion.button>
+        </m.button>
       )}
       <span
         className={cn(
@@ -212,7 +212,7 @@ export function RosterBoard({ className }: { className?: string }) {
           return (
           <div key={label} className="flex flex-col items-center">
             {/* keyed by value so every draft pick pops the number */}
-            <motion.span
+            <m.span
               key={display}
               initial={{ scale: 1.4 }}
               animate={{ scale: 1 }}
@@ -220,7 +220,7 @@ export function RosterBoard({ className }: { className?: string }) {
               className="font-mono text-[11px] font-bold tabular-nums"
             >
               {display}
-            </motion.span>
+            </m.span>
             <span className="text-[8px] font-semibold tracking-wider text-muted-foreground">
               {label}
             </span>
