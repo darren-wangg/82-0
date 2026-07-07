@@ -13,6 +13,14 @@ export const BUDGET_DIFFICULTIES = ["easy", "normal", "hard"] as const;
 export type BudgetDifficulty = (typeof BUDGET_DIFFICULTIES)[number];
 
 /**
+ * Name given to budget teams persisted without a user-typed name (the
+ * challenge flow saves the team before the opponent pick, name or not).
+ * Teams carrying this default are excluded from the budget leaderboards —
+ * only explicitly named teams are listed.
+ */
+export const DEFAULT_BUDGET_TEAM_NAME = "Budget Lineup";
+
+/**
  * Salary cap in $, per roster size then difficulty. Caps scale linearly with
  * roster size (~$22.5 / $17.5 / $12.5 per extra slot by tier, snapped to $5)
  * so the same star-vs-depth tradeoffs carry over at every size.

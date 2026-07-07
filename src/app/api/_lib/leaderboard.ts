@@ -10,6 +10,7 @@ import { LeaderboardEntry } from "@/lib/contracts";
 import { getAnonIdFromCookie } from "@/lib/auth";
 import { prisma } from "@/lib/db";
 import { getSnapshot } from "@/lib/snapshot";
+import { DEFAULT_BUDGET_TEAM_NAME } from "@/lib/budget";
 import {
   PAGE_SIZE,
   rankLeaderboard,
@@ -34,9 +35,15 @@ function boardWhere(
     // Preset famous teams never appear on any leaderboard.
     isPreset: false,
     // Mode filter: null/undefined means "classic" boards (exclude budget);
-    // "budget" means budget-only for the given difficulty.
+    // "budget" means budget-only for the given difficulty. Budget boards list
+    // only explicitly named teams — the challenge flow auto-saves unnamed
+    // teams under the default name, and those never rank.
     ...(mode === "budget"
-      ? { mode: "budget", ...(difficulty ? { difficulty } : {}) }
+      ? {
+          mode: "budget",
+          teamName: { not: DEFAULT_BUDGET_TEAM_NAME },
+          ...(difficulty ? { difficulty } : {}),
+        }
       : { mode: null }),
     ...(scope === "weekly"
       ? { createdAt: { gte: new Date(Date.now() - WEEKLY_WINDOW_MS) } }

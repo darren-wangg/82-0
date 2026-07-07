@@ -209,11 +209,16 @@ export function BudgetSimScreen() {
 
   // Solo flow: persist the team without challenging anyone — it gets a share
   // link and lands on the budget leaderboard for its cap difficulty. Tapping
-  // Challenge afterwards reuses the same saved row.
+  // Challenge afterwards reuses the same saved row. A name is required here:
+  // only explicitly named teams are listed on the budget boards.
   const saveTeamOnly = async () => {
     if (savingRef.current || !state || !sim) return;
     const name = teamName.trim();
-    if (name && containsProfanity(name)) {
+    if (name.length === 0 || name.length > 40) {
+      setError(tSim("toastNameRequired"));
+      return;
+    }
+    if (containsProfanity(name)) {
       setError(tSim("nameRejected"));
       return;
     }
