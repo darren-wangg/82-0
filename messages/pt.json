@@ -196,8 +196,8 @@
     "viewLeaderboard": "Classificação Orçamento",
     "allDifficulties": "Todos",
     "backToSummary": "Voltar ao resumo",
-    "nameOptionalPlaceholder": "Nomeie sua equipe (opcional)",
     "rosterSize": "Tamanho do time",
-    "rosterSizeN": "{n} jogadores"
+    "rosterSizeN": "{n} jogadores",
+    "nameForBoardPlaceholder": "Nomeie sua equipe para ranquear"
   }
 }

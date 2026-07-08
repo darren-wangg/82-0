@@ -196,8 +196,8 @@
     "viewLeaderboard": "Budget Leaderboard",
     "allDifficulties": "All",
     "backToSummary": "Back to summary",
-    "nameOptionalPlaceholder": "Name your team (optional)",
     "rosterSize": "Team size",
-    "rosterSizeN": "{n}-man"
+    "rosterSizeN": "{n}-man",
+    "nameForBoardPlaceholder": "Name your team to rank on the board"
   }
 }

@@ -36,6 +36,13 @@ export const metadata: Metadata = {
   description: "The winningest Ultimate Draft rosters ever drafted.",
 };
 
+/** Active-tab text color per budget cap — mirrors the /budget difficulty cards. */
+const DIFFICULTY_TEXT = {
+  easy: "text-emerald-300",
+  normal: "text-primary",
+  hard: "text-red-300",
+} as const;
+
 export default async function LeaderboardPage({
   searchParams,
 }: PageProps<"/leaderboard">) {
@@ -109,18 +116,33 @@ export default async function LeaderboardPage({
         </div>
       </div>
 
-      {/* Board tab (Classic / Budget) */}
-      <div className="mt-4 grid grid-cols-2 gap-1 rounded-xl bg-muted/40 p-1 text-center text-xs font-semibold">
-        {(["classic", "budget"] as const).map((b) => (
+      {/* Board picker — Classic plus one board per budget cap. Each cap is its
+          own board (caps aren't ranked against each other), so the caps sit
+          beside Classic instead of stacking a separate Budget + difficulty
+          row; the $ prefix and the /budget difficulty colors mark them. */}
+      <div className="mt-4 grid grid-cols-4 gap-1 rounded-xl bg-muted/40 p-1 text-center text-xs font-semibold">
+        <Link
+          href={boardHref({ board: "classic", page: "1" })}
+          className={cn(
+            "rounded-lg py-1",
+            board === "classic" ? "bg-card text-foreground" : "text-muted-foreground"
+          )}
+        >
+          Classic
+        </Link>
+        {BUDGET_DIFFICULTIES.map((d) => (
           <Link
-            key={b}
-            href={boardHref({ board: b, page: "1" })}
+            key={d}
+            href={boardHref({ board: "budget", difficulty: d, page: "1" })}
             className={cn(
-              "rounded-lg py-1",
-              board === b ? "bg-card text-foreground" : "text-muted-foreground"
+              "rounded-lg py-1 whitespace-nowrap",
+              board === "budget" && difficulty === d
+                ? cn("bg-card", DIFFICULTY_TEXT[d])
+                : "text-muted-foreground"
             )}
           >
-            {b === "budget" ? "Budget" : "Classic"}
+            <span className="opacity-60">$</span>
+            {tBudget(`difficulty.${d}`)}
           </Link>
         ))}
       </div>
@@ -140,25 +162,6 @@ export default async function LeaderboardPage({
           </Link>
         ))}
       </div>
-
-      {/* Budget cap difficulty — each cap is its own board (caps aren't ranked
-          against each other) */}
-      {board === "budget" && (
-        <div className="mt-2 grid grid-cols-3 gap-1 rounded-xl bg-muted/40 p-1 text-center text-xs font-semibold">
-          {BUDGET_DIFFICULTIES.map((d) => (
-            <Link
-              key={d}
-              href={boardHref({ difficulty: d, page: "1" })}
-              className={cn(
-                "rounded-lg py-1",
-                difficulty === d ? "bg-card text-foreground" : "text-muted-foreground"
-              )}
-            >
-              {tBudget(`difficulty.${d}`)}
-            </Link>
-          ))}
-        </div>
-      )}
 
       {entries.length === 0 ? (
         <div className="mt-10 text-center text-sm text-muted-foreground">
@@ -230,7 +233,7 @@ export default async function LeaderboardPage({
               >
                 {e.wins}-{e.losses}
               </span>
-              <span className="w-12 shrink-0 text-right font-mono text-xs text-muted-foreground tabular-nums">
+              <span className="w-14 shrink-0 text-right font-mono text-xs whitespace-nowrap text-muted-foreground tabular-nums">
                 {Math.round(e.ovr)} OVR
               </span>
             </li>

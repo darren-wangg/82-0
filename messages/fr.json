@@ -196,8 +196,8 @@
     "viewLeaderboard": "Classement Budget",
     "allDifficulties": "Tous",
     "backToSummary": "Retour au résumé",
-    "nameOptionalPlaceholder": "Nommez votre équipe (facultatif)",
     "rosterSize": "Taille de l'équipe",
-    "rosterSizeN": "{n} joueurs"
+    "rosterSizeN": "{n} joueurs",
+    "nameForBoardPlaceholder": "Nommez votre équipe pour être classé"
   }
 }

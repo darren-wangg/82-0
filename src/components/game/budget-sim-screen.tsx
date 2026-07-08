@@ -497,7 +497,7 @@ export function BudgetSimScreen() {
         <Input
           value={teamName}
           maxLength={40}
-          placeholder={lobbyCode ? tSim("teamNamePlaceholder") : t("nameOptionalPlaceholder")}
+          placeholder={lobbyCode ? tSim("teamNamePlaceholder") : t("nameForBoardPlaceholder")}
           aria-label={tSim("teamNameAria")}
           // Once explicitly saved, the name is committed with the team row —
           // lock the field so edits don't look like they'd still apply.

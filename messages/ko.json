@@ -196,8 +196,8 @@
     "viewLeaderboard": "예산 리더보드",
     "allDifficulties": "전체",
     "backToSummary": "요약으로 돌아가기",
-    "nameOptionalPlaceholder": "팀 이름 (선택)",
     "rosterSize": "팀 인원",
-    "rosterSizeN": "{n}인"
+    "rosterSizeN": "{n}인",
+    "nameForBoardPlaceholder": "팀 이름을 지어야 리더보드에 올라요"
   }
 }

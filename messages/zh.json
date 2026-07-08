@@ -196,8 +196,8 @@
     "viewLeaderboard": "预算排行榜",
     "allDifficulties": "全部",
     "backToSummary": "返回总结",
-    "nameOptionalPlaceholder": "为你的球队命名（可选）",
     "rosterSize": "球队人数",
-    "rosterSizeN": "{n}人"
+    "rosterSizeN": "{n}人",
+    "nameForBoardPlaceholder": "为球队命名才能上榜"
   }
 }

@@ -196,8 +196,8 @@
     "viewLeaderboard": "バジェットリーダーボード",
     "allDifficulties": "すべて",
     "backToSummary": "サマリーに戻る",
-    "nameOptionalPlaceholder": "チーム名（任意）",
     "rosterSize": "チーム人数",
-    "rosterSizeN": "{n}人"
+    "rosterSizeN": "{n}人",
+    "nameForBoardPlaceholder": "チーム名を付けてランキング入り"
   }
 }

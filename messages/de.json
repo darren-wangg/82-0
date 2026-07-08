@@ -196,8 +196,8 @@
     "viewLeaderboard": "Budget-Bestenliste",
     "allDifficulties": "Alle",
     "backToSummary": "Zurück zur Übersicht",
-    "nameOptionalPlaceholder": "Benenne dein Team (optional)",
     "rosterSize": "Teamgröße",
-    "rosterSizeN": "{n} Spieler"
+    "rosterSizeN": "{n} Spieler",
+    "nameForBoardPlaceholder": "Team benennen, um gelistet zu werden"
   }
 }
