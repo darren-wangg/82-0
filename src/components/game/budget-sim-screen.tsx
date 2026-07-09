@@ -592,7 +592,7 @@ export function BudgetSimScreen() {
                   </Button>
                 </div>
                 <Link
-                  href={`/leaderboard?board=budget${difficulty === "normal" ? "" : `&difficulty=${difficulty}`}`}
+                  href={`/budget/leaderboard${difficulty === "normal" ? "" : `?difficulty=${difficulty}`}`}
                   className="text-center text-xs font-semibold text-primary underline-offset-2 hover:underline"
                 >
                   {t("viewLeaderboard")} →

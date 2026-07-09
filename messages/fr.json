@@ -193,7 +193,7 @@
     "totalSpend": "Coût de l'équipe : ${spend} (plafond {difficulty})",
     "budgetExceeded": "Budget dépassé — le serveur a refusé cette équipe.",
     "challengeFailed": "Défi échoué — réessayez.",
-    "viewLeaderboard": "Classement Budget",
+    "viewLeaderboard": "Classement",
     "allDifficulties": "Tous",
     "backToSummary": "Retour au résumé",
     "rosterSize": "Taille de l'équipe",

@@ -193,7 +193,7 @@
     "totalSpend": "Teamkosten: ${spend} ({difficulty} Deckel)",
     "budgetExceeded": "Budget überschritten — der Server hat dieses Team abgelehnt.",
     "challengeFailed": "Herausforderung fehlgeschlagen — erneut versuchen.",
-    "viewLeaderboard": "Budget-Bestenliste",
+    "viewLeaderboard": "Bestenliste",
     "allDifficulties": "Alle",
     "backToSummary": "Zurück zur Übersicht",
     "rosterSize": "Teamgröße",

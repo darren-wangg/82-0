@@ -193,7 +193,7 @@
     "totalSpend": "팀 비용: ${spend}（{difficulty} 캡）",
     "budgetExceeded": "예산 초과 — 서버가 이 로스터를 거부했습니다.",
     "challengeFailed": "도전 실패 — 다시 시도하세요.",
-    "viewLeaderboard": "예산 리더보드",
+    "viewLeaderboard": "순위표",
     "allDifficulties": "전체",
     "backToSummary": "요약으로 돌아가기",
     "rosterSize": "팀 인원",

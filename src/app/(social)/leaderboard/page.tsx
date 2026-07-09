@@ -1,34 +1,21 @@
 /**
- * /leaderboard — top 50 teams (global or weekly), wins desc then OVR desc,
- * scoped to the current snapshot version. Rows link to the team pages.
+ * /leaderboard — top 50 classic teams (global or weekly), wins desc then OVR
+ * desc, scoped to the current snapshot version. Rows link to the team pages.
  *
- * Two boards: Classic (the default) and Budget (?board=budget). Budget teams
- * are drafted under per-difficulty salary caps, so they're ranked only against
- * teams built under the same cap (?difficulty=easy|normal|hard, default
- * normal) — never mixed into the classic board or across caps.
+ * Classic only, kept deliberately minimal. Budget teams are drafted under
+ * per-difficulty salary caps and live on their own boards inside the budget
+ * flow at /budget/leaderboard — never mixed in here.
  */
 
 import type { Metadata } from "next";
 import Link from "next/link";
 import { cookies } from "next/headers";
+import { redirect } from "next/navigation";
 import { getTranslations } from "next-intl/server";
-import { ChevronLeft, ChevronRight } from "lucide-react";
-import { LeaderboardEntry } from "@/lib/contracts";
-import {
-  loadLeaderboardCount,
-  loadLeaderboardEntries,
-} from "@/app/api/_lib/leaderboard";
-import { PAGE_SIZE } from "@/components/social/leaderboard";
-import { Badge } from "@/components/ui/badge";
-import { ClaimTeamButton } from "@/components/social/claim-team";
-import { Unavailable } from "@/components/social/unavailable";
+import { LeaderboardView } from "@/components/social/leaderboard-view";
 import { TeamSizeSwitch } from "@/components/team-size-switch";
 import { resolveTeamSize, TEAM_SIZE_COOKIE } from "@/lib/team-size";
-import {
-  BUDGET_DIFFICULTIES,
-  isBudgetDifficulty,
-  type BudgetDifficulty,
-} from "@/lib/budget";
+import { isBudgetDifficulty } from "@/lib/budget";
 import { cn } from "@/lib/utils";
 
 export const metadata: Metadata = {
@@ -36,73 +23,41 @@ export const metadata: Metadata = {
   description: "The winningest Ultimate Draft rosters ever drafted.",
 };
 
-/** Active-tab text color per budget cap — mirrors the /budget difficulty cards. */
-const DIFFICULTY_TEXT = {
-  easy: "text-emerald-300",
-  normal: "text-primary",
-  hard: "text-red-300",
-} as const;
-
 export default async function LeaderboardPage({
   searchParams,
 }: PageProps<"/leaderboard">) {
   const params = await searchParams;
+
+  // Budget boards moved into the budget flow — keep old shared links working.
+  if (params.board === "budget") {
+    const d = Array.isArray(params.difficulty)
+      ? params.difficulty[0]
+      : params.difficulty;
+    redirect(
+      isBudgetDifficulty(d) && d !== "normal"
+        ? `/budget/leaderboard?difficulty=${d}`
+        : "/budget/leaderboard"
+    );
+  }
+
   const scope = params.scope === "weekly" ? "weekly" : "global";
-  const board = params.board === "budget" ? "budget" : "classic";
-  const difficultyParam = Array.isArray(params.difficulty)
-    ? params.difficulty[0]
-    : params.difficulty;
-  const difficulty: BudgetDifficulty = isBudgetDifficulty(difficultyParam)
-    ? difficultyParam
-    : "normal";
   const t = await getTranslations("home");
-  const tBudget = await getTranslations("budget");
   const teamSize = resolveTeamSize(
     (await cookies()).get(TEAM_SIZE_COOKIE)?.value
   );
 
-  // 1-based page in the URL; clamped to the real range after we know the count.
   const pageParam = Array.isArray(params.page) ? params.page[0] : params.page;
   const requestedPage = Math.max(1, Number.parseInt(pageParam ?? "1", 10) || 1);
 
-  let entries: LeaderboardEntry[];
-  let totalPages: number;
-  let page: number;
-  // Budget boards filter by mode + cap difficulty; classic passes neither
-  // (the loader then excludes budget teams via mode: null).
-  const mode = board === "budget" ? "budget" : undefined;
-  const boardDifficulty = board === "budget" ? difficulty : undefined;
-
-  try {
-    const total = await loadLeaderboardCount(scope, teamSize, mode, boardDifficulty);
-    totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE));
-    page = Math.min(requestedPage, totalPages);
-    entries = await loadLeaderboardEntries(
-      scope,
-      teamSize,
-      page - 1,
-      mode,
-      boardDifficulty
-    );
-  } catch {
-    return <Unavailable what="the leaderboard" />;
-  }
-
-  /** Build a leaderboard href preserving active params. */
+  /** Build a leaderboard href preserving the active scope. */
   const boardHref = (overrides: Record<string, string | undefined>) => {
     const sp = new URLSearchParams();
-    const merged = { scope, board, difficulty, ...overrides };
-    if (merged.board === "budget") {
-      sp.set("board", "budget");
-      if (merged.difficulty !== "normal") sp.set("difficulty", merged.difficulty);
-    }
+    const merged = { scope, ...overrides };
     if (merged.scope === "weekly") sp.set("scope", "weekly");
     if (overrides.page && overrides.page !== "1") sp.set("page", overrides.page);
     const qs = sp.toString();
     return qs ? `/leaderboard?${qs}` : "/leaderboard";
   };
-
-  const pageHref = (p: number) => boardHref({ page: String(p) });
 
   return (
     <main className="flex flex-1 flex-col">
@@ -116,39 +71,8 @@ export default async function LeaderboardPage({
         </div>
       </div>
 
-      {/* Board picker — Classic plus one board per budget cap. Each cap is its
-          own board (caps aren't ranked against each other), so the caps sit
-          beside Classic instead of stacking a separate Budget + difficulty
-          row; the $ prefix and the /budget difficulty colors mark them. */}
-      <div className="mt-4 grid grid-cols-4 gap-1 rounded-xl bg-muted/40 p-1 text-center text-xs font-semibold">
-        <Link
-          href={boardHref({ board: "classic", page: "1" })}
-          className={cn(
-            "rounded-lg py-1",
-            board === "classic" ? "bg-card text-foreground" : "text-muted-foreground"
-          )}
-        >
-          Classic
-        </Link>
-        {BUDGET_DIFFICULTIES.map((d) => (
-          <Link
-            key={d}
-            href={boardHref({ board: "budget", difficulty: d, page: "1" })}
-            className={cn(
-              "rounded-lg py-1 whitespace-nowrap",
-              board === "budget" && difficulty === d
-                ? cn("bg-card", DIFFICULTY_TEXT[d])
-                : "text-muted-foreground"
-            )}
-          >
-            <span className="opacity-60">$</span>
-            {tBudget(`difficulty.${d}`)}
-          </Link>
-        ))}
-      </div>
-
       {/* Scope tab (Global / This week) */}
-      <div className="mt-2 grid grid-cols-2 gap-1 rounded-xl bg-muted/40 p-1 text-center text-xs font-semibold">
+      <div className="mt-4 grid grid-cols-2 gap-1 rounded-xl bg-muted/40 p-1 text-center text-xs font-semibold">
         {(["global", "weekly"] as const).map((s) => (
           <Link
             key={s}
@@ -163,122 +87,13 @@ export default async function LeaderboardPage({
         ))}
       </div>
 
-      {entries.length === 0 ? (
-        <div className="mt-10 text-center text-sm text-muted-foreground">
-          <p>No teams on the board yet.</p>
-          <Link
-            href={board === "budget" ? "/budget" : "/play"}
-            className="mt-2 inline-block font-semibold text-primary"
-          >
-            Be the first →
-          </Link>
-        </div>
-      ) : (
-        <ol className="mt-4 space-y-1.5">
-          {entries.map((e) => (
-            <li
-              key={e.teamSlug}
-              className={cn(
-                "relative flex items-center gap-3 rounded-xl border px-3 py-2.5 shadow-md shadow-black/25",
-                e.viewer
-                  ? "border-primary/50 bg-primary/10"
-                  : "border-border/80 bg-card/70"
-              )}
-            >
-              <Link
-                href={`/t/${e.teamSlug}`}
-                aria-label={`${e.teamName}, ${e.wins}-${e.losses}`}
-                className="absolute inset-0 rounded-xl"
-              />
-              <span
-                className={cn(
-                  "w-7 shrink-0 text-center font-display text-base",
-                  e.rank === 1
-                    ? "text-amber-300"
-                    : e.rank <= 3
-                      ? "text-primary"
-                      : "text-muted-foreground"
-                )}
-              >
-                {e.rank}
-              </span>
-              <span className="min-w-0 flex-1">
-                <span className="flex items-center gap-1.5">
-                  <span className="truncate text-sm font-bold">
-                    {e.teamName}
-                  </span>
-                  {e.viewer && (
-                    <Badge className="h-4 shrink-0 px-1.5 text-[10px] font-bold">
-                      You
-                    </Badge>
-                  )}
-                </span>
-                {e.displayName ? (
-                  <span className="block truncate text-[11px] text-muted-foreground">
-                    {e.displayName}
-                  </span>
-                ) : e.viewer ? (
-                  <ClaimTeamButton
-                    slug={e.teamSlug}
-                    teamName={e.teamName}
-                    className="relative z-10"
-                  />
-                ) : null}
-              </span>
-              <span
-                className={cn(
-                  "shrink-0 font-mono text-sm font-bold tabular-nums",
-                  e.losses === 0 ? "text-emerald-400" : undefined
-                )}
-              >
-                {e.wins}-{e.losses}
-              </span>
-              <span className="w-14 shrink-0 text-right font-mono text-xs whitespace-nowrap text-muted-foreground tabular-nums">
-                {Math.round(e.ovr)} OVR
-              </span>
-            </li>
-          ))}
-        </ol>
-      )}
-
-      {totalPages > 1 && (
-        <nav
-          aria-label="Leaderboard pages"
-          className="mt-5 flex items-center justify-center gap-4 text-sm font-semibold"
-        >
-          {page > 1 ? (
-            <Link
-              href={pageHref(page - 1)}
-              rel="prev"
-              aria-label="Previous page"
-              className="flex size-9 items-center justify-center rounded-lg border border-border/80 text-foreground transition-colors hover:bg-muted"
-            >
-              <ChevronLeft className="size-4" />
-            </Link>
-          ) : (
-            <span className="flex size-9 items-center justify-center rounded-lg border border-border/40 text-muted-foreground/40">
-              <ChevronLeft className="size-4" />
-            </span>
-          )}
-          <span className="tabular-nums text-muted-foreground">
-            {page} / {totalPages}
-          </span>
-          {page < totalPages ? (
-            <Link
-              href={pageHref(page + 1)}
-              rel="next"
-              aria-label="Next page"
-              className="flex size-9 items-center justify-center rounded-lg border border-border/80 text-foreground transition-colors hover:bg-muted"
-            >
-              <ChevronRight className="size-4" />
-            </Link>
-          ) : (
-            <span className="flex size-9 items-center justify-center rounded-lg border border-border/40 text-muted-foreground/40">
-              <ChevronRight className="size-4" />
-            </span>
-          )}
-        </nav>
-      )}
+      <LeaderboardView
+        scope={scope}
+        teamSize={teamSize}
+        requestedPage={requestedPage}
+        pageHref={(p) => boardHref({ page: String(p) })}
+        emptyCtaHref="/play"
+      />
     </main>
   );
 }

@@ -193,7 +193,7 @@
     "totalSpend": "Roster cost: ${spend} ({difficulty} cap)",
     "budgetExceeded": "Budget exceeded — the server rejected this roster.",
     "challengeFailed": "Challenge failed — try again.",
-    "viewLeaderboard": "Budget Leaderboard",
+    "viewLeaderboard": "Leaderboard",
     "allDifficulties": "All",
     "backToSummary": "Back to summary",
     "rosterSize": "Team size",

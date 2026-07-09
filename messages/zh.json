@@ -193,7 +193,7 @@
     "totalSpend": "球队费用：${spend}（{difficulty}帽）",
     "budgetExceeded": "超出预算 — 服务器拒绝了该阵容。",
     "challengeFailed": "挑战失败 — 请重试。",
-    "viewLeaderboard": "预算排行榜",
+    "viewLeaderboard": "排行榜",
     "allDifficulties": "全部",
     "backToSummary": "返回总结",
     "rosterSize": "球队人数",

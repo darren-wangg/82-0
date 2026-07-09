@@ -193,7 +193,7 @@
     "totalSpend": "Custo do time: ${spend} (limite {difficulty})",
     "budgetExceeded": "Orçamento excedido — o servidor rejeitou esta equipe.",
     "challengeFailed": "Desafio falhou — tente novamente.",
-    "viewLeaderboard": "Classificação Orçamento",
+    "viewLeaderboard": "Classificação",
     "allDifficulties": "Todos",
     "backToSummary": "Voltar ao resumo",
     "rosterSize": "Tamanho do time",

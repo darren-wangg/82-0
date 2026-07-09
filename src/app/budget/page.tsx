@@ -9,7 +9,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { cookies } from "next/headers";
 import { getTranslations } from "next-intl/server";
-import { ChevronLeft } from "lucide-react";
+import { ChevronLeft, Trophy } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { BUDGET_CAP, BUDGET_DIFFICULTIES } from "@/lib/budget";
 import { preloadGameData } from "@/lib/preload-game-data";
@@ -91,10 +91,11 @@ export default async function BudgetPage() {
         </div>
 
         <Link
-          href="/leaderboard?board=budget"
-          className="text-center text-sm font-semibold text-primary underline-offset-2 hover:underline"
+          href="/budget/leaderboard"
+          className="inline-flex items-center justify-center gap-1.5 self-center text-sm font-semibold text-primary underline-offset-2 hover:underline"
         >
-          {t("viewLeaderboard")} →
+          <Trophy className="size-4 text-amber-300" />
+          {t("viewLeaderboard")}
         </Link>
 
         <p className="mt-auto text-center text-xs text-muted-foreground">

@@ -193,7 +193,7 @@
     "totalSpend": "Costo del team: ${spend} (tetto {difficulty})",
     "budgetExceeded": "Budget superato — il server ha rifiutato questa squadra.",
     "challengeFailed": "Sfida fallita — riprova.",
-    "viewLeaderboard": "Classifica Budget",
+    "viewLeaderboard": "Classifica",
     "allDifficulties": "Tutte",
     "backToSummary": "Torna al riepilogo",
     "rosterSize": "Dimensione squadra",

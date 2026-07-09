@@ -193,7 +193,7 @@
     "totalSpend": "チームコスト：${spend}（{difficulty}キャップ）",
     "budgetExceeded": "バジェット超過 — サーバーがこのロスターを拒否しました。",
     "challengeFailed": "チャレンジ失敗 — もう一度試してください。",
-    "viewLeaderboard": "バジェットリーダーボード",
+    "viewLeaderboard": "ランキング",
     "allDifficulties": "すべて",
     "backToSummary": "サマリーに戻る",
     "rosterSize": "チーム人数",
