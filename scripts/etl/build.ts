@@ -12,10 +12,10 @@ import { mkdirSync, readFileSync, writeFileSync, existsSync } from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 
+import { SnapshotSchema } from "../../src/lib/contracts-schemas";
 import {
   DECADES,
   POSITIONS,
-  SnapshotSchema,
   type Decade,
   type EraBaseline,
   type Franchise,

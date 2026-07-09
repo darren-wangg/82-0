@@ -9,7 +9,8 @@ import { readFileSync } from "node:fs";
 import path from "node:path";
 import { describe, expect, it } from "vitest";
 
-import { DECADES, SnapshotSchema, type Snapshot } from "../../src/lib/contracts";
+import { DECADES, type Snapshot } from "../../src/lib/contracts";
+import { SnapshotSchema } from "../../src/lib/contracts-schemas";
 
 const SNAPSHOT_FILE = path.join(__dirname, "..", "..", "public", "data", "snapshot-v1.json");
 

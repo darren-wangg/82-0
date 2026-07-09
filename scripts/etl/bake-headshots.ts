@@ -23,7 +23,8 @@ import { fileURLToPath } from "node:url";
 
 import sharp from "sharp";
 
-import { headshotUrl, SnapshotSchema } from "../../src/lib/contracts";
+import { headshotUrl } from "../../src/lib/contracts";
+import { SnapshotSchema } from "../../src/lib/contracts-schemas";
 import { headshotSourcesFrom, type FallbackUrls } from "../../src/lib/headshots-core";
 
 const ROOT = path.join(path.dirname(fileURLToPath(import.meta.url)), "..", "..");

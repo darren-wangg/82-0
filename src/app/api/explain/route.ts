@@ -12,12 +12,12 @@ import { anthropic } from "@ai-sdk/anthropic";
 import { z } from "zod";
 import {
   ExplainRequest,
-  ExplainRequestSchema,
   MatchupResult,
   POSITIONS,
   Roster,
   TeamRating,
 } from "@/lib/contracts";
+import { ExplainRequestSchema } from "@/lib/contracts-schemas";
 import { prisma } from "@/lib/db";
 import { getEngine } from "@/lib/engine-provider";
 import { getBaselines, getPlayerMap, getSnapshot } from "@/lib/snapshot";

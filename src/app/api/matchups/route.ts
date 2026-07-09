@@ -7,10 +7,10 @@
 
 import { z } from "zod";
 import {
-  CreateMatchupRequestSchema,
   MatchupResponse,
   MatchupResult,
 } from "@/lib/contracts";
+import { CreateMatchupRequestSchema } from "@/lib/contracts-schemas";
 import { prisma } from "@/lib/db";
 import { getEngine } from "@/lib/engine-provider";
 import { stableSeed } from "@/components/social/hashing";

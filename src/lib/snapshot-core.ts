@@ -11,15 +11,29 @@ import {
   EraBaselines,
   PlayerStatLine,
   Snapshot,
-  SnapshotSchema,
 } from "./contracts";
 
-/** Zod-validate in dev/test; in production the ETL already validated this
- *  exact file at build time, so skip the (full-dataset) parse cost. */
+/**
+ * Cheap structural sanity check. The ETL zod-validates the snapshot when it is
+ * generated and scripts/etl/validate.test.ts re-validates the shipped file
+ * against SnapshotSchema on every test run, so runtime only guards against a
+ * truncated/mismatched download — deliberately WITHOUT importing zod, which
+ * would ship the whole schema runtime to every client bundle (and a full
+ * zod parse of the 1.5 MB dataset cost real main-thread time on mobile).
+ */
 export function parseSnapshot(raw: unknown): Snapshot {
-  return process.env.NODE_ENV === "production"
-    ? (raw as Snapshot)
-    : SnapshotSchema.parse(raw);
+  const s = raw as Snapshot;
+  if (
+    typeof s?.version !== "string" ||
+    !Array.isArray(s.players) ||
+    !Array.isArray(s.franchises) ||
+    !Array.isArray(s.baselines) ||
+    typeof s.pools !== "object" ||
+    s.pools === null
+  ) {
+    throw new Error("snapshot payload is malformed");
+  }
+  return s;
 }
 
 // Derived lookups are memoized per snapshot object: getPlayerMap() used to

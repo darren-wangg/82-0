@@ -5,9 +5,12 @@
  *
  * Wave 1 tasks must NOT edit this file. If a contract is wrong, stop and
  * resolve it centrally — every consumer depends on these exact shapes.
+ *
+ * This module is intentionally zod-free so client bundles importing contract
+ * types and constants ship no schema runtime. The matching zod schemas live in
+ * contracts-schemas.ts (equally frozen); compile-time parity assertions there
+ * pin each schema to its type here.
  */
-
-import { z } from "zod";
 
 // ---------------------------------------------------------------------------
 // Core enums
@@ -59,84 +62,85 @@ export const SEASON_GAMES = 82;
 export const OVR_MAX = 100;
 
 // ---------------------------------------------------------------------------
-// Snapshot (data pipeline output, game input) — zod-first so ETL validation
-// and runtime parsing share one schema.
+// Snapshot (data pipeline output, game input) — validated by SnapshotSchema
+// in contracts-schemas.ts at ETL time and in tests.
 // ---------------------------------------------------------------------------
 
-export const NineCatLineSchema = z.object({
-  pts: z.number(),
-  reb: z.number(),
-  ast: z.number(),
-  stl: z.number(),
-  blk: z.number(),
+export interface NineCatLine {
+  pts: number;
+  reb: number;
+  ast: number;
+  stl: number;
+  blk: number;
   /** 0–1 fraction, e.g. 0.509 */
-  fgPct: z.number(),
+  fgPct: number;
   /** 0–1 fraction */
-  ftPct: z.number(),
+  ftPct: number;
   /** made threes per game */
-  tpm: z.number(),
+  tpm: number;
   /** turnovers per game */
-  tov: z.number(),
-});
-export type NineCatLine = z.infer<typeof NineCatLineSchema>;
+  tov: number;
+}
 
-export const PlayerStatLineSchema = z.object({
+export interface PlayerStatLine {
   /** Stable id: `${bbrefSlug}-${franchiseId}-${decade}` */
-  id: z.string(),
+  id: string;
   /** Basketball-Reference style slug, e.g. "chambwi01" */
-  playerSlug: z.string(),
-  name: z.string(),
+  playerSlug: string;
+  name: string;
   /** Curated nickname; absent → UI falls back to last name. */
-  nickname: z.string().optional(),
+  nickname?: string;
   /** stats.nba.com person id for headshot CDN; absent → silhouette. */
-  nbaPlayerId: z.number().optional(),
-  franchiseId: z.string(),
-  decade: z.enum(DECADES),
+  nbaPlayerId?: number;
+  franchiseId: string;
+  decade: Decade;
   /** Season label of the peak season used, e.g. "1961-62". */
-  peakSeason: z.string(),
+  peakSeason: string;
   /** Primary listed position; engine applies out-of-position penalty off this. */
-  position: z.enum(POSITIONS),
+  position: Position;
   /** Secondary positions playable without penalty. */
-  altPositions: z.array(z.enum(POSITIONS)).default([]),
-  stats: NineCatLineSchema,
+  altPositions: Position[];
+  stats: NineCatLine;
   /** Offensive rating (points produced per 100 possessions). */
-  ortg: z.number(),
+  ortg: number;
   /** Defensive rating (points allowed per 100 possessions; lower is better). */
-  drtg: z.number(),
+  drtg: number;
   /** Cats whose values are estimates (pre-1974 stl/blk/tov, pre-1980 tpm, ratings). */
-  estimatedCats: z.array(z.string()).default([]),
-});
-export type PlayerStatLine = z.infer<typeof PlayerStatLineSchema>;
+  estimatedCats: string[];
+}
 
-export const FranchiseSchema = z.object({
+export interface Franchise {
   /** Canonical modern id, e.g. "GSW" (covers Philadelphia/SF Warriors history). */
-  id: z.string(),
-  name: z.string(),
+  id: string;
+  name: string;
   /** Decades in which the franchise has a draftable pool. */
-  activeDecades: z.array(z.enum(DECADES)),
-});
-export type Franchise = z.infer<typeof FranchiseSchema>;
+  activeDecades: Decade[];
+}
+
+/** A 9-cat stat line extended with the two per-100-possession ratings. */
+export interface RatedNineCatLine extends NineCatLine {
+  ortg: number;
+  drtg: number;
+}
 
 /** Per-decade league mean and standard deviation for each cat + ratings. */
-export const EraBaselineSchema = z.object({
-  decade: z.enum(DECADES),
-  mean: NineCatLineSchema.extend({ ortg: z.number(), drtg: z.number() }),
-  sd: NineCatLineSchema.extend({ ortg: z.number(), drtg: z.number() }),
-});
-export type EraBaseline = z.infer<typeof EraBaselineSchema>;
+export interface EraBaseline {
+  decade: Decade;
+  mean: RatedNineCatLine;
+  sd: RatedNineCatLine;
+}
 export type EraBaselines = Record<Decade, EraBaseline>;
 
-export const SnapshotSchema = z.object({
-  version: z.string(), // e.g. "v1"
-  generatedAt: z.string(),
-  attribution: z.string(),
-  franchises: z.array(FranchiseSchema),
-  baselines: z.array(EraBaselineSchema),
-  players: z.array(PlayerStatLineSchema),
+export interface Snapshot {
+  version: string; // e.g. "v1"
+  generatedAt: string;
+  attribution: string;
+  franchises: Franchise[];
+  baselines: EraBaseline[];
+  players: PlayerStatLine[];
   /** franchiseId → decade → player ids (indexes into `players`). */
-  pools: z.record(z.string(), z.record(z.string(), z.array(z.string()))),
-});
-export type Snapshot = z.infer<typeof SnapshotSchema>;
+  pools: Record<string, Record<string, string[]>>;
+}
 
 export function headshotUrl(p: Pick<PlayerStatLine, "nbaPlayerId">): string | null {
   return p.nbaPlayerId
@@ -148,13 +152,12 @@ export function headshotUrl(p: Pick<PlayerStatLine, "nbaPlayerId">): string | nu
 // Roster & draft state (client game state, persisted server-side on save)
 // ---------------------------------------------------------------------------
 
-export const RosterSchema = z.object({
+export interface Roster {
   /** Position → PlayerStatLine id. All five required to simulate. */
-  starters: z.record(z.enum(POSITIONS), z.string()),
+  starters: Record<Position, string>;
   /** Exactly BENCH_COUNT ids. */
-  bench: z.array(z.string()).length(BENCH_COUNT),
-});
-export type Roster = z.infer<typeof RosterSchema>;
+  bench: string[];
+}
 
 export interface SpinResult {
   franchiseId: string;
@@ -235,15 +238,14 @@ export interface Engine {
 }
 
 // ---------------------------------------------------------------------------
-// API route payloads (Wave 1D)
+// API route payloads (Wave 1D) — request schemas in contracts-schemas.ts
 // ---------------------------------------------------------------------------
 
-export const SaveTeamRequestSchema = z.object({
-  teamName: z.string().min(1).max(40),
-  roster: RosterSchema,
-  snapshotVersion: z.string(),
-});
-export type SaveTeamRequest = z.infer<typeof SaveTeamRequestSchema>;
+export interface SaveTeamRequest {
+  teamName: string;
+  roster: Roster;
+  snapshotVersion: string;
+}
 
 export interface SavedTeam {
   slug: string;
@@ -261,11 +263,10 @@ export interface SaveTeamResponse {
   url: string; // /t/{slug}
 }
 
-export const CreateMatchupRequestSchema = z.object({
-  teamSlugA: z.string(),
-  teamSlugB: z.string(),
-});
-export type CreateMatchupRequest = z.infer<typeof CreateMatchupRequestSchema>;
+export interface CreateMatchupRequest {
+  teamSlugA: string;
+  teamSlugB: string;
+}
 
 export interface MatchupResponse {
   id: string;
@@ -274,23 +275,21 @@ export interface MatchupResponse {
   result: MatchupResult;
 }
 
-export const CreateLobbyRequestSchema = z.object({
-  name: z.string().min(1).max(40),
-});
-export type CreateLobbyRequest = z.infer<typeof CreateLobbyRequestSchema>;
+export interface CreateLobbyRequest {
+  name: string;
+}
 
 /**
  * Enter a lobby with a team drafted for it. The server only accepts teams
  * owned by the calling device and created after the lobby opened (no loading
  * pre-existing saved teams), one entry per device per lobby.
  */
-export const EnterLobbyRequestSchema = z.object({
-  code: z.string(),
-  teamSlug: z.string(),
+export interface EnterLobbyRequest {
+  code: string;
+  teamSlug: string;
   /** Entrant's name, shown beside the team in standings ("whose is whose"). */
-  displayName: z.string().trim().min(1).max(24).optional(),
-});
-export type EnterLobbyRequest = z.infer<typeof EnterLobbyRequestSchema>;
+  displayName?: string;
+}
 
 export interface LobbyStanding {
   teamSlug: string;
@@ -333,16 +332,10 @@ export interface LeaderboardResponse {
   entries: LeaderboardEntry[];
 }
 
-export const ExplainRequestSchema = z.discriminatedUnion("kind", [
-  z.object({ kind: z.literal("team"), teamSlug: z.string() }),
-  z.object({ kind: z.literal("matchup"), matchupId: z.string() }),
+export type ExplainRequest =
+  | { kind: "team"; teamSlug: string }
+  | { kind: "matchup"; matchupId: string }
   /** Unsaved draft straight from /sim: the server re-runs the engine on the
    *  roster (server-authoritative) and explains it like a saved team. */
-  z.object({
-    kind: z.literal("draft"),
-    roster: RosterSchema,
-    snapshotVersion: z.string(),
-  }),
-]);
-export type ExplainRequest = z.infer<typeof ExplainRequestSchema>;
+  | { kind: "draft"; roster: Roster; snapshotVersion: string };
 // ExplainResponse is a streamed text response (Vercel AI SDK data stream).

@@ -2,7 +2,8 @@
  *  device becomes the creator: only it may end the lobby early. */
 
 import { z } from "zod";
-import { CreateLobbyRequestSchema, LobbyResponse } from "@/lib/contracts";
+import { LobbyResponse } from "@/lib/contracts";
+import { CreateLobbyRequestSchema } from "@/lib/contracts-schemas";
 import { prisma } from "@/lib/db";
 import { getOrCreateAnonId } from "@/lib/auth";
 import { makeLobbyCode } from "@/components/social/hashing";

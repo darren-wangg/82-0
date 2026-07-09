@@ -36,7 +36,8 @@ import { existsSync, readFileSync, writeFileSync } from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 
-import { headshotUrl, SnapshotSchema } from "../../src/lib/contracts";
+import { headshotUrl } from "../../src/lib/contracts";
+import { SnapshotSchema } from "../../src/lib/contracts-schemas";
 
 const ROOT = path.join(path.dirname(fileURLToPath(import.meta.url)), "..", "..");
 const SNAPSHOT_FILE = path.join(ROOT, "public", "data", "snapshot-v1.json");

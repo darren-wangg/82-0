@@ -9,8 +9,8 @@
 import { readFileSync } from "node:fs";
 import path from "node:path";
 import { engine } from "../../src/engine";
+import { SnapshotSchema } from "../../src/lib/contracts-schemas";
 import {
-  SnapshotSchema,
   type Decade,
   type EraBaseline,
   type EraBaselines,

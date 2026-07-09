@@ -16,7 +16,6 @@
  * always be completed.
  */
 
-import { z } from "zod";
 import {
   DECADES,
   Decade,
@@ -688,32 +687,81 @@ export function gameReducer(
  *  the GameMode. */
 export const STORAGE_KEY = CLASSIC_MODE.storageKey;
 
-const PersistedSchema = z.object({
-  // Optional for saves written before multi-mode support (default Classic).
-  modeId: z.string().default(CLASSIC_MODE.id),
-  snapshotVersion: z.string(),
-  seed: z.number(),
-  rngCursor: z.number().int().min(0),
-  status: z.enum(["draft", "locked"]),
-  excludedDecades: z.array(z.enum(DECADES)),
-  round: z.number().int().min(1).max(40),
-  spin: z
-    .object({ franchiseId: z.string(), decade: z.enum(DECADES) })
-    .nullable(),
-  spinNonce: z.number().int().min(0),
-  teamSkipsLeft: z.number().int().min(0).max(20),
-  eraSkipsLeft: z.number().int().min(0).max(20),
-  // Optional for saves written before duplicate-combo tracking.
-  spunCombos: z.array(z.string()).default([]),
-  picks: z.array(z.string()).max(40),
-  slots: z.record(z.string(), z.string().nullable()),
-  selectedPlayerId: z.string().nullable(),
-  // Optional for saves written before challenges / lobbies existed.
-  challengeSlug: z.string().nullable().default(null),
-  lobbyCode: z.string().nullable().default(null),
-  // Optional for saves written before live lobbies existed.
-  lobbyLive: z.boolean().default(false),
-});
+// Hand-rolled validator for the persisted payload (deliberately zod-free:
+// this module is in every game route's client bundle, and this schema was its
+// only runtime zod use). Each helper throws on mismatch; deserializeGame's
+// try/catch turns any violation into "start a new game", same as before.
+function str(v: unknown): string {
+  if (typeof v !== "string") throw new Error("expected string");
+  return v;
+}
+function strOrNull(v: unknown): string | null {
+  return v === null ? null : str(v);
+}
+function bool(v: unknown): boolean {
+  if (typeof v !== "boolean") throw new Error("expected boolean");
+  return v;
+}
+function num(v: unknown): number {
+  if (typeof v !== "number" || Number.isNaN(v)) throw new Error("expected number");
+  return v;
+}
+function int(v: unknown, min: number, max = Infinity): number {
+  const n = num(v);
+  if (!Number.isInteger(n) || n < min || n > max) throw new Error("int out of range");
+  return n;
+}
+function decade(v: unknown): Decade {
+  if (!(DECADES as readonly string[]).includes(str(v))) throw new Error("bad decade");
+  return v as Decade;
+}
+function arr<T>(v: unknown, item: (x: unknown) => T, max = Infinity): T[] {
+  if (!Array.isArray(v) || v.length > max) throw new Error("expected array");
+  return v.map(item);
+}
+function obj(v: unknown): Record<string, unknown> {
+  if (typeof v !== "object" || v === null || Array.isArray(v)) {
+    throw new Error("expected object");
+  }
+  return v as Record<string, unknown>;
+}
+
+/** Validates a raw persisted payload into a clean GameState-shaped object
+ *  (unknown fields dropped, like the previous zod schema's strip behavior). */
+function parsePersisted(value: unknown): GameState {
+  const r = obj(value);
+  const status = str(r.status);
+  if (status !== "draft" && status !== "locked") throw new Error("bad status");
+  return {
+    // Optional for saves written before multi-mode support (default Classic).
+    modeId: r.modeId === undefined ? CLASSIC_MODE.id : str(r.modeId),
+    snapshotVersion: str(r.snapshotVersion),
+    seed: num(r.seed),
+    rngCursor: int(r.rngCursor, 0),
+    status,
+    excludedDecades: arr(r.excludedDecades, decade),
+    round: int(r.round, 1, 40),
+    spin:
+      r.spin === null
+        ? null
+        : { franchiseId: str(obj(r.spin).franchiseId), decade: decade(obj(r.spin).decade) },
+    spinNonce: int(r.spinNonce, 0),
+    teamSkipsLeft: int(r.teamSkipsLeft, 0, 20),
+    eraSkipsLeft: int(r.eraSkipsLeft, 0, 20),
+    // Optional for saves written before duplicate-combo tracking.
+    spunCombos: r.spunCombos === undefined ? [] : arr(r.spunCombos, str),
+    picks: arr(r.picks, str, 40),
+    slots: Object.fromEntries(
+      Object.entries(obj(r.slots)).map(([k, v]) => [k, strOrNull(v)])
+    ),
+    selectedPlayerId: strOrNull(r.selectedPlayerId),
+    // Optional for saves written before challenges / lobbies existed.
+    challengeSlug: r.challengeSlug === undefined ? null : strOrNull(r.challengeSlug),
+    lobbyCode: r.lobbyCode === undefined ? null : strOrNull(r.lobbyCode),
+    // Optional for saves written before live lobbies existed.
+    lobbyLive: r.lobbyLive === undefined ? false : bool(r.lobbyLive),
+  };
+}
 
 export function serializeGame(state: GameState): string {
   return JSON.stringify(state);
@@ -730,7 +778,7 @@ export function deserializeGame(
 ): GameState | null {
   if (!raw) return null;
   try {
-    const parsed = PersistedSchema.parse(JSON.parse(raw));
+    const parsed = parsePersisted(JSON.parse(raw));
     if (parsed.snapshotVersion !== ctx.snapshotVersion) return null;
     if (parsed.modeId !== ctxMode(ctx).id) return null;
     if (parsed.picks.some((id) => !(id in ctx.slugById))) return null;

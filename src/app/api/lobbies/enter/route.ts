@@ -9,7 +9,7 @@
  *  - one entry per device per lobby (DB unique constraint).
  */
 
-import { EnterLobbyRequestSchema } from "@/lib/contracts";
+import { EnterLobbyRequestSchema } from "@/lib/contracts-schemas";
 import { prisma } from "@/lib/db";
 import { getOrCreateAnonId } from "@/lib/auth";
 import { containsProfanity, PROFANITY_ERROR } from "@/lib/profanity";

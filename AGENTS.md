@@ -16,8 +16,11 @@ Framer Motion, Prisma 7 + Postgres, Auth.js v5, Vercel AI SDK + Claude.
 
 ## Hard rules
 
-- **`src/lib/contracts.ts` is FROZEN.** All types, zod schemas, engine API, and
-  route payloads live there. Never edit it during Wave 1 work; build to it.
+- **`src/lib/contracts.ts` and `src/lib/contracts-schemas.ts` are FROZEN.**
+  Types, constants, engine API, and route payloads live in `contracts.ts`
+  (zod-free so client bundles never ship zod); the matching runtime zod schemas
+  live in `contracts-schemas.ts` (server/ETL/tests only — never import it from
+  client code). Never edit either during Wave 1 work; build to them.
 - Game/API code gets the engine only via `getEngine()` in
   `src/lib/engine-provider.ts` and player data only via `src/lib/snapshot.ts`.
   Never import `engine-mock` or snapshot JSON directly.

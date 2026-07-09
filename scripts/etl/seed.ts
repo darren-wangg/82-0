@@ -16,7 +16,7 @@ import { fileURLToPath } from "node:url";
 import { PrismaPg } from "@prisma/adapter-pg";
 
 import { PrismaClient } from "../../src/generated/prisma/client";
-import { SnapshotSchema } from "../../src/lib/contracts";
+import { SnapshotSchema } from "../../src/lib/contracts-schemas";
 
 const ROOT = path.join(path.dirname(fileURLToPath(import.meta.url)), "..", "..");
 const SNAPSHOT_FILE = path.join(ROOT, "public", "data", "snapshot-v1.json");

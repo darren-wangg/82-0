@@ -3,8 +3,8 @@ import {
   DRAFT_ROUNDS,
   EXCLUDED_DECADES_PER_GAME,
   POSITIONS,
-  RosterSchema,
 } from "@/lib/contracts";
+import { RosterSchema } from "@/lib/contracts-schemas";
 import { getSnapshot } from "@/lib/snapshot";
 import {
   ALL_SLOTS,
